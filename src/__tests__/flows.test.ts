@@ -48,7 +48,7 @@ function gardenFlow(): string {
   const move = findValidMoves(state.board)[0];
   const after = reduceGarden(state, { type: 'swap', from: move.from, to: move.to });
   const direction = move.to.col > move.from.col ? 'RIGHT' : move.to.col < move.from.col ? 'LEFT' : move.to.row > move.from.row ? 'DOWN' : 'UP';
-  return `${header('Potager Fou (seed 1) - the scripted first swap scores as the engine predicts, then Pause and Quitter', 'garden')}- scrollUntilVisible:
+  return `${header(`Potager Fou (seed ${SESSION_SEED}) - the scripted first swap scores as the engine predicts, then Pause and Quitter`, 'garden')}- scrollUntilVisible:
     element:
       id: "world-puzzle"
     direction: DOWN
@@ -101,7 +101,7 @@ function gardenFlow(): string {
 function bubblesFlow(): string {
   const angle = aimAngle({ x: LAUNCHER.x, y: LAUNCHER.y - 5 });
   const after = reduceBubbles(createBubbles(ROUND_SEED, {}), { type: 'shoot', angle });
-  return `${header('Bulles en Folie (seed 1) - one scripted shot straight up scores as the engine predicts, then Pause and Quitter', 'bubbles')}- scrollUntilVisible:
+  return `${header(`Bulles en Folie (seed ${SESSION_SEED}) - one scripted shot straight up scores as the engine predicts, then Pause and Quitter`, 'bubbles')}- scrollUntilVisible:
     element:
       id: "world-bubbles"
     direction: DOWN

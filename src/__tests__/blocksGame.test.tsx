@@ -92,7 +92,12 @@ describe('Pluie de Blocs screen (AC-21, AC-39)', () => {
   });
 
   it('pauses when the app goes to background and shows the pause overlay on return (AC-39)', async () => {
-    await startBlocks();
+    await startBlocks(false);
+    // Dismiss the first bubble with a drag so that the round has a visible state (one move made).
+    await act(async () => {
+      fireGestureHandler(getByGestureTestId('blocks-pan'), [{ translationX: 0, translationY: 0 }, { translationX: 200, translationY: 0 }, { translationX: 200, translationY: 0 }]);
+    });
+    const before = { score: screen.getByTestId('hud-score').props.children, lines: screen.getByTestId('hud-lines').props.children, bubble: screen.getByTestId('tutorial-rotate') };
     const listeners = (AppState.addEventListener as jest.Mock).mock.calls.map((c) => c[1]);
     await act(async () => {
       for (const listener of listeners) listener('background');
@@ -104,6 +109,11 @@ describe('Pluie de Blocs screen (AC-21, AC-39)', () => {
     expect(screen.getByTestId('pause-overlay')).toBeTruthy();
     await fireEvent.press(screen.getByTestId('pause-resume'));
     expect(screen.queryByTestId('pause-overlay')).toBeNull();
+    // The same state is shown: score, lines and the current tutorial step are unchanged.
+    expect(screen.getByTestId('hud-score').props.children).toEqual(before.score);
+    expect(screen.getByTestId('hud-lines').props.children).toEqual(before.lines);
+    expect(screen.getByTestId('tutorial-rotate')).toBeTruthy();
+    expect(before.bubble).toBeTruthy();
   });
 
   it('restarting from Pause starts a new round in place', async () => {

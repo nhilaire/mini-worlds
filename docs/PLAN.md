@@ -13,13 +13,13 @@ Foundations
 
 Core meta engine (src/game/core)
 
-- [ ] T-04 Round settlement: XP, level, level-up coins, coins with bonus upgrade, short rounds (AC-06, AC-07) - proof: unit
-- [ ] T-05 World unlocks with announcements (AC-09) - proof: unit
-- [ ] T-06 Upgrade purchase rules and effects (AC-10) - proof: unit
-- [ ] T-07 Daily reward calendar (AC-11) - proof: unit
-- [ ] T-08 Daily challenges: deterministic draw and progress from settled rounds (AC-12, AC-13) - proof: unit
-- [ ] T-09 Achievements with rewards (AC-14) - proof: unit
-- [ ] T-10 Save model: schema v1, defaults, unknown fields kept, read-only on newer schema, reset keeps settings and consent (AC-15) - proof: unit
+- [x] T-04 Round settlement: XP, level, level-up coins, coins with bonus upgrade, short rounds (AC-06, AC-07) - proof: unit
+- [x] T-05 World unlocks with announcements (AC-09) - proof: unit
+- [x] T-06 Upgrade purchase rules and effects (AC-10) - proof: unit
+- [x] T-07 Daily reward calendar (AC-11) - proof: unit
+- [x] T-08 Daily challenges: deterministic draw and progress from settled rounds (AC-12, AC-13) - proof: unit
+- [x] T-09 Achievements with rewards (AC-14) - proof: unit
+- [x] T-10 Save model: schema v1, defaults, unknown fields kept, read-only on newer schema, reset keeps settings and consent (AC-15) - proof: unit
 
 Mini-game engines (src/game/<game>)
 

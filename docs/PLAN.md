@@ -50,9 +50,9 @@ Screens (React, thin)
 
 Persistence, telemetry, feel
 
-- [ ] T-29 Persistence wiring: load at start, debounced save after every change, reset, days played (AC-15) - proof: unit
-- [ ] T-30 Telemetry calls for the 10 PRD events at the right moments, nothing without consent (AC-40, AC-41) - proof: unit
-- [ ] T-31 Sound effects (generated WAV, header test) and haptics behind the settings toggles (AC-36) - proof: unit
+- [x] T-29 Persistence wiring: load at start, debounced save after every change, reset, days played (AC-15) - proof: unit
+- [x] T-30 Telemetry calls for the 10 PRD events at the right moments, nothing without consent (AC-40, AC-41) - proof: unit
+- [x] T-31 Sound effects (generated WAV, header test) and haptics behind the settings toggles (AC-36) - proof: unit
 - [ ] T-32 Polish: result count-up and star animation, coins flying, level-up banner, world unlock reveal, piece and pop effects (AC-45) - proof: manual
 
 Proof on the emulator and the phone

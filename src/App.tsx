@@ -5,6 +5,7 @@ import { ActivityIndicator, AppState, BackHandler, StyleSheet, View } from 'reac
 import { GestureHandlerRootView } from 'react-native-gesture-handler';
 import { SafeAreaProvider } from 'react-native-safe-area-context';
 
+import { installSoundPlayer, releaseSoundPlayer } from './feedback/player';
 import { GameId } from './game/core/content';
 import { parseSeedLink } from './game/rng';
 import { LanguageSetting } from './i18n';
@@ -220,6 +221,10 @@ function Loading() {
 export default function App() {
   const [fontsLoaded] = useFonts(FONTS);
   const sessionSeed = useSessionSeed();
+  useEffect(() => {
+    installSoundPlayer();
+    return releaseSoundPlayer;
+  }, []);
   if (!fontsLoaded || sessionSeed === 'pending') return <View style={styles.loading} />;
   return (
     <GestureHandlerRootView style={styles.root}>

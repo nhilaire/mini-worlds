@@ -1,0 +1,66 @@
+appId: io.github.nhilaire.miniworlds
+name: Bulles en Folie (seed 1) - one scripted shot straight up scores as the engine predicts, then Pause and Quitter
+tags:
+  - bubbles
+---
+- launchApp:
+    clearState: true
+- extendedWaitUntil:
+    visible:
+      id: "consent-screen"
+    timeout: 30000
+- tapOn:
+    id: "consent-refuse"
+- runFlow: helpers/french.yaml
+# The test link fixes the seed and opens every world for the session (nothing is written to the save).
+- openLink: miniworlds://seed/5/unlocked
+- extendedWaitUntil:
+    visible:
+      id: "home-screen"
+    timeout: 30000
+- tapOn:
+    id: "tab-games"
+- scrollUntilVisible:
+    element:
+      id: "world-bubbles"
+    direction: DOWN
+    timeout: 30000
+- tapOn:
+    id: "world-bubbles"
+- tapOn:
+    id: "game-bubbles"
+- assertVisible:
+    id: "game-sheet-screen"
+- tapOn:
+    id: "sheet-play"
+- extendedWaitUntil:
+    visible:
+      id: "bubbles-screen"
+    timeout: 15000
+- assertVisible:
+    id: "tutorial-aim"
+- takeScreenshot: bubbles-01-start
+# A slow vertical swipe from the launcher: the hold dismisses the aim bubble, the release shoots at 90°.
+- swipe:
+    from:
+      id: "bubbles-launcher"
+    direction: UP
+    duration: 1200
+- assertNotVisible:
+    id: "tutorial-bubble"
+- assertVisible:
+    id: "hud-shots"
+    text: "1"
+- assertVisible:
+    id: "hud-score"
+    text: "40"
+- takeScreenshot: bubbles-02-after-shot
+- tapOn:
+    id: "game-pause"
+- tapOn:
+    id: "pause-quit"
+- extendedWaitUntil:
+    visible:
+      id: "result-screen"
+    timeout: 10000
+- takeScreenshot: bubbles-03-result

@@ -7,7 +7,7 @@ import { SafeAreaProvider } from 'react-native-safe-area-context';
 
 import { installSoundPlayer, releaseSoundPlayer } from './feedback/player';
 import { GameId } from './game/core/content';
-import { parseSeedLink } from './game/rng';
+import { parseTestLink, TestLink } from './game/rng';
 import { LanguageSetting } from './i18n';
 import { I18nProvider } from './i18n/I18nProvider';
 import { current, initialNavigation, Navigation, pop, popTo, push, replace, selectTab, Tab } from './navigation';
@@ -35,24 +35,24 @@ import { PixelText } from './ui/Typography';
 
 const FONTS = { PressStart2P: require('../assets/fonts/PressStart2P-Regular.ttf') };
 
-/** Session seed from the deep link (null = random play). Resolved before the store loads. */
-function useSessionSeed(): number | null | 'pending' {
-  const [seed, setSeed] = useState<number | null | 'pending'>('pending');
+/** Test link from the deep link (null = normal play). Resolved before the store loads. */
+function useTestLink(): TestLink | null | 'pending' {
+  const [link, setLink] = useState<TestLink | null | 'pending'>('pending');
   useEffect(() => {
     let alive = true;
     Linking.getInitialURL()
-      .then((url) => alive && setSeed(parseSeedLink(url)))
-      .catch(() => alive && setSeed(null));
+      .then((url) => alive && setLink(parseTestLink(url)))
+      .catch(() => alive && setLink(null));
     const sub = Linking.addEventListener('url', ({ url }) => {
-      const parsed = parseSeedLink(url);
-      if (parsed !== null) setSeed(parsed);
+      const parsed = parseTestLink(url);
+      if (parsed !== null) setLink(parsed);
     });
     return () => {
       alive = false;
       sub.remove();
     };
   }, []);
-  return seed;
+  return link;
 }
 
 function Shell({ consent, onConsent }: { consent: Consent; onConsent: (granted: boolean) => void }) {
@@ -220,16 +220,16 @@ function Loading() {
 
 export default function App() {
   const [fontsLoaded] = useFonts(FONTS);
-  const sessionSeed = useSessionSeed();
+  const link = useTestLink();
   useEffect(() => {
     installSoundPlayer();
     return releaseSoundPlayer;
   }, []);
-  if (!fontsLoaded || sessionSeed === 'pending') return <View style={styles.loading} />;
+  if (!fontsLoaded || link === 'pending') return <View style={styles.loading} />;
   return (
     <GestureHandlerRootView style={styles.root}>
       <SafeAreaProvider>
-        <GameStoreProvider sessionSeed={sessionSeed}>
+        <GameStoreProvider sessionSeed={link?.seed ?? null} testUnlocked={link?.unlocked ?? false}>
           <Root />
         </GameStoreProvider>
       </SafeAreaProvider>

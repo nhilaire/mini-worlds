@@ -55,11 +55,23 @@ export function randomSeed(): number {
 
 export const SEED_LINK_SCHEME = 'miniworlds';
 
-/** `miniworlds://seed/<integer>` → the integer; anything else → null. */
-export function parseSeedLink(url: string | null | undefined): number | null {
+export type TestLink = {
+  seed: number;
+  /** `/unlocked`: every world of this version is open for the session and nothing is written to the save. */
+  unlocked: boolean;
+};
+
+/** `miniworlds://seed/<integer>[/unlocked]` → the seed and the flag; anything else → null. */
+export function parseTestLink(url: string | null | undefined): TestLink | null {
   if (!url) return null;
-  const match = /^miniworlds:\/\/seed\/(\d{1,10})\/?$/.exec(url.trim());
+  const match = /^miniworlds:\/\/seed\/(\d{1,10})(\/unlocked)?\/?$/.exec(url.trim());
   if (!match) return null;
   const seed = Number(match[1]);
-  return Number.isSafeInteger(seed) && seed <= 0xffffffff ? seed : null;
+  if (!Number.isSafeInteger(seed) || seed > 0xffffffff) return null;
+  return { seed, unlocked: match[2] !== undefined };
+}
+
+/** `miniworlds://seed/<integer>` → the integer; anything else → null. */
+export function parseSeedLink(url: string | null | undefined): number | null {
+  return parseTestLink(url)?.seed ?? null;
 }

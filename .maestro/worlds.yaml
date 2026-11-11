@@ -1,0 +1,97 @@
+appId: io.github.nhilaire.miniworlds
+name: Worlds - the 10 worlds with their state, Arcade open with Pluie de Blocs, the game sheet and the upgrades at 0 of 3
+tags:
+  - worlds
+---
+- launchApp:
+    clearState: true
+- extendedWaitUntil:
+    visible:
+      id: "consent-screen"
+    timeout: 30000
+- tapOn:
+    id: "consent-refuse"
+- runFlow: helpers/french.yaml
+- tapOn:
+    id: "tab-games"
+- assertVisible:
+    id: "worlds-screen"
+- assertVisible:
+    id: "world-arcade-state"
+    text: "Ouvert"
+- assertVisible:
+    id: "world-puzzle-state"
+    text: "Verrouillé"
+- assertVisible: "2 étoiles dans Arcade"
+- takeScreenshot: worlds-01-map
+- scrollUntilVisible:
+    element:
+      id: "world-challenges"
+    direction: DOWN
+    timeout: 30000
+- assertVisible:
+    id: "world-challenges-state"
+    text: "Bientôt"
+- takeScreenshot: worlds-02-map-bottom
+- scrollUntilVisible:
+    element:
+      id: "world-puzzle"
+    direction: UP
+    timeout: 30000
+# A locked world shows its conditions in a sheet (AC-31).
+- tapOn:
+    id: "world-puzzle"
+- assertVisible:
+    id: "world-locked-sheet"
+- takeScreenshot: worlds-03-locked-sheet
+- tapOn:
+    id: "world-locked-close"
+- scrollUntilVisible:
+    element:
+      id: "world-arcade"
+    direction: UP
+    timeout: 30000
+- tapOn:
+    id: "world-arcade"
+- assertVisible:
+    id: "world-detail-screen"
+- assertVisible:
+    id: "game-blocks"
+- assertVisible:
+    id: "slot-soon-1"
+- assertVisible:
+    id: "slot-soon-4"
+- takeScreenshot: worlds-04-arcade
+- tapOn:
+    id: "game-blocks"
+- assertVisible:
+    id: "game-sheet-screen"
+- assertVisible:
+    id: "sheet-play"
+- assertVisible: "Pluie de Blocs"
+- takeScreenshot: worlds-05-sheet
+# Upgrades with 0 coins: three upgrades at 0 / 3, Acheter disabled (AC-32).
+- tapOn:
+    id: "sheet-upgrades"
+- assertVisible:
+    id: "upgrades-screen"
+- assertVisible:
+    id: "upgrade-preview-level"
+    text: "Niveau 0 / 3"
+- assertVisible:
+    id: "upgrade-slow_start-level"
+    text: "Niveau 0 / 3"
+- assertVisible:
+    id: "upgrade-coins-level"
+    text: "Niveau 0 / 3"
+- assertVisible:
+    id: "upgrade-preview-buy"
+    enabled: false
+- assertVisible:
+    id: "upgrade-coins-buy"
+    enabled: false
+- takeScreenshot: worlds-06-upgrades
+- tapOn:
+    id: "upgrades-back"
+- assertVisible:
+    id: "game-sheet-screen"

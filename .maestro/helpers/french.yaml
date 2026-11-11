@@ -1,0 +1,15 @@
+appId: io.github.nhilaire.miniworlds
+name: Helper - set the app language to French from the settings (flows assert French texts whatever the emulator language)
+---
+- tapOn:
+    id: "tab-profile"
+- tapOn:
+    id: "profile-settings"
+- tapOn:
+    id: "settings-language-fr"
+- tapOn:
+    id: "settings-back"
+- tapOn:
+    id: "tab-home"
+- assertVisible:
+    id: "home-screen"

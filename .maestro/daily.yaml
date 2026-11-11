@@ -1,0 +1,38 @@
+appId: io.github.nhilaire.miniworlds
+name: Daily reward - the Home card, one collection of 100 coins, then the card disappears
+tags:
+  - daily
+---
+- launchApp:
+    clearState: true
+- extendedWaitUntil:
+    visible:
+      id: "consent-screen"
+    timeout: 30000
+- tapOn:
+    id: "consent-refuse"
+- runFlow: helpers/french.yaml
+- assertVisible:
+    id: "home-daily"
+- tapOn:
+    id: "home-daily"
+- assertVisible:
+    id: "daily-screen"
+- assertVisible: "Jour 1"
+- takeScreenshot: daily-01-calendar
+- tapOn:
+    id: "daily-collect"
+- assertVisible:
+    id: "daily-collected"
+- assertVisible: "100 pièces"
+- takeScreenshot: daily-02-collected
+- tapOn:
+    id: "daily-back"
+- assertVisible:
+    id: "home-screen"
+- assertVisible:
+    id: "home-coins"
+    text: "100"
+- assertNotVisible:
+    id: "home-daily"
+- takeScreenshot: daily-03-home

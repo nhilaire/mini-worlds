@@ -4,7 +4,7 @@ import { createContext, ReactNode, useCallback, useContext, useEffect, useMemo, 
 
 import { today } from '../game/clock';
 import { ensureChallenges } from '../game/core/challenges';
-import { AchievementId, GameId, UpgradeId } from '../game/core/content';
+import { AchievementId, GameId, UpgradeId, WORLDS } from '../game/core/content';
 import {
   collectDailyReward,
   CollectResult,
@@ -48,7 +48,14 @@ const SAVE_DEBOUNCE_MS = 300;
 
 const GameStoreContext = createContext<GameStore | null>(null);
 
-export function GameStoreProvider({ sessionSeed, children }: { sessionSeed: number | null; children: ReactNode }) {
+type ProviderProps = {
+  sessionSeed: number | null;
+  /** Test link `/unlocked`: every world of this version is open in memory and the session never writes the save. */
+  testUnlocked?: boolean;
+  children: ReactNode;
+};
+
+export function GameStoreProvider({ sessionSeed, testUnlocked = false, children }: ProviderProps) {
   const [save, setSave] = useState<Save>(defaultSave);
   const [loaded, setLoaded] = useState(false);
   const [readOnly, setReadOnly] = useState(false);
@@ -73,16 +80,17 @@ export function GameStoreProvider({ sessionSeed, children }: { sessionSeed: numb
     (async () => {
       const result = await loadSave();
       if (!alive) return;
-      const withDay = ensureChallenges(result.save, today(), sessionSeed ?? undefined);
+      const opened = testUnlocked ? { ...result.save, unlockedWorlds: WORLDS.filter((w) => !w.comingSoon).map((w) => w.id) } : result.save;
+      const withDay = ensureChallenges(opened, today(), sessionSeed ?? undefined);
       saveRef.current = withDay;
       setSave(withDay);
-      setReadOnly(result.readOnly);
+      setReadOnly(result.readOnly || testUnlocked);
       setLoaded(true);
     })();
     return () => {
       alive = false;
     };
-  }, [sessionSeed]);
+  }, [sessionSeed, testUnlocked]);
 
   // Debounced persistence after every change (never during a read-only session or before the load).
   useEffect(() => {

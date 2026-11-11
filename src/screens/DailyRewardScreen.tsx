@@ -6,6 +6,7 @@ import { today } from '../game/clock';
 import { DAILY_REWARDS } from '../game/core/content';
 import { CALENDAR_DAYS, canCollectDaily, nextCalendarDay } from '../game/core/daily';
 import type { CollectResult } from '../game/core/engine';
+import { playFeedback } from '../feedback/feedback';
 import { useI18n } from '../i18n/I18nProvider';
 import { useGameStore } from '../state/GameStore';
 import { Button } from '../ui/Button';
@@ -74,7 +75,15 @@ export function DailyRewardScreen({ onBack }: { onBack: () => void }) {
       )}
       <View style={styles.flex} />
       {collectable ? (
-        <Button label={t.daily.collect} onPress={() => setCollected(collectDaily())} testID="daily-collect" />
+        <Button
+          label={t.daily.collect}
+          testID="daily-collect"
+          onPress={() => {
+            const result = collectDaily();
+            setCollected(result);
+            if (result) playFeedback(result.levelUps.length > 0 ? 'level_up' : 'reward', save.settings);
+          }}
+        />
       ) : (
         <Button label={t.daily.collected} onPress={() => {}} disabled testID="daily-collected-button" />
       )}

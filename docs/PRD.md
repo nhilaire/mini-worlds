@@ -122,7 +122,8 @@ flowchart LR
 All randomness (piece bags, board generation, bubble colours, challenge draw) goes through one seeded
 pseudo-random generator. The seed is random in normal play. Opening the app through the deep link
 `miniworlds://seed/<integer>` fixes the seed for the session (used by Maestro flows; it has no effect on the
-save file).
+save file). The variant `miniworlds://seed/<integer>/unlocked` also opens every world of this version in memory
+for the session and suppresses every write to the save (Maestro flows of Potager Fou and Bulles en Folie).
 
 ### Worlds and unlocks
 

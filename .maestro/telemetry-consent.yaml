@@ -1,5 +1,5 @@
 appId: io.github.nhilaire.miniworlds
-name: Telemetry - accept consent and play one round (events checked in logcat by verify.mjs)
+name: Telemetry - accept consent, play one round, collect the daily reward, buy nothing (events checked in logcat by verify.mjs)
 tags:
   - telemetry
 ---
@@ -14,11 +14,40 @@ tags:
 - assertVisible:
     id: "home-screen"
 - tapOn:
-    id: "home-play"
+    id: "home-daily"
 - tapOn:
-    id: "game-tap-zone"
+    id: "daily-collect"
+- tapOn:
+    id: "daily-back"
+- tapOn:
+    id: "home-play"
 - extendedWaitUntil:
     visible:
-      id: "game-over-screen"
-    timeout: 20000
-- takeScreenshot: telemetry-game-over
+      id: "blocks-screen"
+    timeout: 15000
+- swipe:
+    from:
+      id: "blocks-board"
+    direction: RIGHT
+    duration: 300
+- tapOn:
+    id: "blocks-board"
+- swipe:
+    from:
+      id: "blocks-board"
+    direction: DOWN
+    duration: 300
+- repeat:
+    times: 14
+    commands:
+      - tapOn:
+          id: "blocks-board"
+- tapOn:
+    id: "game-pause"
+- tapOn:
+    id: "pause-quit"
+- extendedWaitUntil:
+    visible:
+      id: "result-screen"
+    timeout: 10000
+- takeScreenshot: telemetry-result

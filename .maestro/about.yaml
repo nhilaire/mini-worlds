@@ -1,0 +1,43 @@
+appId: io.github.nhilaire.miniworlds
+name: About - the story of the game, the word from the author, the data note and the version
+tags:
+  - about
+---
+- launchApp:
+    clearState: true
+- extendedWaitUntil:
+    visible:
+      id: "consent-screen"
+    timeout: 30000
+- tapOn:
+    id: "consent-refuse"
+- runFlow: helpers/french.yaml
+- tapOn:
+    id: "tab-profile"
+- assertVisible:
+    id: "profile-screen"
+- takeScreenshot: about-01-profile
+- scrollUntilVisible:
+    element:
+      id: "profile-about"
+    direction: DOWN
+    timeout: 30000
+- tapOn:
+    id: "profile-about"
+- assertVisible:
+    id: "about-screen"
+- assertVisible: "L'histoire de ce jeu"
+- assertVisible: ".*toute la famille, parents compris.*"
+- takeScreenshot: about-02-story
+- scrollUntilVisible:
+    element:
+      text: "Version [0-9]+[.][0-9]+[.][0-9]+"
+    direction: DOWN
+    timeout: 30000
+- assertVisible: ".*développeur passionné.*"
+- assertVisible: "Tes données"
+- takeScreenshot: about-03-bottom
+- tapOn:
+    id: "about-back"
+- assertVisible:
+    id: "profile-screen"

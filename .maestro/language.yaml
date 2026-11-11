@@ -12,7 +12,9 @@ tags:
 - tapOn:
     id: "consent-refuse"
 - tapOn:
-    id: "home-settings"
+    id: "tab-profile"
+- tapOn:
+    id: "profile-settings"
 - tapOn:
     id: "settings-language-fr"
 - assertVisible: "Paramètres"
@@ -20,9 +22,12 @@ tags:
 - tapOn:
     id: "settings-language-en"
 - assertVisible: "Settings"
+- assertVisible: "Sound"
 - takeScreenshot: language-en-settings
 - tapOn:
     id: "settings-back"
+- tapOn:
+    id: "tab-home"
 - assertVisible: "Play"
 - takeScreenshot: language-en-home
 - stopApp
@@ -34,11 +39,15 @@ tags:
     timeout: 30000
 - assertVisible: "Play"
 - tapOn:
-    id: "home-settings"
+    id: "tab-profile"
+- tapOn:
+    id: "profile-settings"
 - tapOn:
     id: "settings-language-auto"
 - tapOn:
     id: "settings-language-fr"
 - tapOn:
     id: "settings-back"
+- tapOn:
+    id: "tab-home"
 - assertVisible: "Jouer"

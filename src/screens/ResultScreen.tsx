@@ -5,7 +5,9 @@ import Animated, { FadeInDown, FadeInUp } from 'react-native-reanimated';
 import { UI_SPRITES } from '../art/sprites';
 import { GameId } from '../game/core/content';
 import type { RoundResult } from '../game/core/engine';
+import { playFeedback } from '../feedback/feedback';
 import { useI18n } from '../i18n/I18nProvider';
+import { useGameStore } from '../state/GameStore';
 import { Button } from '../ui/Button';
 import { Card, Row } from '../ui/Card';
 import { PixelSprite } from '../ui/PixelSprite';
@@ -38,7 +40,16 @@ function useCountUp(target: number): number {
 export function ResultScreen({ game, result, onReplay, onUpgrade, onBack }: Props) {
   const { t } = useI18n();
   const names = useGameNames();
+  const { save } = useGameStore();
   const shown = useCountUp(result.score);
+
+  // One sound for the round's best moment: level-up > new star > coins; plus the unlock jingle.
+  useEffect(() => {
+    if (result.short) return;
+    const settings = save.settings;
+    playFeedback(result.levelUps.length > 0 ? 'level_up' : result.newStars > 0 ? 'star' : 'coin', settings);
+    if (result.worldsUnlocked.length > 0) playFeedback('reward', settings);
+  }, [result, save.settings]);
 
   return (
     <Screen testID="result-screen">

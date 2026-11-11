@@ -138,6 +138,10 @@ export function GardenGame({ seed, onFinish }: { seed: number; onFinish: OnFinis
           <Canvas style={StyleSheet.absoluteFill}>
             <Picture picture={picture} />
           </Canvas>
+          {/* Invisible cell targets: Maestro swipes from `garden-cell-<col>-<row>` (the gesture reads the touch point). */}
+          {state.board.map((row, r) =>
+            row.map((_, c) => <View key={`${c}-${r}`} testID={`garden-cell-${c}-${r}`} pointerEvents="none" style={{ position: 'absolute', left: c * cell, top: r * cell, width: cell, height: cell }} />),
+          )}
         </View>
       </GestureDetector>
     </GameFrame>

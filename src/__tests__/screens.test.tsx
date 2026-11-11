@@ -8,6 +8,7 @@ import { defaultSave, Save, serializeSave } from '../game/core/save';
 import { deviceLanguageTags } from '../i18n/deviceLocale';
 import { I18nProvider } from '../i18n/I18nProvider';
 import { ResultScreen } from '../screens/ResultScreen';
+import { GameStoreProvider } from '../state/GameStore';
 import { ThemeProvider } from '../ui/ThemeProvider';
 
 const DATE = new Date(2026, 10, 11, 10, 0).getTime();
@@ -163,11 +164,13 @@ describe('meta-game screens', () => {
 
 describe('result screen (AC-33)', () => {
   const wrap = (ui: React.ReactElement) => (
-    <ThemeProvider setting="dark">
-      <I18nProvider setting="fr" onChange={() => {}}>
-        {ui}
-      </I18nProvider>
-    </ThemeProvider>
+    <GameStoreProvider sessionSeed={null}>
+      <ThemeProvider setting="dark">
+        <I18nProvider setting="fr" onChange={() => {}}>
+          {ui}
+        </I18nProvider>
+      </ThemeProvider>
+    </GameStoreProvider>
   );
 
   it('shows new best, new stars, level-up, unlock and challenges only when applicable', async () => {

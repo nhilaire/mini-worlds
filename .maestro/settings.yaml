@@ -1,0 +1,98 @@
+appId: io.github.nhilaire.miniworlds
+name: Settings - sound, vibrations, theme and statistics survive a restart; reset clears the progression and keeps the language
+tags:
+  - settings
+---
+- launchApp:
+    clearState: true
+- extendedWaitUntil:
+    visible:
+      id: "consent-screen"
+    timeout: 30000
+- tapOn:
+    id: "consent-refuse"
+- runFlow: helpers/french.yaml
+# Earn coins first so that the reset has something to clear.
+- tapOn:
+    id: "home-daily"
+- tapOn:
+    id: "daily-collect"
+- tapOn:
+    id: "daily-back"
+- assertVisible:
+    id: "home-coins"
+    text: "100"
+- tapOn:
+    id: "tab-profile"
+- tapOn:
+    id: "profile-settings"
+- assertVisible:
+    id: "settings-screen"
+- tapOn:
+    id: "settings-sound"
+- tapOn:
+    id: "settings-vibrations"
+- tapOn:
+    id: "settings-theme-light"
+- takeScreenshot: settings-01-light
+- scrollUntilVisible:
+    element:
+      id: "settings-telemetry"
+    direction: DOWN
+    timeout: 30000
+- tapOn:
+    id: "settings-telemetry"
+- takeScreenshot: settings-02-changed
+- stopApp
+- launchApp:
+    stopApp: false
+- extendedWaitUntil:
+    visible:
+      id: "home-screen"
+    timeout: 30000
+- tapOn:
+    id: "tab-profile"
+- tapOn:
+    id: "profile-settings"
+- assertVisible:
+    id: "settings-sound"
+    checked: false
+- assertVisible:
+    id: "settings-vibrations"
+    checked: false
+- scrollUntilVisible:
+    element:
+      id: "settings-telemetry"
+    direction: DOWN
+    timeout: 30000
+- assertVisible:
+    id: "settings-telemetry"
+    checked: true
+- takeScreenshot: settings-03-persisted
+# Reset: the confirmation can be cancelled, then confirmed (AC-37).
+- scrollUntilVisible:
+    element:
+      id: "settings-reset"
+    direction: DOWN
+    timeout: 30000
+- tapOn:
+    id: "settings-reset"
+- assertVisible:
+    id: "settings-reset-dialog"
+- tapOn:
+    id: "settings-reset-cancel"
+- tapOn:
+    id: "settings-reset"
+- tapOn:
+    id: "settings-reset-confirm"
+- tapOn:
+    id: "settings-back"
+- tapOn:
+    id: "tab-home"
+- assertVisible:
+    id: "home-coins"
+    text: "0"
+- assertVisible: "Jouer"
+- assertVisible:
+    id: "home-daily"
+- takeScreenshot: settings-04-reset

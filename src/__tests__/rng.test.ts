@@ -1,4 +1,4 @@
-import { createRng, hashString, parseSeedLink, randomSeed } from '../game/rng';
+import { createRng, hashString, parseSeedLink, parseTestLink, randomSeed } from '../game/rng';
 
 describe('seeded generator', () => {
   it('is deterministic for the same seed and differs for another seed', () => {
@@ -56,6 +56,13 @@ describe('seed link', () => {
       expect(parseSeedLink(url)).toBeNull();
     },
   );
+
+  it('parses the unlocked flag of the test link', () => {
+    expect(parseTestLink('miniworlds://seed/7/unlocked')).toEqual({ seed: 7, unlocked: true });
+    expect(parseTestLink('miniworlds://seed/7')).toEqual({ seed: 7, unlocked: false });
+    expect(parseTestLink('miniworlds://seed/7/other')).toBeNull();
+    expect(parseSeedLink('miniworlds://seed/7/unlocked')).toBe(7);
+  });
 
   it('random seeds are 32-bit integers', () => {
     const s = randomSeed();

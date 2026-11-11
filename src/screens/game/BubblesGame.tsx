@@ -162,6 +162,8 @@ export function BubblesGame({ seed, onFinish }: { seed: number; onFinish: OnFini
           <Canvas style={StyleSheet.absoluteFill}>
             <Picture picture={picture} />
           </Canvas>
+          {/* Invisible launcher target: Maestro swipes up from it (the gesture reads the touch point). */}
+          <View testID="bubbles-launcher" pointerEvents="none" style={{ position: 'absolute', left: (LAUNCHER.x - 0.5) * unit, top: (LAUNCHER.y - 0.5) * unit, width: unit, height: unit }} />
         </View>
       </GestureDetector>
     </GameFrame>

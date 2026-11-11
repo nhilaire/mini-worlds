@@ -1,5 +1,5 @@
 appId: io.github.nhilaire.miniworlds
-name: Smoke (any phone language) - first launch, refuse telemetry, play one round
+name: Smoke (any phone language) - first launch, refuse telemetry, guided first round of Pluie de Blocs, quit after 20 s, result
 tags:
   - smoke
 ---
@@ -9,29 +9,75 @@ tags:
     visible:
       id: "consent-screen"
     timeout: 30000
-- assertVisible:
-    id: "consent-screen"
 - takeScreenshot: 01-consent
 - tapOn:
     id: "consent-refuse"
 - assertVisible:
     id: "home-screen"
+- runFlow: helpers/french.yaml
+- assertVisible:
+    id: "home-daily"
+- assertVisible:
+    id: "challenge-rounds3"
 - takeScreenshot: readme-1-home
 - tapOn:
     id: "home-play"
-- assertVisible:
-    id: "game-tap-zone"
-- tapOn:
-    id: "game-tap-zone"
-- tapOn:
-    id: "game-tap-zone"
-- takeScreenshot: readme-2-game
 - extendedWaitUntil:
     visible:
-      id: "game-over-screen"
-    timeout: 20000
-- takeScreenshot: readme-3-game-over
+      id: "blocks-screen"
+    timeout: 15000
+# Guided first round: three bubbles, each dismissed by its action (AC-21).
+- assertVisible:
+    id: "tutorial-move"
+- takeScreenshot: 02-tutorial-move
+- swipe:
+    from:
+      id: "blocks-board"
+    direction: RIGHT
+    duration: 300
+- assertVisible:
+    id: "tutorial-rotate"
 - tapOn:
-    id: "game-home"
+    id: "blocks-board"
+- assertVisible:
+    id: "tutorial-drop"
+- swipe:
+    from:
+      id: "blocks-board"
+    direction: DOWN
+    duration: 300
+- assertNotVisible:
+    id: "tutorial-bubble"
+# Rotations keep the round alive for more than 20 s without stacking pieces.
+- repeat:
+    times: 14
+    commands:
+      - tapOn:
+          id: "blocks-board"
+- takeScreenshot: readme-2-game
+- tapOn:
+    id: "game-pause"
+- assertVisible:
+    id: "pause-overlay"
+- takeScreenshot: 03-pause
+- tapOn:
+    id: "pause-quit"
+- extendedWaitUntil:
+    visible:
+      id: "result-screen"
+    timeout: 10000
+- assertNotVisible:
+    id: "result-short"
+- assertVisible:
+    id: "result-coins"
+- assertVisible:
+    id: "result-xp"
+- takeScreenshot: readme-3-result
+- tapOn:
+    id: "result-back"
 - assertVisible:
     id: "home-screen"
+- assertVisible:
+    id: "challenge-rounds3-progress"
+    text: "1 / 3"
+- takeScreenshot: 04-home-after-round

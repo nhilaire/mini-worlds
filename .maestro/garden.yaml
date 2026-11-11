@@ -1,0 +1,69 @@
+appId: io.github.nhilaire.miniworlds
+name: Potager Fou (seed 1) - the scripted first swap scores as the engine predicts, then Pause and Quitter
+tags:
+  - garden
+---
+- launchApp:
+    clearState: true
+- extendedWaitUntil:
+    visible:
+      id: "consent-screen"
+    timeout: 30000
+- tapOn:
+    id: "consent-refuse"
+- runFlow: helpers/french.yaml
+# The test link fixes the seed and opens every world for the session (nothing is written to the save).
+- openLink: miniworlds://seed/5/unlocked
+- extendedWaitUntil:
+    visible:
+      id: "home-screen"
+    timeout: 30000
+- tapOn:
+    id: "tab-games"
+- scrollUntilVisible:
+    element:
+      id: "world-puzzle"
+    direction: DOWN
+    timeout: 30000
+- tapOn:
+    id: "world-puzzle"
+- tapOn:
+    id: "game-garden"
+- assertVisible:
+    id: "game-sheet-screen"
+- tapOn:
+    id: "sheet-play"
+- extendedWaitUntil:
+    visible:
+      id: "garden-screen"
+    timeout: 15000
+- assertVisible:
+    id: "tutorial-swap"
+- assertVisible:
+    id: "hud-moves"
+    text: "20"
+- takeScreenshot: garden-01-start
+# Scripted swap for round seed 6: cell (0,1) towards DOWN.
+- swipe:
+    from:
+      id: "garden-cell-0-1"
+    direction: DOWN
+    duration: 400
+- assertNotVisible:
+    id: "tutorial-bubble"
+- assertVisible:
+    id: "hud-score"
+    text: "100"
+- assertVisible:
+    id: "hud-moves"
+    text: "19"
+- takeScreenshot: garden-02-after-swap
+- tapOn:
+    id: "game-pause"
+- tapOn:
+    id: "pause-quit"
+- extendedWaitUntil:
+    visible:
+      id: "result-screen"
+    timeout: 10000
+- takeScreenshot: garden-03-result

@@ -53,12 +53,12 @@ Persistence, telemetry, feel
 - [x] T-29 Persistence wiring: load at start, debounced save after every change, reset, days played (AC-15) - proof: unit
 - [x] T-30 Telemetry calls for the 10 PRD events at the right moments, nothing without consent (AC-40, AC-41) - proof: unit
 - [x] T-31 Sound effects (generated WAV, header test) and haptics behind the settings toggles (AC-36) - proof: unit
-- [ ] T-32 Polish: result count-up and star animation, coins flying, level-up banner, world unlock reveal, piece and pop effects (AC-45) - proof: manual
+- [x] T-32 Polish: result count-up and star animation, coins flying, level-up banner, world unlock reveal, piece and pop effects (AC-45) - proof: manual
 
 Proof on the emulator and the phone
 
-- [ ] T-33 Maestro flows: smoke with readme captures, worlds and sheet, upgrades, each game through the seed link, daily reward, challenges, settings and reset, about, language, telemetry consent (AC-01, AC-03, AC-21, AC-26, AC-30, AC-31, AC-32, AC-34, AC-35, AC-36, AC-37, AC-38, AC-41) - proof: e2e
-- [ ] T-34 Device checks: launcher label per language, manifest permissions, cold start (AC-04, AC-42, AC-43) - proof: device
+- [x] T-33 Maestro flows: smoke with readme captures, worlds and sheet, upgrades, each game through the seed link, daily reward, challenges, settings and reset, about, language, telemetry consent (AC-01, AC-03, AC-21, AC-26, AC-30, AC-31, AC-32, AC-34, AC-35, AC-36, AC-37, AC-38, AC-41) - proof: e2e
+- [x] T-34 Device checks: launcher label per language, manifest permissions, cold start (AC-04, AC-42, AC-43) - proof: device
 
 ## Notes
 

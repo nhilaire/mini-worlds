@@ -95,7 +95,7 @@ describe('meta-game screens', () => {
     expect(screen.getByTestId('upgrade-preview-level')).toHaveTextContent(/Niveau 1 \/ 3/);
     // 300 − 100, plus 50 for the « Bricoleur » achievement announced by a toast
     expect(screen.getByTestId('upgrades-coins')).toHaveTextContent(/^250$/);
-    expect(await screen.findByTestId('achievement-toast')).toBeTruthy();
+    expect(await screen.findByTestId('achievement-toast')).toHaveTextContent(/Succès.: Bricoleur/);
     await fireEvent.press(screen.getByTestId('upgrade-preview-buy')); // level 2 costs 250
     expect(screen.getByTestId('upgrade-preview-level')).toHaveTextContent(/Niveau 2 \/ 3/);
     expect(screen.getByTestId('upgrades-coins')).toHaveTextContent(/^0$/);

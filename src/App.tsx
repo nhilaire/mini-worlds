@@ -6,10 +6,10 @@ import { GestureHandlerRootView } from 'react-native-gesture-handler';
 import { SafeAreaProvider } from 'react-native-safe-area-context';
 
 import { installSoundPlayer, releaseSoundPlayer } from './feedback/player';
-import { GameId } from './game/core/content';
+import { AchievementId, GameId } from './game/core/content';
 import { parseTestLink, TestLink } from './game/rng';
 import { LanguageSetting } from './i18n';
-import { I18nProvider } from './i18n/I18nProvider';
+import { I18nProvider, useI18n } from './i18n/I18nProvider';
 import { current, initialNavigation, Navigation, pop, popTo, push, replace, selectTab, Tab } from './navigation';
 import { AboutScreen } from './screens/AboutScreen';
 import { DailyRewardScreen } from './screens/DailyRewardScreen';
@@ -147,8 +147,9 @@ function Shell({ consent, onConsent }: { consent: Consent; onConsent: (granted: 
   );
 }
 
-function Toast({ id, onDone }: { id: string; onDone: () => void }) {
+function Toast({ id, onDone }: { id: AchievementId; onDone: () => void }) {
   const { colors } = useTheme();
+  const { t } = useI18n();
   useEffect(() => {
     const timer = setTimeout(onDone, 2500);
     return () => clearTimeout(timer);
@@ -156,7 +157,7 @@ function Toast({ id, onDone }: { id: string; onDone: () => void }) {
   return (
     <View style={[styles.toast, { backgroundColor: colors.accent }]} testID="achievement-toast" pointerEvents="none">
       <PixelText size={8} style={{ color: colors.accentText }}>
-        {id}
+        {t.achievement.toast(t.achievement[id])}
       </PixelText>
     </View>
   );

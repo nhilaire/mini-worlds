@@ -12,5 +12,6 @@
   "displayNames": {
     "en": "Game Grab-Bag"
   },
-  "factoryVersion": "1.0.0"
+  "factoryVersion": "1.0.0",
+  "firebase": "deferred"
 }

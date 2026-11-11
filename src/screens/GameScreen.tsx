@@ -18,7 +18,7 @@ export function GameScreen({ onExit, onGameOver }: Props) {
   const reported = useRef(false);
 
   useEffect(() => {
-    track('game_start', { level: 1 });
+    track('round_start', { game: 'blocks' }); // placeholder screen, replaced in the build phase
   }, []);
 
   const start = () => {
@@ -26,7 +26,7 @@ export function GameScreen({ onExit, onGameOver }: Props) {
     const t = Date.now();
     dispatch({ type: 'start', now: t });
     setNow(t);
-    track('game_start', { level: 1 });
+    track('round_start', { game: 'blocks' }); // placeholder screen, replaced in the build phase
   };
 
   useEffect(() => {
@@ -42,7 +42,7 @@ export function GameScreen({ onExit, onGameOver }: Props) {
   useEffect(() => {
     if (state.status !== 'over' || reported.current) return;
     reported.current = true;
-    track('game_over', { level: state.level, score: state.score, duration_s: durationSeconds(state) });
+    track('round_end', { game: 'blocks', score: state.score, duration_s: durationSeconds(state), stars_new: 0, outcome: 'ended' });
     onGameOver(state.score);
   }, [state, onGameOver]);
 

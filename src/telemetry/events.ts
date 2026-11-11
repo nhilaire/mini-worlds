@@ -1,9 +1,45 @@
 // Typed catalog of the only telemetry events this app may send (must match docs/PRD.md "Telemetry events").
 // Params are numbers or short lowercase enums. Never identifiers, names, free text or locations.
 
+export type GameId = 'blocks' | 'garden' | 'bubbles';
+export type WorldId = 'arcade' | 'puzzle' | 'bubbles';
+export type RoundOutcome = 'ended' | 'quit' | 'short';
+export type UpgradeId = 'preview' | 'slow_start' | 'extra_move' | 'cascade' | 'aim' | 'next' | 'coins';
+export type ChallengeId =
+  | 'rounds3'
+  | 'games2'
+  | 'star1'
+  | 'combos5'
+  | 'coins200'
+  | 'score_blocks'
+  | 'score_garden'
+  | 'score_bubbles';
+export type AchievementId =
+  | 'first_round'
+  | 'rounds10'
+  | 'rounds100'
+  | 'first_star'
+  | 'all_stars'
+  | 'explorer'
+  | 'first_upgrade'
+  | 'maxed_upgrade'
+  | 'level5'
+  | 'level10'
+  | 'week'
+  | 'rich';
+export type SettingId = 'sound' | 'vibrations' | 'theme' | 'language' | 'stats' | 'reset';
+
 export type TelemetryEvents = {
-  game_start: { level: number };
-  game_over: { level: number; score: number; duration_s: number };
+  round_start: { game: GameId };
+  round_end: { game: GameId; score: number; duration_s: number; stars_new: number; outcome: RoundOutcome };
+  tutorial_complete: { game: GameId };
+  level_up: { level: number };
+  world_unlock: { world: WorldId };
+  upgrade_buy: { game: GameId; upgrade: UpgradeId; level: number };
+  daily_reward_collect: { day: number };
+  daily_challenge_complete: { challenge: ChallengeId };
+  achievement_unlock: { achievement: AchievementId };
+  settings_change: { setting: SettingId; value: string };
 };
 
 export type EventName = keyof TelemetryEvents;

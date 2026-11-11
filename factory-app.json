@@ -1,0 +1,16 @@
+{
+  "slug": "mini-worlds",
+  "displayName": "Bric-à-Jeux",
+  "package": "io.github.nhilaire.miniworlds",
+  "stack": null,
+  "description": "A family collection of one-finger mini-games tied together by a shared progression (XP, coins, stars, unlocks)",
+  "languages": [
+    "fr",
+    "en"
+  ],
+  "fallbackLanguage": "en",
+  "displayNames": {
+    "en": "Game Grab-Bag"
+  },
+  "factoryVersion": "1.0.0"
+}

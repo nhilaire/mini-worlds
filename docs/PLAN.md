@@ -9,7 +9,7 @@ Foundations
 
 - [x] T-01 Dependencies (Skia, Reanimated, worklets, Gesture Handler, expo-audio, expo-asset, expo-haptics, expo-font, expo-linking, safe-area) and their Jest mocks; existing tests stay green - proof: unit
 - [x] T-02 Seeded random generator and session seed from the deep link `miniworlds://seed/<n>` (AC-16) - proof: unit
-- [ ] T-03 Content catalogue: worlds, games, star thresholds, upgrades, challenges, achievements as typed data; stars rule (AC-08) - proof: unit
+- [x] T-03 Content catalogue: worlds, games, star thresholds, upgrades, challenges, achievements as typed data; stars rule (AC-08) - proof: unit
 
 Core meta engine (src/game/core)
 

@@ -1,0 +1,86 @@
+import {
+  ACHIEVEMENTS,
+  CHALLENGES,
+  DAILY_REWARDS,
+  GAME_IDS,
+  GAMES,
+  gameById,
+  mergeStars,
+  SLOTS_PER_WORLD,
+  starsForScore,
+  UPGRADE_COSTS,
+  WORLDS,
+  worldOfGame,
+} from '../../game/core/content';
+
+describe('content catalogue', () => {
+  it('has 10 worlds in display order, three of them holding the v0.1.0 games', () => {
+    expect(WORLDS.map((w) => w.index)).toEqual([1, 2, 3, 4, 5, 6, 7, 8, 9, 10]);
+    expect(WORLDS.filter((w) => w.games.length > 0).map((w) => w.id)).toEqual(['arcade', 'puzzle', 'bubbles']);
+    expect(WORLDS.filter((w) => w.comingSoon).length).toBe(7);
+    for (const w of WORLDS) expect(w.games.length).toBeLessThanOrEqual(SLOTS_PER_WORLD);
+    expect(WORLDS.find((w) => w.id === 'arcade')?.conditions).toEqual([]);
+  });
+
+  it('places every game in its world', () => {
+    expect(GAME_IDS).toEqual(['blocks', 'garden', 'bubbles']);
+    expect(worldOfGame('blocks').id).toBe('arcade');
+    expect(worldOfGame('garden').id).toBe('puzzle');
+    expect(worldOfGame('bubbles').id).toBe('bubbles');
+    for (const game of GAMES) expect(worldOfGame(game.id).games).toContain(game.id);
+  });
+
+  it.each([
+    ['blocks', [500, 1500, 3000]],
+    ['garden', [1500, 3000, 5000]],
+    ['bubbles', [800, 2000, 4000]],
+  ] as const)('%s star thresholds are increasing and match the PRD', (id, thresholds) => {
+    expect(gameById(id).stars).toEqual(thresholds);
+  });
+
+  it('every game has 3 upgrades of 3 levels including the coin bonus, costs 100 / 250 / 500', () => {
+    for (const game of GAMES) {
+      expect(game.upgrades).toHaveLength(3);
+      expect(game.upgrades.map((u) => u.id)).toContain('coins');
+      for (const u of game.upgrades) expect(u.maxLevel).toBe(3);
+    }
+    expect(UPGRADE_COSTS).toEqual([100, 250, 500]);
+  });
+
+  it('challenge pool has 8 entries, Jouer 3 parties fixed first, games2 needs 2 games', () => {
+    expect(CHALLENGES).toHaveLength(8);
+    expect(CHALLENGES.filter((c) => c.fixedFirst).map((c) => c.id)).toEqual(['rounds3']);
+    expect(CHALLENGES.find((c) => c.id === 'games2')?.minGames).toBe(2);
+    expect(CHALLENGES.find((c) => c.id === 'score_blocks')?.target).toBe(gameById('blocks').stars[0]);
+    expect(CHALLENGES.find((c) => c.id === 'score_garden')?.target).toBe(gameById('garden').stars[0]);
+    expect(CHALLENGES.find((c) => c.id === 'score_bubbles')?.target).toBe(gameById('bubbles').stars[0]);
+  });
+
+  it('has 12 achievements with unique ids and 7 daily rewards ending with 600 coins + 100 XP', () => {
+    expect(ACHIEVEMENTS).toHaveLength(12);
+    expect(new Set(ACHIEVEMENTS.map((a) => a.id)).size).toBe(12);
+    expect(DAILY_REWARDS.map((d) => d.coins)).toEqual([100, 150, 200, 250, 300, 400, 600]);
+    expect(DAILY_REWARDS[6].xp).toBe(100);
+    expect(DAILY_REWARDS.slice(0, 6).every((d) => d.xp === 0)).toBe(true);
+  });
+});
+
+describe('stars (AC-08)', () => {
+  it.each([
+    [0, 0],
+    [499, 0],
+    [500, 1],
+    [1499, 1],
+    [1500, 2],
+    [3000, 3],
+    [10000, 3],
+  ])('blocks score %i earns %i star(s), threshold inclusive', (score, stars) => {
+    expect(starsForScore('blocks', score)).toBe(stars);
+  });
+
+  it('a lower score later never removes a star', () => {
+    expect(mergeStars(2, 1)).toBe(2);
+    expect(mergeStars(1, 3)).toBe(3);
+    expect(mergeStars(0, 0)).toBe(0);
+  });
+});

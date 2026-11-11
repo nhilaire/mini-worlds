@@ -409,7 +409,9 @@ Languages and consent
 - AC-03 [e2e] Given Settings, when the player picks « English », then the whole UI switches at once (tabs,
   « Settings », « Sound ») and the choice survives a restart; « Automatique » follows the phone again.
 - AC-04 [device] Given the release APK, when `aapt dump badging` is read, then the application label is
-  « Bric-à-Jeux » by default and « Game Grab-Bag » for `en`.
+  « Bric-à-Jeux » for `fr` and « Game Grab-Bag » for `en` and by default (the default resource carries the
+  fallback language, English, so a phone in an unsupported language shows the same language under the icon as in
+  the game).
 - AC-05 [unit] Given the dictionaries `fr.ts` and `en.ts`, then they have exactly the same keys and shapes and
   no value is empty; every mini-game, world, upgrade, challenge and achievement has a name in both.
 

@@ -4,7 +4,8 @@ import { StyleSheet, Text, View } from 'react-native';
 import { I18nContext } from '../i18n/I18nProvider';
 import { reportError } from '../telemetry/telemetry';
 import { Button } from './Button';
-import { colors, font, spacing } from './theme';
+import { ThemeContext } from './ThemeProvider';
+import { font, spacing } from './theme';
 
 type State = { failed: boolean };
 
@@ -23,21 +24,25 @@ export class ErrorBoundary extends Component<{ children: ReactNode }, State> {
   render() {
     if (!this.state.failed) return this.props.children;
     return (
-      <I18nContext.Consumer>
-        {({ t }) => (
-          <View style={styles.container}>
-            <Text style={styles.title}>{t.errors.title}</Text>
-            <Text style={styles.body}>{t.errors.body}</Text>
-            <Button label={t.errors.retry} onPress={() => this.setState({ failed: false })} />
-          </View>
+      <ThemeContext.Consumer>
+        {({ colors }) => (
+          <I18nContext.Consumer>
+            {({ t }) => (
+              <View style={[styles.container, { backgroundColor: colors.background }]}>
+                <Text style={[styles.title, { color: colors.text }]}>{t.errors.title}</Text>
+                <Text style={[styles.body, { color: colors.muted }]}>{t.errors.body}</Text>
+                <Button label={t.errors.retry} onPress={() => this.setState({ failed: false })} />
+              </View>
+            )}
+          </I18nContext.Consumer>
         )}
-      </I18nContext.Consumer>
+      </ThemeContext.Consumer>
     );
   }
 }
 
 const styles = StyleSheet.create({
-  container: { flex: 1, backgroundColor: colors.background, padding: spacing.lg, justifyContent: 'center', gap: spacing.md },
-  title: { color: colors.text, fontSize: font.heading, fontWeight: '700' },
-  body: { color: colors.muted, fontSize: font.body },
+  container: { flex: 1, padding: spacing.lg, justifyContent: 'center', gap: spacing.md },
+  title: { fontSize: font.title, fontWeight: '700' },
+  body: { fontSize: font.body },
 });

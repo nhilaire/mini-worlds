@@ -93,3 +93,9 @@ jest.mock('expo-linking', () => ({
   addEventListener: jest.fn(() => ({ remove: jest.fn() })),
   parse: jest.fn((url) => ({ path: url })),
 }));
+
+// SafeAreaProvider renders nothing until native insets arrive: the library's mock provides them at once.
+jest.mock('react-native-safe-area-context', () => {
+  const mock = require('react-native-safe-area-context/jest/mock');
+  return mock.default ?? mock;
+});

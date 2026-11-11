@@ -37,7 +37,7 @@ Pixel art and text
 
 Screens (React, thin)
 
-- [ ] T-19 App shell: route state, 3 tabs, Home (level, XP, coins, Play, challenges, next unlock, recent games), theme light/dark (AC-01, AC-03) - proof: unit
+- [x] T-19 App shell: route state, 3 tabs, Home (level, XP, coins, Play, challenges, next unlock, recent games), theme light/dark (AC-01, AC-03) - proof: unit
 - [ ] T-20 Worlds map, World detail, Game sheet (AC-31) - proof: unit
 - [ ] T-21 Upgrades screen (AC-32) - proof: unit
 - [ ] T-22 Skia board renderer, Block Rain screen: gestures, HUD, pause overlay, background pause, tutorial bubbles (AC-21, AC-39) - proof: unit

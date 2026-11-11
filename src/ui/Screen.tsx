@@ -1,18 +1,32 @@
 import { ReactNode } from 'react';
 import { StatusBar, StyleSheet, View } from 'react-native';
+import { useSafeAreaInsets } from 'react-native-safe-area-context';
 
-import { colors, spacing } from './theme';
+import { useTheme } from './ThemeProvider';
+import { spacing } from './theme';
 
-// Full-screen container that keeps content clear of the status bar (Android edge-to-edge).
-export function Screen({ children, testID }: { children: ReactNode; testID?: string }) {
+type Props = { children: ReactNode; testID?: string; padded?: boolean; bottomInset?: boolean };
+
+// Full-screen container that keeps content clear of the status bar (Android edge-to-edge) and the navigation bar.
+export function Screen({ children, testID, padded = true, bottomInset = true }: Props) {
+  const { colors, scheme } = useTheme();
+  const insets = useSafeAreaInsets();
   return (
-    <View testID={testID} style={[styles.screen, { paddingTop: (StatusBar.currentHeight ?? 0) + spacing.lg }]}>
-      <StatusBar barStyle="light-content" translucent backgroundColor="transparent" />
+    <View
+      testID={testID}
+      style={[
+        styles.screen,
+        { backgroundColor: colors.background, paddingTop: insets.top + spacing.md, paddingBottom: bottomInset ? insets.bottom + spacing.md : 0 },
+        padded && styles.padded,
+      ]}
+    >
+      <StatusBar barStyle={scheme === 'dark' ? 'light-content' : 'dark-content'} translucent backgroundColor="transparent" />
       {children}
     </View>
   );
 }
 
 const styles = StyleSheet.create({
-  screen: { flex: 1, backgroundColor: colors.background, paddingHorizontal: spacing.lg, paddingBottom: spacing.xl, gap: spacing.md },
+  screen: { flex: 1, gap: spacing.md },
+  padded: { paddingHorizontal: spacing.md },
 });

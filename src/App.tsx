@@ -1,38 +1,164 @@
+import { useFonts } from 'expo-font';
+import * as Linking from 'expo-linking';
 import { useCallback, useEffect, useState } from 'react';
-import { ActivityIndicator, StyleSheet, View } from 'react-native';
+import { ActivityIndicator, AppState, BackHandler, StyleSheet, View } from 'react-native';
+import { GestureHandlerRootView } from 'react-native-gesture-handler';
+import { SafeAreaProvider } from 'react-native-safe-area-context';
 
+import { GameId } from './game/core/content';
+import { parseSeedLink } from './game/rng';
 import { LanguageSetting } from './i18n';
 import { I18nProvider } from './i18n/I18nProvider';
+import { current, initialNavigation, Navigation, pop, popTo, push, replace, selectTab, Tab } from './navigation';
 import { AboutScreen } from './screens/AboutScreen';
 import { ConsentScreen } from './screens/ConsentScreen';
-import { GameScreen } from './screens/GameScreen';
 import { HomeScreen } from './screens/HomeScreen';
+import { PlaceholderScreen } from './screens/PlaceholderScreen';
 import { SettingsScreen } from './screens/SettingsScreen';
-import { loadBestScore, saveBestScore } from './storage/bestScore';
+import { GameStoreProvider, useGameStore } from './state/GameStore';
 import { loadLanguageSetting, saveLanguageSetting } from './storage/languageSetting';
 import { Consent, loadConsent, saveConsent } from './telemetry/consentStore';
 import { applyConsent, reportError } from './telemetry/telemetry';
 import { ErrorBoundary } from './ui/ErrorBoundary';
-import { colors } from './ui/theme';
+import { TabBar } from './ui/TabBar';
+import { ThemeProvider, useTheme } from './ui/ThemeProvider';
+import { PixelText } from './ui/Typography';
 
-type Route = 'home' | 'game' | 'settings' | 'about';
+const FONTS = { PressStart2P: require('../assets/fonts/PressStart2P-Regular.ttf') };
 
-export default function App() {
+/** Session seed from the deep link (null = random play). Resolved before the store loads. */
+function useSessionSeed(): number | null | 'pending' {
+  const [seed, setSeed] = useState<number | null | 'pending'>('pending');
+  useEffect(() => {
+    let alive = true;
+    Linking.getInitialURL()
+      .then((url) => alive && setSeed(parseSeedLink(url)))
+      .catch(() => alive && setSeed(null));
+    const sub = Linking.addEventListener('url', ({ url }) => {
+      const parsed = parseSeedLink(url);
+      if (parsed !== null) setSeed(parsed);
+    });
+    return () => {
+      alive = false;
+      sub.remove();
+    };
+  }, []);
+  return seed;
+}
+
+function Shell({ consent, onConsent }: { consent: Consent; onConsent: (granted: boolean) => void }) {
+  const store = useGameStore();
+  const { colors } = useTheme();
+  const [nav, setNav] = useState<Navigation>(initialNavigation);
+  const route = current(nav);
+
+  // Today's challenges are refreshed when the app comes back to the foreground (the date may have changed).
+  useEffect(() => {
+    const sub = AppState.addEventListener('change', (state) => {
+      if (state === 'active') store.refreshDay();
+    });
+    return () => sub?.remove();
+  }, [store]);
+
+  const goBack = useCallback(() => setNav((n) => pop(n)), []);
+  useEffect(() => {
+    const sub = BackHandler.addEventListener('hardwareBackPress', () => {
+      if (route === null || route.name === 'game') return false; // game screens handle it (pause); tabs let Android exit
+      goBack();
+      return true;
+    });
+    return () => sub.remove();
+  }, [route, goBack]);
+
+  const onTab = useCallback((tab: Tab) => setNav((n) => selectTab(n, tab)), []);
+  const openGame = useCallback((game: GameId) => setNav((n) => push(n, { name: 'game', game, seed: store.roundSeed() })), [store]);
+  const openSheet = useCallback((game: GameId) => setNav((n) => push(n, { name: 'sheet', game })), []);
+
+  if (!store.loaded) {
+    return (
+      <View style={[styles.loading, { backgroundColor: colors.background }]}>
+        <ActivityIndicator color={colors.accent} />
+      </View>
+    );
+  }
+  if (consent === 'unknown') return <ConsentScreen onDecision={onConsent} />;
+
+  let content: React.ReactNode;
+  if (route === null) {
+    if (nav.tab === 'home') {
+      content = <HomeScreen onPlay={openGame} onDaily={() => setNav((n) => push(n, { name: 'daily' }))} onGame={openSheet} onWorlds={() => onTab('games')} />;
+    } else if (nav.tab === 'games') {
+      content = <PlaceholderScreen testID="worlds-screen" title="worlds" />;
+    } else {
+      content = (
+        <PlaceholderScreen
+          testID="profile-screen"
+          title="profile"
+          actions={[
+            { testID: 'profile-settings', label: 'settings', onPress: () => setNav((n) => push(n, { name: 'settings' })) },
+            { testID: 'profile-about', label: 'about', onPress: () => setNav((n) => push(n, { name: 'about' })) },
+          ]}
+        />
+      );
+    }
+  } else if (route.name === 'settings') {
+    content = <SettingsScreen telemetryEnabled={consent === 'granted'} onToggleTelemetry={onConsent} onBack={goBack} />;
+  } else if (route.name === 'about') {
+    content = <AboutScreen onBack={goBack} />;
+  } else if (route.name === 'result') {
+    content = (
+      <PlaceholderScreen
+        testID="result-screen"
+        title={`result ${route.result.score}`}
+        actions={[
+          { testID: 'result-replay', label: 'replay', onPress: () => setNav((n) => replace(n, { name: 'game', game: route.game, seed: store.roundSeed() })) },
+          { testID: 'result-back', label: 'back', onPress: () => setNav((n) => popTo(pop(n), 'sheet')) },
+        ]}
+      />
+    );
+  } else {
+    content = <PlaceholderScreen testID={`${route.name}-screen`} title={route.name} actions={[{ testID: `${route.name}-back`, label: 'back', onPress: goBack }]} />;
+  }
+
+  const showTabs = route === null;
+  return (
+    <View style={styles.root}>
+      <View style={styles.root}>{content}</View>
+      {showTabs && <TabBar active={nav.tab} onSelect={onTab} />}
+      {store.toasts.length > 0 && <Toast id={store.toasts[0]} onDone={store.dismissToast} />}
+    </View>
+  );
+}
+
+function Toast({ id, onDone }: { id: string; onDone: () => void }) {
+  const { colors } = useTheme();
+  useEffect(() => {
+    const timer = setTimeout(onDone, 2500);
+    return () => clearTimeout(timer);
+  }, [id, onDone]);
+  return (
+    <View style={[styles.toast, { backgroundColor: colors.accent }]} testID="achievement-toast" pointerEvents="none">
+      <PixelText size={8} style={{ color: colors.accentText }}>
+        {id}
+      </PixelText>
+    </View>
+  );
+}
+
+function Root() {
+  const store = useGameStore();
   const [consent, setConsentState] = useState<Consent | 'loading'>('loading');
-  const [route, setRoute] = useState<Route>('home');
-  const [bestScore, setBestScore] = useState(0);
   const [languageSetting, setLanguageSetting] = useState<LanguageSetting>('auto');
 
   useEffect(() => {
     let alive = true;
     (async () => {
-      const [storedConsent, storedBest, storedLanguage] = await Promise.all([loadConsent(), loadBestScore(), loadLanguageSetting()]);
+      const [storedConsent, storedLanguage] = await Promise.all([loadConsent(), loadLanguageSetting()]);
       // Not awaited: the first screen must not wait for Firebase (the choice applies at once inside applyConsent).
       if (storedConsent !== 'unknown') void applyConsent(storedConsent === 'granted');
       if (alive) {
         setLanguageSetting(storedLanguage);
         setConsentState(storedConsent);
-        setBestScore(storedBest);
       }
     })();
     return () => {
@@ -57,37 +183,41 @@ export default function App() {
     await saveLanguageSetting(value);
   }, []);
 
-  const onGameOver = useCallback(async (score: number) => {
-    setBestScore((current) => Math.max(current, score));
-    await saveBestScore(score);
-  }, []);
-
-  let content: React.ReactNode;
-  if (consent === 'loading') {
-    content = (
-      <View style={styles.loading}>
-        <ActivityIndicator color={colors.accent} />
-      </View>
-    );
-  } else if (consent === 'unknown') {
-    content = <ConsentScreen onDecision={decide} />;
-  } else if (route === 'game') {
-    content = <GameScreen onExit={() => setRoute('home')} onGameOver={onGameOver} />;
-  } else if (route === 'about') {
-    content = <AboutScreen onBack={() => setRoute('home')} />;
-  } else if (route === 'settings') {
-    content = <SettingsScreen telemetryEnabled={consent === 'granted'} onToggleTelemetry={decide} onBack={() => setRoute('home')} />;
-  } else {
-    content = <HomeScreen bestScore={bestScore} onPlay={() => setRoute('game')} onSettings={() => setRoute('settings')} onAbout={() => setRoute('about')} />;
-  }
-
   return (
-    <I18nProvider setting={languageSetting} onChange={changeLanguage}>
-      <ErrorBoundary>{content}</ErrorBoundary>
-    </I18nProvider>
+    <ThemeProvider setting={store.save.settings.theme}>
+      <I18nProvider setting={languageSetting} onChange={changeLanguage}>
+        <ErrorBoundary>{consent === 'loading' ? <Loading /> : <Shell consent={consent} onConsent={decide} />}</ErrorBoundary>
+      </I18nProvider>
+    </ThemeProvider>
+  );
+}
+
+function Loading() {
+  const { colors } = useTheme();
+  return (
+    <View style={[styles.loading, { backgroundColor: colors.background }]}>
+      <ActivityIndicator color={colors.accent} />
+    </View>
+  );
+}
+
+export default function App() {
+  const [fontsLoaded] = useFonts(FONTS);
+  const sessionSeed = useSessionSeed();
+  if (!fontsLoaded || sessionSeed === 'pending') return <View style={styles.loading} />;
+  return (
+    <GestureHandlerRootView style={styles.root}>
+      <SafeAreaProvider>
+        <GameStoreProvider sessionSeed={sessionSeed}>
+          <Root />
+        </GameStoreProvider>
+      </SafeAreaProvider>
+    </GestureHandlerRootView>
   );
 }
 
 const styles = StyleSheet.create({
-  loading: { flex: 1, alignItems: 'center', justifyContent: 'center', backgroundColor: colors.background },
+  root: { flex: 1 },
+  loading: { flex: 1, alignItems: 'center', justifyContent: 'center', backgroundColor: '#141226' },
+  toast: { position: 'absolute', top: 60, alignSelf: 'center', paddingHorizontal: 16, paddingVertical: 10, borderRadius: 10 },
 });

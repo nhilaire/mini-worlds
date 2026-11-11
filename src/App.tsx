@@ -19,8 +19,9 @@ import { UpgradesScreen } from './screens/UpgradesScreen';
 import { WorldDetailScreen } from './screens/WorldDetailScreen';
 import { WorldsScreen } from './screens/WorldsScreen';
 import { ConsentScreen } from './screens/ConsentScreen';
+import type { OnFinish } from './screens/game/GameFrame';
+import { GameScreen } from './screens/game/GameScreen';
 import { HomeScreen } from './screens/HomeScreen';
-import { PlaceholderScreen } from './screens/PlaceholderScreen';
 import { SettingsScreen } from './screens/SettingsScreen';
 import { GameStoreProvider, useGameStore } from './state/GameStore';
 import { loadLanguageSetting, saveLanguageSetting } from './storage/languageSetting';
@@ -80,6 +81,14 @@ function Shell({ consent, onConsent }: { consent: Consent; onConsent: (granted: 
   const onTab = useCallback((tab: Tab) => setNav((n) => selectTab(n, tab)), []);
   const openGame = useCallback((game: GameId) => setNav((n) => push(n, { name: 'game', game, seed: store.roundSeed() })), [store]);
   const openSheet = useCallback((game: GameId) => setNav((n) => push(n, { name: 'sheet', game })), []);
+  // A finished round is settled by the store, then the Result screen replaces the game (or a new round starts).
+  const onFinish = useCallback<OnFinish>(
+    (round, next) => {
+      const result = store.settle(round);
+      setNav((n) => replace(n, next === 'restart' ? { name: 'game', game: round.game, seed: store.roundSeed() } : { name: 'result', game: round.game, result }));
+    },
+    [store],
+  );
 
   if (!store.loaded) {
     return (
@@ -103,6 +112,8 @@ function Shell({ consent, onConsent }: { consent: Consent; onConsent: (granted: 
     content = <SettingsScreen telemetryEnabled={consent === 'granted'} onToggleTelemetry={onConsent} onBack={goBack} />;
   } else if (route.name === 'about') {
     content = <AboutScreen onBack={goBack} />;
+  } else if (route.name === 'game') {
+    content = <GameScreen game={route.game} seed={route.seed} onFinish={onFinish} />;
   } else if (route.name === 'world') {
     content = <WorldDetailScreen world={route.world} onGame={openSheet} onBack={goBack} />;
   } else if (route.name === 'sheet') {
@@ -123,8 +134,6 @@ function Shell({ consent, onConsent }: { consent: Consent; onConsent: (granted: 
         onBack={() => setNav((n) => (n.stack.some((r) => r.name === 'sheet') ? popTo(n, 'sheet') : selectTab(n, n.tab)))}
       />
     );
-  } else {
-    content = <PlaceholderScreen testID={`${route.name}-screen`} title={route.name} actions={[{ testID: `${route.name}-back`, label: 'back', onPress: goBack }]} />;
   }
 
   const showTabs = route === null;

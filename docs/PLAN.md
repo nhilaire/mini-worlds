@@ -23,8 +23,8 @@ Core meta engine (src/game/core)
 
 Mini-game engines (src/game/<game>)
 
-- [ ] T-11 Block Rain: 7-bag, board, move, rotate with wall kicks, hard drop (AC-17, AC-18) - proof: unit
-- [ ] T-12 Block Rain: lock, line clear, scoring, back-to-back, gravity interval, end, determinism (AC-19, AC-20, AC-16) - proof: unit
+- [x] T-11 Block Rain: 7-bag, board, move, rotate with wall kicks, hard drop (AC-17, AC-18) - proof: unit
+- [x] T-12 Block Rain: lock, line clear, scoring, back-to-back, gravity interval, end, determinism (AC-19, AC-20, AC-16) - proof: unit
 - [ ] T-13 Crazy Patch: seeded board without lines, valid-move detection, shuffle invariants (AC-22) - proof: unit
 - [ ] T-14 Crazy Patch: swaps, line scoring, cascades with multiplier and combos, sixth type from move 11, end, determinism (AC-23, AC-24, AC-25, AC-16) - proof: unit
 - [ ] T-15 Bubble Frenzy: hex grid, trajectory with wall bounces, snapping, minimum angle (AC-27) - proof: unit

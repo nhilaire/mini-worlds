@@ -11,6 +11,13 @@ import { LanguageSetting } from './i18n';
 import { I18nProvider } from './i18n/I18nProvider';
 import { current, initialNavigation, Navigation, pop, popTo, push, replace, selectTab, Tab } from './navigation';
 import { AboutScreen } from './screens/AboutScreen';
+import { DailyRewardScreen } from './screens/DailyRewardScreen';
+import { GameSheetScreen } from './screens/GameSheetScreen';
+import { ProfileScreen } from './screens/ProfileScreen';
+import { ResultScreen } from './screens/ResultScreen';
+import { UpgradesScreen } from './screens/UpgradesScreen';
+import { WorldDetailScreen } from './screens/WorldDetailScreen';
+import { WorldsScreen } from './screens/WorldsScreen';
 import { ConsentScreen } from './screens/ConsentScreen';
 import { HomeScreen } from './screens/HomeScreen';
 import { PlaceholderScreen } from './screens/PlaceholderScreen';
@@ -88,32 +95,32 @@ function Shell({ consent, onConsent }: { consent: Consent; onConsent: (granted: 
     if (nav.tab === 'home') {
       content = <HomeScreen onPlay={openGame} onDaily={() => setNav((n) => push(n, { name: 'daily' }))} onGame={openSheet} onWorlds={() => onTab('games')} />;
     } else if (nav.tab === 'games') {
-      content = <PlaceholderScreen testID="worlds-screen" title="worlds" />;
+      content = <WorldsScreen onWorld={(world) => setNav((n) => push(n, { name: 'world', world }))} />;
     } else {
-      content = (
-        <PlaceholderScreen
-          testID="profile-screen"
-          title="profile"
-          actions={[
-            { testID: 'profile-settings', label: 'settings', onPress: () => setNav((n) => push(n, { name: 'settings' })) },
-            { testID: 'profile-about', label: 'about', onPress: () => setNav((n) => push(n, { name: 'about' })) },
-          ]}
-        />
-      );
+      content = <ProfileScreen onSettings={() => setNav((n) => push(n, { name: 'settings' }))} onAbout={() => setNav((n) => push(n, { name: 'about' }))} />;
     }
   } else if (route.name === 'settings') {
     content = <SettingsScreen telemetryEnabled={consent === 'granted'} onToggleTelemetry={onConsent} onBack={goBack} />;
   } else if (route.name === 'about') {
     content = <AboutScreen onBack={goBack} />;
+  } else if (route.name === 'world') {
+    content = <WorldDetailScreen world={route.world} onGame={openSheet} onBack={goBack} />;
+  } else if (route.name === 'sheet') {
+    content = (
+      <GameSheetScreen game={route.game} onPlay={() => openGame(route.game)} onUpgrades={() => setNav((n) => push(n, { name: 'upgrades', game: route.game }))} onBack={goBack} />
+    );
+  } else if (route.name === 'upgrades') {
+    content = <UpgradesScreen game={route.game} onBack={goBack} />;
+  } else if (route.name === 'daily') {
+    content = <DailyRewardScreen onBack={goBack} />;
   } else if (route.name === 'result') {
     content = (
-      <PlaceholderScreen
-        testID="result-screen"
-        title={`result ${route.result.score}`}
-        actions={[
-          { testID: 'result-replay', label: 'replay', onPress: () => setNav((n) => replace(n, { name: 'game', game: route.game, seed: store.roundSeed() })) },
-          { testID: 'result-back', label: 'back', onPress: () => setNav((n) => popTo(pop(n), 'sheet')) },
-        ]}
+      <ResultScreen
+        game={route.game}
+        result={route.result}
+        onReplay={() => setNav((n) => replace(n, { name: 'game', game: route.game, seed: store.roundSeed() }))}
+        onUpgrade={() => setNav((n) => push(n, { name: 'upgrades', game: route.game }))}
+        onBack={() => setNav((n) => (n.stack.some((r) => r.name === 'sheet') ? popTo(n, 'sheet') : selectTab(n, n.tab)))}
       />
     );
   } else {

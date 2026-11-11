@@ -38,15 +38,15 @@ Pixel art and text
 Screens (React, thin)
 
 - [x] T-19 App shell: route state, 3 tabs, Home (level, XP, coins, Play, challenges, next unlock, recent games), theme light/dark (AC-01, AC-03) - proof: unit
-- [ ] T-20 Worlds map, World detail, Game sheet (AC-31) - proof: unit
-- [ ] T-21 Upgrades screen (AC-32) - proof: unit
+- [x] T-20 Worlds map, World detail, Game sheet (AC-31) - proof: unit
+- [x] T-21 Upgrades screen (AC-32) - proof: unit
 - [ ] T-22 Skia board renderer, Block Rain screen: gestures, HUD, pause overlay, background pause, tutorial bubbles (AC-21, AC-39) - proof: unit
 - [ ] T-23 Crazy Patch screen: swipe swaps, cascade animation, HUD, tutorial bubble (AC-26) - proof: unit
 - [ ] T-24 Bubble Frenzy screen: aim guide, shot animation, HUD, tutorial bubbles (AC-30) - proof: unit
-- [ ] T-25 Result screen: score, new best, stars, coins, XP, level-up, unlock, challenges done, three actions (AC-33) - proof: unit
-- [ ] T-26 Daily reward screen and Home card (AC-34) - proof: unit
-- [ ] T-27 Daily challenges card on Home with live progress (AC-35) - proof: unit
-- [ ] T-28 Profile (stats, achievements grid, toast), Settings (sound, vibrations, theme, language, stats, reset with confirmation), About with the story (AC-36, AC-37, AC-38) - proof: unit
+- [x] T-25 Result screen: score, new best, stars, coins, XP, level-up, unlock, challenges done, three actions (AC-33) - proof: unit
+- [x] T-26 Daily reward screen and Home card (AC-34) - proof: unit
+- [x] T-27 Daily challenges card on Home with live progress (AC-35) - proof: unit
+- [x] T-28 Profile (stats, achievements grid, toast), Settings (sound, vibrations, theme, language, stats, reset with confirmation), About with the story (AC-36, AC-37, AC-38) - proof: unit
 
 Persistence, telemetry, feel
 

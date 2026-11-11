@@ -1,6 +1,7 @@
 import meta from '../../factory-app.json';
 import { DICTIONARIES, FALLBACK_LANGUAGE, LANGUAGE_NAMES, LANGUAGES, resolveLanguage } from '../i18n';
 import { formatter } from '../i18n/format';
+import { ACHIEVEMENTS, CHALLENGES, GAMES, WORLDS } from '../game/core/content';
 
 // Shape of a dictionary: every key, function arity and list length (texts differ, structure must not).
 function shape(value: unknown): unknown {
@@ -73,5 +74,27 @@ describe('formatting', () => {
     const en = formatter('en-US');
     expect(en.integer(12345)).toBe('12,345');
     expect(en.label('Score', 3)).toBe('Score: 3');
+  });
+});
+
+describe('content names (AC-05)', () => {
+  it.each(LANGUAGES)('%s names every world, game, upgrade, challenge and achievement', (language) => {
+    const t = DICTIONARIES[language];
+    for (const w of WORLDS) expect(t.world[w.id].length).toBeGreaterThan(0);
+    for (const g of GAMES) {
+      expect(t.game[g.id].name.length).toBeGreaterThan(0);
+      for (const u of g.upgrades) expect(t.upgrade[u.id].name.length).toBeGreaterThan(0);
+    }
+    for (const c of CHALLENGES) expect(t.challenge[c.id].length).toBeGreaterThan(0);
+    for (const a of ACHIEVEMENTS) {
+      expect(t.achievement[a.id].length).toBeGreaterThan(0);
+      expect(t.achievementHint[a.id].length).toBeGreaterThan(0);
+    }
+  });
+
+  it('French strings use no-break spaces before : ! ? and English strings none', () => {
+    const frTexts = texts(DICTIONARIES.fr);
+    expect(frTexts.filter((s) => / [:!?]/.test(s))).toEqual([]);
+    expect(texts(DICTIONARIES.en).filter((s) => / /.test(s))).toEqual([]);
   });
 });

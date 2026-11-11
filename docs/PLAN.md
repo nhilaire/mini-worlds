@@ -33,7 +33,7 @@ Mini-game engines (src/game/<game>)
 Pixel art and text
 
 - [ ] T-17 Pixel sprites: palette, sprite grids for every piece, bubble, vegetable, world icon and UI frames, validation tests (AC-44) - proof: unit
-- [ ] T-18 Dictionaries fr/en with the whole PRD player copy, tu tone, French typography (AC-02, AC-05) - proof: unit
+- [x] T-18 Dictionaries fr/en with the whole PRD player copy, tu tone, French typography (AC-02, AC-05) - proof: unit
 
 Screens (React, thin)
 

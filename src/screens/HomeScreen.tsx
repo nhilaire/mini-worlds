@@ -16,11 +16,11 @@ export function HomeScreen({ bestScore, onPlay, onSettings, onAbout }: Props) {
         <Text style={styles.title} accessibilityRole="header">
           {appName(language)}
         </Text>
-        {bestScore > 0 && <Text style={styles.best}>{t.home.bestScore(bestScore)}</Text>}
+        {bestScore > 0 && <Text style={styles.best}>{t.sheet.best}</Text>}
       </View>
       <Button label={t.home.play} onPress={onPlay} testID="home-play" />
-      <Button label={t.home.settings} onPress={onSettings} variant="secondary" testID="home-settings" />
-      <Button label={t.home.about} onPress={onAbout} variant="secondary" testID="home-about" />
+      <Button label={t.profile.settings} onPress={onSettings} variant="secondary" testID="home-settings" />
+      <Button label={t.profile.about} onPress={onAbout} variant="secondary" testID="home-about" />
     </Screen>
   );
 }

@@ -15,7 +15,7 @@ describe('App', () => {
 
   it('asks for consent in French on a French phone, then shows the home screen', async () => {
     await render(<App />);
-    expect(await screen.findByText('Votre vie privée')).toBeTruthy();
+    expect(await screen.findByText('Statistiques anonymes')).toBeTruthy();
     await fireEvent.press(screen.getByText('Refuser'));
     expect(await screen.findByText('Jouer')).toBeTruthy();
     expect(screen.getByText(appName('fr'))).toBeTruthy();
@@ -24,7 +24,7 @@ describe('App', () => {
   it('speaks English on an English phone', async () => {
     jest.mocked(deviceLanguageTags).mockReturnValue(['en-US']);
     await render(<App />);
-    expect(await screen.findByText('Your privacy')).toBeTruthy();
+    expect(await screen.findByText('Anonymous statistics')).toBeTruthy();
   });
 
   it('uses the fallback language on a phone in an unsupported language', async () => {
@@ -74,6 +74,6 @@ describe('App', () => {
     await AsyncStorage.setItem('telemetry.consent.v1', 'denied');
     await render(<App />);
     expect(await screen.findByText('Jouer')).toBeTruthy();
-    expect(screen.queryByText('Votre vie privée')).toBeNull();
+    expect(screen.queryByText('Statistiques anonymes')).toBeNull();
   });
 });

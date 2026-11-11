@@ -15,7 +15,6 @@ export function ConsentScreen({ onDecision }: { onDecision: (granted: boolean) =
           {t.consent.title}
         </Text>
         <Text style={styles.body}>{t.consent.body}</Text>
-        <Text style={styles.footnote}>{t.consent.footnote}</Text>
       </View>
       <Button label={t.consent.accept} onPress={() => onDecision(true)} testID="consent-accept" />
       <Button label={t.consent.refuse} onPress={() => onDecision(false)} testID="consent-refuse" />
@@ -27,5 +26,4 @@ const styles = StyleSheet.create({
   content: { flex: 1, justifyContent: 'center', gap: spacing.md },
   title: { color: colors.text, fontSize: font.title, fontWeight: '800' },
   body: { color: colors.text, fontSize: font.body, lineHeight: 24 },
-  footnote: { color: colors.muted, fontSize: font.small },
 });

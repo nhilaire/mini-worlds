@@ -51,12 +51,12 @@ export function GameScreen({ onExit, onGameOver }: Props) {
       <Screen testID="game-over-screen">
         <View style={styles.center}>
           <Text style={styles.title} accessibilityRole="header">
-            {t.game.over}
+            {t.result.title}
           </Text>
-          <Text style={styles.score}>{t.game.finalScore(state.score)}</Text>
+          <Text style={styles.score}>{String(state.score)}</Text>
         </View>
-        <Button label={t.game.playAgain} onPress={start} testID="game-play-again" />
-        <Button label={t.game.home} onPress={onExit} variant="secondary" testID="game-home" />
+        <Button label={t.result.replay} onPress={start} testID="game-play-again" />
+        <Button label={t.result.back} onPress={onExit} variant="secondary" testID="game-home" />
       </Screen>
     );
   }
@@ -64,17 +64,17 @@ export function GameScreen({ onExit, onGameOver }: Props) {
   return (
     <Screen testID="game-screen">
       <View style={styles.hud}>
-        <Text style={styles.hudText}>{t.game.score(state.score)}</Text>
-        <Text style={styles.hudText}>{t.game.timeLeft(remainingSeconds(state, now))}</Text>
+        <Text style={styles.hudText}>{t.hud.score}</Text>
+        <Text style={styles.hudText}>{String(remainingSeconds(state, now))}</Text>
       </View>
       <Pressable
         testID="game-tap-zone"
         accessibilityRole="button"
-        accessibilityLabel={t.game.tap}
+        accessibilityLabel={t.hud.pause}
         onPress={() => dispatch({ type: 'tap', now: Date.now() })}
         style={({ pressed }) => [styles.tapZone, pressed && styles.tapZonePressed]}
       >
-        <Text style={styles.tapText}>{t.game.tap}</Text>
+        <Text style={styles.tapText}>{t.hud.pause}</Text>
       </Pressable>
     </Screen>
   );

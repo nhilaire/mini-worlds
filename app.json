@@ -26,6 +26,7 @@
       "@react-native-firebase/analytics",
       "@react-native-firebase/crashlytics",
       "expo-localization"
-    ]
+    ],
+    "scheme": "miniworlds"
   }
 }

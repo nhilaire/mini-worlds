@@ -1,13 +1,17 @@
 // « Bulles en Folie » screen: the shooter engine (src/game/bubbles) drawn in a Skia canvas. Hold to aim (the guide
-// line follows the finger, with the bounces allowed by the « Visée » upgrade), release to shoot.
+// line follows the finger, with the bounces allowed by the « Visée » upgrade), release to shoot. The engine settles
+// the shot at once (HUD, score); the screen then replays it for the eye from the pure replay plan
+// (src/game/bubbles/replay): flight with bounces, glow of the popped group with its points, pop, fall of the
+// disconnected bubbles, slide of a pushed row. Inputs are locked while the replay runs.
 import { Canvas, createPicture, Picture, Skia, SkPicture } from '@shopify/react-native-skia';
-import { useCallback, useMemo, useRef, useState } from 'react';
+import { useCallback, useEffect, useMemo, useRef, useState } from 'react';
 import { StyleSheet, useWindowDimensions, View } from 'react-native';
 import { Gesture, GestureDetector } from 'react-native-gesture-handler';
 
 import { BUBBLES } from '../../art/sprites';
 import { now } from '../../game/clock';
-import { BUBBLE_COLS, BUBBLE_ROWS, BubbleState, cellCenter, Colour, createBubbles, LAUNCHER, Point, reduceBubbles, ROW_HEIGHT, simulateShot } from '../../game/bubbles/engine';
+import { BUBBLE_COLS, BUBBLE_ROWS, BubbleBoard, Cell, cellCenter, Colour, createBubbles, LAUNCHER, Point, reduceBubbles, ROW_HEIGHT, Shift, simulateShot } from '../../game/bubbles/engine';
+import { buildReplay, Phase, pointAlong } from '../../game/bubbles/replay';
 import { upgradeLevels } from '../../game/core/upgrades';
 import { useI18n } from '../../i18n/I18nProvider';
 import { useGameStore } from '../../state/GameStore';
@@ -23,6 +27,13 @@ const AIM_HOLD_MS = 500;
 /** Height of the field in bubble units: the grid plus the launcher row. */
 const FIELD_UNITS = 0.5 + (BUBBLE_ROWS + 1) * ROW_HEIGHT + 0.5;
 
+type Frame = { phase: Phase; progress: number };
+type Colors = { guide: string; danger: string; flash: string };
+
+const easeOut = (p: number) => 1 - (1 - p) * (1 - p);
+const easeIn = (p: number) => p * p;
+const sameCell = (a: Cell, b: Cell) => a.col === b.col && a.row === b.row;
+
 function bubblePictures(unit: number): Record<Colour, SkPicture> {
   const scale = unit / SPRITE_PIXELS;
   const out = {} as Record<Colour, SkPicture>;
@@ -36,37 +47,84 @@ export function aimAngle(touch: Point): number {
   return Math.max(10, Math.min(170, angle));
 }
 
-function fieldPicture(state: BubbleState, unit: number, sprites: Record<Colour, SkPicture>, guide: readonly Point[] | null, guideColor: string, lineColor: string): SkPicture {
+type FieldView = { board: BubbleBoard; shift: Shift; current: Colour; queue: readonly Colour[]; next: number };
+
+function fieldPicture(view: FieldView, unit: number, sprites: Record<Colour, SkPicture>, guide: readonly Point[] | null, colors: Colors, frame: Frame | null): SkPicture {
   const width = BUBBLE_COLS * unit;
   const height = FIELD_UNITS * unit;
-  const draw = (canvas: Parameters<Parameters<typeof createPicture>[0]>[0], colour: Colour, centre: Point) => {
+  const draw = (canvas: Parameters<Parameters<typeof createPicture>[0]>[0], colour: Colour, centre: Point, scale = 1) => {
     canvas.save();
     canvas.translate((centre.x - 0.5) * unit, (centre.y - 0.5) * unit);
+    if (scale !== 1) {
+      canvas.translate(unit / 2, unit / 2);
+      canvas.scale(scale, scale);
+      canvas.translate(-unit / 2, -unit / 2);
+    }
     canvas.drawPicture(sprites[colour]);
     canvas.restore();
   };
   return createPicture((canvas) => {
     // Danger line: the bottom row.
     const line = Skia.Paint();
-    line.setColor(Skia.Color(lineColor));
+    line.setColor(Skia.Color(colors.danger));
     line.setStyle(1);
     line.setStrokeWidth(1);
     const dangerY = (0.5 + (BUBBLE_ROWS - 1) * ROW_HEIGHT + 0.5) * unit;
     canvas.drawLine(0, dangerY, width, dangerY, line);
-    state.board.forEach((row, r) =>
+
+    const phase = frame?.phase;
+    const p = frame?.progress ?? 0;
+    const board = phase ? phase.board : view.board;
+    const shift = phase ? phase.shift : view.shift;
+    // A pushed row: the whole stack slides down from one row above.
+    const slide = phase && phase.kind === 'push' ? -ROW_HEIGHT * (1 - easeOut(p)) : 0;
+
+    if (phase && phase.kind === 'flash') {
+      const glow = Skia.Paint();
+      glow.setColor(Skia.Color(colors.flash));
+      glow.setAlphaf(0.25 + 0.3 * (0.5 + 0.5 * Math.sin(p * Math.PI * 4)));
+      const ring = Skia.Paint();
+      ring.setColor(Skia.Color(colors.flash));
+      ring.setStyle(1);
+      ring.setStrokeWidth(3);
+      for (const c of phase.cells) {
+        const centre = cellCenter(c.col, c.row, shift);
+        canvas.drawCircle(centre.x * unit, centre.y * unit, 0.56 * unit, glow);
+        canvas.drawCircle(centre.x * unit, centre.y * unit, 0.5 * unit, ring);
+      }
+    }
+
+    board.forEach((row, r) =>
       row.forEach((colour, c) => {
-        if (colour) draw(canvas, colour, cellCenter(c, r, state.shift));
+        if (!colour) return;
+        const centre = cellCenter(c, r, shift);
+        let scale = 1;
+        if (phase && phase.kind === 'pop' && phase.cells.some((cell) => sameCell(cell, { col: c, row: r }))) scale = 1 - p;
+        if (scale <= 0) return;
+        draw(canvas, colour, { x: centre.x, y: centre.y + slide }, scale);
       }),
     );
-    if (guide && guide.length > 1) {
+
+    if (phase && phase.kind === 'fall') {
+      // The disconnected bubbles drop out of the field, accelerating.
+      const dy = easeIn(p) * FIELD_UNITS;
+      phase.cells.forEach((c, i) => {
+        const centre = cellCenter(c.col, c.row, shift);
+        draw(canvas, phase.colours[i], { x: centre.x, y: centre.y + dy });
+      });
+    }
+
+    if (phase && phase.kind === 'fly') draw(canvas, phase.colour, pointAlong(phase.path, p));
+
+    if (guide && guide.length > 1 && !phase) {
       const paint = Skia.Paint();
-      paint.setColor(Skia.Color(guideColor));
+      paint.setColor(Skia.Color(colors.guide));
       paint.setStyle(1);
       paint.setStrokeWidth(2);
       for (let i = 1; i < guide.length; i++) canvas.drawLine(guide[i - 1].x * unit, guide[i - 1].y * unit, guide[i].x * unit, guide[i].y * unit, paint);
     }
-    draw(canvas, state.current, LAUNCHER);
-    state.queue.slice(0, state.next).forEach((colour, i) => draw(canvas, colour, { x: LAUNCHER.x + 1.2 + i * 0.9, y: LAUNCHER.y + 0.1 }));
+    draw(canvas, view.current, LAUNCHER);
+    view.queue.slice(0, view.next).forEach((colour, i) => draw(canvas, colour, { x: LAUNCHER.x + 1.2 + i * 0.9, y: LAUNCHER.y + 0.1 }));
   }, { x: 0, y: 0, width, height });
 }
 
@@ -92,6 +150,12 @@ export function BubblesGame({ seed, onFinish }: { seed: number; onFinish: OnFini
   const { paused, advanceTutorial, finish, setCombos } = frame;
   useGameFeedback(state.events);
 
+  // Replay of the last shot: phases and the frame being drawn.
+  const replay = useRef<{ phases: Phase[]; index: number; startedAt: number } | null>(null);
+  const [replaying, setReplaying] = useState(false);
+  const [shownFrame, setShownFrame] = useState<Frame | null>(null);
+  const lastFrame = useRef<{ index: number; progress: number } | null>(null);
+
   const shoot = useCallback(
     (degrees: number) => {
       const previous = stateRef.current;
@@ -99,6 +163,13 @@ export function BubblesGame({ seed, onFinish }: { seed: number; onFinish: OnFini
       const next = reduceBubbles(previous, { type: 'shoot', angle: degrees });
       stateRef.current = next;
       setState(next);
+      const phases = buildReplay(previous.board, previous.shift, next);
+      if (phases.length > 0) {
+        replay.current = { phases, index: 0, startedAt: now() };
+        lastFrame.current = { index: 0, progress: 0 };
+        setShownFrame({ phase: phases[0], progress: 0 });
+        setReplaying(true);
+      }
       if (next.events.some((e) => e.kind === 'shot')) advanceTutorial('shoot');
       if (next.status === 'over') finish(next.score, next.combos);
       else setCombos(next.combos);
@@ -106,7 +177,45 @@ export function BubblesGame({ seed, onFinish }: { seed: number; onFinish: OnFini
     [advanceTutorial, finish, setCombos],
   );
 
-  const inputsLocked = paused || state.status !== 'playing';
+  // Frame loop of the replay: advances through the phases by elapsed time (injectable clock), then shows the
+  // settled field. Re-renders only when the drawing changes.
+  useEffect(() => {
+    if (!replaying) return;
+    let handle = 0;
+    const loop = () => {
+      const current = replay.current;
+      if (!current) {
+        setShownFrame(null);
+        setReplaying(false);
+        return;
+      }
+      let phase = current.phases[current.index];
+      let elapsed = now() - current.startedAt;
+      while (elapsed >= phase.ms) {
+        current.index += 1;
+        current.startedAt += phase.ms;
+        elapsed -= phase.ms;
+        if (current.index >= current.phases.length) {
+          replay.current = null;
+          setShownFrame(null);
+          setReplaying(false);
+          return;
+        }
+        phase = current.phases[current.index];
+      }
+      const progress = elapsed / phase.ms;
+      const last = lastFrame.current;
+      if (!last || last.index !== current.index || Math.abs(last.progress - progress) >= 0.004) {
+        lastFrame.current = { index: current.index, progress };
+        setShownFrame({ phase, progress });
+      }
+      handle = requestAnimationFrame(loop);
+    };
+    handle = requestAnimationFrame(loop);
+    return () => cancelAnimationFrame(handle);
+  }, [replaying]);
+
+  const inputsLocked = paused || replaying || state.status !== 'playing';
   const holdStart = useRef(0);
   const aimed = useRef(false);
   /* eslint-disable react-hooks/refs -- the gesture callbacks run on touch events, never during render */
@@ -144,7 +253,22 @@ export function BubblesGame({ seed, onFinish }: { seed: number; onFinish: OnFini
     const shot = simulateShot(state.board, angle, state.shift);
     return shot.path.slice(0, state.aim + 2);
   }, [angle, inputsLocked, state.board, state.shift, state.aim]);
-  const picture = useMemo(() => fieldPicture(state, unit, sprites, guide, colors.accent, colors.danger), [state, unit, sprites, guide, colors.accent, colors.danger]);
+  const paletteColors = useMemo<Colors>(() => ({ guide: colors.accent, danger: colors.danger, flash: colors.accent }), [colors.accent, colors.danger]);
+  const { board, shift, current: currentColour, queue, next } = state;
+  const view = useMemo<FieldView>(() => ({ board, shift, current: currentColour, queue, next }), [board, shift, currentColour, queue, next]);
+  const picture = useMemo(() => fieldPicture(view, unit, sprites, guide, paletteColors, shownFrame), [view, unit, sprites, guide, paletteColors, shownFrame]);
+
+  // Points popping above the popped group (flash and pop phases) and above the dropped bubbles (fall phase).
+  const pop = useMemo(() => {
+    const phase = shownFrame?.phase;
+    if (!phase || (phase.kind !== 'flash' && phase.kind !== 'pop' && phase.kind !== 'fall')) return null;
+    const points = phase.kind === 'flash' || phase.kind === 'fall' ? phase.points : null;
+    if (points === null) return null;
+    const centres = phase.cells.map((c) => cellCenter(c.col, c.row, phase.shift));
+    const cx = centres.reduce((s, c) => s + c.x, 0) / centres.length;
+    const top = Math.min(...centres.map((c) => c.y)) - 0.5;
+    return { text: `+${points}`, left: cx * unit, top: Math.max(0, top * unit - 10) };
+  }, [shownFrame, unit]);
 
   const hud = (
     <View style={styles.hudItem}>
@@ -164,6 +288,13 @@ export function BubblesGame({ seed, onFinish }: { seed: number; onFinish: OnFini
           </Canvas>
           {/* Invisible launcher target: Maestro swipes up from it (the gesture reads the touch point). */}
           <View testID="bubbles-launcher" pointerEvents="none" style={{ position: 'absolute', left: (LAUNCHER.x - 0.5) * unit, top: (LAUNCHER.y - 0.5) * unit, width: unit, height: unit }} />
+          {pop && (
+            <View pointerEvents="none" style={[styles.pop, { left: pop.left - 60, top: pop.top }]}>
+              <PixelText testID="bubbles-points-pop" color="accent" bold style={styles.popText}>
+                {pop.text}
+              </PixelText>
+            </View>
+          )}
         </View>
       </GestureDetector>
     </GameFrame>
@@ -173,4 +304,6 @@ export function BubblesGame({ seed, onFinish }: { seed: number; onFinish: OnFini
 const styles = StyleSheet.create({
   board: { borderWidth: 2, borderRadius: 4, overflow: 'hidden' },
   hudItem: { gap: 2 },
+  pop: { position: 'absolute', width: 120, alignItems: 'center' },
+  popText: { textShadowColor: 'rgba(0, 0, 0, 0.35)', textShadowOffset: { width: 1, height: 1 }, textShadowRadius: 1 },
 });

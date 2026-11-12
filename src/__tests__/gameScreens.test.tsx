@@ -7,13 +7,23 @@ import App from '../App';
 import { aimAngle } from '../screens/game/BubblesGame';
 import { setClock } from '../game/clock';
 import { BUBBLE_COLS, createBubbles, LAUNCHER, reduceBubbles, ROW_HEIGHT } from '../game/bubbles/engine';
+import { buildReplay as buildBubblesReplay } from '../game/bubbles/replay';
 import { defaultSave, serializeSave } from '../game/core/save';
 import { createGarden, findValidMoves, GARDEN_COLS, reduceGarden } from '../game/garden/engine';
 import { SWAP_MS } from '../game/garden/replay';
 import { deviceLanguageTags } from '../i18n/deviceLocale';
 
 // The session seed comes from the deep link; the first round of the session uses seed + 1.
-const SESSION_SEED = 1;
+// The first session seed whose straight-up first shot pops a group (same rule as the Maestro seed flows), so that
+// the Bulles replay has points to show; the garden swap works for any seed.
+function pickSessionSeed(): number {
+  for (let seed = 1; seed < 500; seed++) {
+    const shot = reduceBubbles(createBubbles(seed + 1, {}), { type: 'shoot', angle: 90 });
+    if (shot.events.some((e) => e.kind === 'pop') && shot.status === 'playing') return seed;
+  }
+  throw new Error('no seed with a popping straight shot');
+}
+const SESSION_SEED = pickSessionSeed();
 const ROUND_SEED = SESSION_SEED + 1;
 // Jest window: 750 × 1334 (react-native's Dimensions mock); same formulas as the screens.
 const GARDEN_CELL = Math.floor(Math.min((750 - 32) / GARDEN_COLS, (1334 - 220) / 8));
@@ -100,13 +110,21 @@ describe('game screens under the seed link', () => {
     });
     expect(screen.getByTestId('hud-shots')).toHaveTextContent(/^1$/);
     expect(screen.getByTestId('hud-score')).toHaveTextContent(new RegExp(`^${expected.score}$`));
+    // The replay shows the points of the popped group after the flight (AC-54); the test drives the clock.
+    const popEvent = expected.events.find((e) => e.kind === 'pop');
+    if (!popEvent || popEvent.kind !== 'pop') throw new Error('the scripted shot pops a group');
+    const plan = buildBubblesReplay(createBubbles(ROUND_SEED, {}).board, 0, expected);
+    nowMs += plan[0].ms + 50; // inside the flash phase whatever the machine load
+    expect(await screen.findByTestId('bubbles-points-pop')).toHaveTextContent(new RegExp(`^\\+${popEvent.points}$`));
+    nowMs += 10_000; // past every phase
+    await waitFor(() => expect(screen.queryByTestId('bubbles-points-pop')).toBeNull(), { timeout: 4000 });
 
     nowMs += 25_000;
     await fireEvent.press(screen.getByTestId('game-pause'));
     await fireEvent.press(await screen.findByTestId('pause-quit'));
     expect(await screen.findByTestId('result-screen')).toBeTruthy();
     expect(screen.getByTestId('result-score')).toBeTruthy();
-  });
+  }, 60_000); // the whole App renders under the parallel suite of verify.mjs
 
   it('shows the tutorial bubbles of Potager Fou and Bulles en Folie on a first round', async () => {
     const save = defaultSave();

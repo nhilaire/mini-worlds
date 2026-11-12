@@ -3,9 +3,9 @@
 Phone install: PASS
 User acceptance: pending
 Date: 2026-11-12
-Commit: ac9c80f
-APK: mini-worlds-0.1.0-arm64-v8a.apk (49.8 MB, arm64-v8a)
-SHA-256: eee4733de1bc2e0b14bf7259b196d8ae9e1abd5dd5de75620e58105f3a8e0d9d
+Commit: f858ae8
+APK: mini-worlds-0.1.0-arm64-v8a.apk (49.4 MB, arm64-v8a)
+SHA-256: 70f615d1d2da7967f5c683b829ebcb6bf64ce5c2cdd6733b6f7b80a6eb07d7d5
 Signature: release signature valid
 Phone: Android 11 (API 30, arm64-v8a)
 Launch check: alive after 10 s, no fatal error
@@ -38,3 +38,7 @@ with the user (PRD amendment, fixed through /build-game, then re-verify and re-r
 8. (second phone test, 2026-11-12 afternoon) The launcher icon and the splash screen were still the Expo
    placeholders. Decision: a pixel « toy box » icon generated from the game sprites (adaptive layers, monochrome,
    legacy icon, favicon) and a splash image on the app background through expo-splash-screen (AC-52, AC-53).
+9. (second phone test) Bulles en Folie had no movement: the shot bubble appeared at its cell and the popped
+   group vanished at once, nothing showed what the shot destroyed. Decision: the screen replays the shot from the
+   engine events (flight with bounces, glow and points of the popped group, pop, fall of the dropped bubbles,
+   slide of a pushed row), inputs locked during the replay (AC-54).

@@ -317,8 +317,13 @@ quitting at once.
 - Combo (for challenges): a shot that pops 5+ bubbles or drops at least one bubble.
 - End: any bubble occupies row 12 (by snap or by a row push). An empty board grants 500 bonus points, is
   refilled with 5 rows and the round continues; the shot counter is not reset. Expected round: 1-3 min.
-- Tutorial bubbles: « Garde le doigt appuyé pour viser » (dismissed after a drag of 0.5 s), « Relâche pour
-  tirer » (by a release that shoots).
+- Feedback of a shot (second phone test: the field jumped to its final state): the engine settles the shot at
+  once (score, HUD), then the screen replays it from the engine events: the bubble flies along the engine path at
+  22 units/s (bounces visible), the popped group glows and pulses with its points popping above it (250 ms), shrinks
+  away (120 ms), the disconnected bubbles fall out of the field with their points (320 ms), and a pushed row slides
+  the whole stack down one row (180 ms). Inputs are locked while the replay runs.
+- Tutorial bubbles: « Garde le doigt appuyé pour viser » (dismissed after a drag of 0.5 s), « Relâche pour
+  tirer » (by a release that shoots).
 
 ### Tutorial (guided first round)
 
@@ -571,6 +576,12 @@ Telemetry and technical
   and palette unchanged, and app.json points the icon, the adaptive icon and the expo-splash-screen plugin at them.
 - AC-53 [device] Given the release APK on the emulator, when the launcher is shown, then the app icon is the toy box
   tile (not the Expo placeholder) and the cold start shows the splash tile on the light background before Home.
+- AC-54 [unit] Given the field before a shot and the engine events of that shot, when the replay plan is built,
+  then it holds a fly phase (the engine path from the launcher, duration from the path length at 22 units/s, at
+  least 120 ms), then for a pop a flash phase (group cells, points) and a pop phase, then for dropped bubbles a fall
+  phase (cells, their colours, points) whose board no longer holds them, then a push phase when a row was pushed;
+  the boards chain to the settled board; a too-flat release yields no phase; and the Bulles screen shows the points
+  of the pop above the group after a scripted shot, then removes them when the replay ends.
 
 ## Player copy
 

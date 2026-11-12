@@ -2,16 +2,16 @@
 
 Produced by the `verifier` agent from the PRD and the evidence of this version. One row per acceptance criterion.
 
-Verified commit: c93b4dd (REPORT.md Overall PASS, 2026-11-12 15:01 UTC, after the fixes of the first phone test and the
-launcher icon / splash of the second test).
-APK SHA-256: 4b9049123233385e57e3b6a56695412dd82a045c7f84be013f318e78d8f8228a.
+Verified commit: c59f57e (REPORT.md Overall PASS, 2026-11-12 17:27 UTC, after the fixes of the first phone test and the
+launcher icon / splash and Bulles replay of the second test).
+APK SHA-256: b9a3891d41cfd8a5b45af305cf2cb04644a23014ea4450db24c18c850744d90e.
 
-Sources: docs/PRD.md (AC-01..AC-53), REPORT.md (Overall PASS), raw/jest.txt (284 / 284), raw/maestro.txt +
-raw/maestro-junit.xml (8 / 8, run folder raw/maestro-output/2026-11-12_155436), raw/logcat-*.txt, raw/device-*.txt,
+Sources: docs/PRD.md (AC-01..AC-54), REPORT.md (Overall PASS), raw/jest.txt (289 / 289), raw/maestro.txt +
+raw/maestro-junit.xml (8 / 8, run folder raw/maestro-output/2026-11-12_181958), raw/logcat-*.txt, raw/device-*.txt,
 screens/*.png, DEVICE-CHECKS.md. Rows AC-01..AC-51 were written by the verifier agent on the deed8a3 run (every test
 name checked in raw/jest.txt, every flow step in the .maestro/*.yaml files, screenshots opened) and re-checked on
-this run (same tests and flows, 284 / 284 and 8 / 8); rows AC-52 and AC-53 were added for the icon and splash work
-from raw/jest.txt lines 296-300 and the launcher / splash captures. The emulator runs in English, so `01-consent.png` is in English.
+this run (same tests and flows, 289 / 289 and 8 / 8); rows AC-52 and AC-53 were added for the icon and splash work
+from raw/jest.txt and the launcher / splash captures, row AC-54 for the Bulles replay. The emulator runs in English, so `01-consent.png` is in English.
 `firebase: deferred` in factory-app.json: AC-41 is DEFERRED (firebase). `[manual]` criteria are proven at release on
 the user's phone (PENDING RELEASE).
 
@@ -69,6 +69,8 @@ the user's phone (PENDING RELEASE).
 | AC-50 | First session (3 Blocks rounds 1000/1500/2000 + day-1 reward, all settled) affords 250 but not 850 | unit | economy.test.ts "coin economy pacing (AC-50) › a first session on <date> affords one upgrade level, not two" (4 dates; `collectDailyReward` then 3× `settleRound` at 1000/1500/2000, 90 s; coins ≥ `UPGRADE_COSTS[0]` and < `UPGRADE_COSTS[0] + UPGRADE_COSTS[1]`), "a full upgrade line costs 2050 coins and the nine lines 18 450" | PASS |
 | AC-51 | Replay plan: swap, then flash/pop/fall per step with consistent boards and fall distances; refused swap → swap + swap-back; screen shows step-1 points then removes them | unit | gardenReplay.test.ts "replay plan of a swap (AC-51) › a valid swap gives swap, then flash + pop + fall per cascade step, the first match board being the swapped board" (flash.board = swapped board, points 100, fall.board = settled board, fallen distances per column), "a refused swap gives a slide and a slide back", "fall distances: survivors keep their order, a hole in the middle pulls the pieces above it", "every engine-generated swap replays with consistent boards (seeds 1-30)"; screen side: gameScreens.test.tsx AC-26 test asserts `garden-points-pop` shows `+<first step points>` then `waitFor` it to be null | PASS |
 | AC-52 | Icon generator: committed PNGs byte for byte, sizes, sprites and palette unchanged, app.json wiring | unit | icons.test.ts "launcher icon and splash (AC-52) › the committed PNG files are exactly what the generator produces" (`node scripts/generate-icons.mjs --check` → "6 icon files up to date"), "files have the expected sizes (RGBA)" (1024² ×4, splash 1000², favicon 48²), "the generator embeds the game sprites and palette colours unchanged" (arcade / bubble.blue / tomato / challenges vs src/art), "app.json uses the generated files for the icon, the adaptive icon and the splash screen" (adaptive layers, `#F77F00`, expo-splash-screen image / contain / `#F4F1E8` / dark) — raw/jest.txt lines 296-300 | PASS |
-| AC-53 | Launcher shows the toy box icon, cold start shows the splash tile | device | `screens/device-launcher-icon.png` (emulator app drawer, crop: cream tile with the four pieces on the orange circle, label « Game Grab-… » as the emulator is English; full capture raw/device-launcher.png); `screens/device-splash.png` (screencap 350 ms after `am start` from a stopped state: the four pieces centred on the light background before Home); `raw/device-labels.txt` `application-icon-640:'res/BW.xml'` (adaptive icon resource, not the placeholder PNG); REPORT.md row 11 cold start median 721 ms | PASS |
+| AC-53 | Launcher shows the toy box icon, cold start shows the splash tile | device | `screens/device-launcher-icon.png` (emulator app drawer, crop: cream tile with the four pieces on the orange circle, label « Game Grab-… » as the emulator is English; full capture raw/device-launcher.png); `screens/device-splash.png` (screencap 350 ms after `am start` from a stopped state: the four pieces centred on the light background before Home); `raw/device-labels.txt` `application-icon-640:'res/BW.xml'` (adaptive icon resource, not the placeholder PNG); REPORT.md row 11 cold start median 1 122 ms | PASS |
 
-Summary: 51 PASS, 1 DEFERRED (firebase), 1 PENDING RELEASE, 0 FAIL, 0 NOT PROVEN.
+| AC-54 | Bulles replay plan: fly along the engine path, flash/pop of the group with points, fall of dropped bubbles, push slide; screen shows then removes the points | unit | bubblesReplay.test.ts "replay plan of a shot (AC-54) › a popping shot gives fly, flash and pop with the engine path, landing and group; the settled board follows", "a shot that drops bubbles adds a fall phase holding their colours and points", "a shot that misses gives a fly phase only, and a push phase on the 6th shot" (too-flat → no phase), "pointAlong walks the polyline by distance, bounces included", "every engine-generated first shot replays with a consistent end board (seeds 1-40)"; screen side: gameScreens.test.tsx AC-30 test asserts `bubbles-points-pop` shows `+<pop points>` in the flash phase, then is removed after the replay | PASS |
+
+Summary: 52 PASS, 1 DEFERRED (firebase), 1 PENDING RELEASE, 0 FAIL, 0 NOT PROVEN.

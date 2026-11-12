@@ -60,6 +60,13 @@ Proof on the emulator and the phone
 - [x] T-33 Maestro flows: smoke with readme captures, worlds and sheet, upgrades, each game through the seed link, daily reward, challenges, settings and reset, about, language, telemetry consent (AC-01, AC-03, AC-21, AC-26, AC-30, AC-31, AC-32, AC-34, AC-35, AC-36, AC-37, AC-38, AC-41) - proof: e2e
 - [x] T-34 Device checks: launcher label per language, manifest permissions, cold start (AC-04, AC-42, AC-43) - proof: device
 
+After the first phone test (2026-11-12, RELEASE.md notes)
+
+- [ ] T-35 Blocks scoring and stars: hard drop 1 point per row, star thresholds 1 000 / 2 500 / 5 000 (AC-08, AC-18) - proof: unit
+- [ ] T-36 Tutorial fall: slow tick (one row per 2 s) while a bubble is shown instead of a frozen piece (AC-47, AC-21) - proof: unit
+- [ ] T-37 Ghost piece for the first 5 locked pieces of each round only (AC-46) - proof: unit
+- [ ] T-38 Pixel font: Pixelify Sans (Regular, Bold) replaces Press Start 2P in titles, HUD and buttons; licences and README (AC-48, AC-45) - proof: unit
+
 ## Notes
 
 - Order: foundations and engines first (pure TypeScript, Jest), then screens on top of the engines, then wiring.

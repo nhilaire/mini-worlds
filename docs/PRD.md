@@ -5,7 +5,7 @@ Project slug: mini-worlds
 Final app name: Bric-à-Jeux
 Android package: io.github.nhilaire.miniworlds
 Version target: 0.1.0
-Last updated: 2026-11-11
+Last updated: 2026-11-12 (amended after the first phone test of v0.1.0: blocks scoring and stars, tutorial fall, ghost piece, pixel font)
 
 > Written in English. Player-facing text is quoted in the "Player copy" section, in every language of the game
 > (`factory-app.json` "languages"; French is the reference).
@@ -152,7 +152,7 @@ forever (a lower score later never removes one). 9 stars exist in v0.1.0.
 
 | Game | 1 star | 2 stars | 3 stars |
 |---|---|---|---|
-| Pluie de Blocs | 500 | 1 500 | 3 000 |
+| Pluie de Blocs | 1 000 | 2 500 | 5 000 |
 | Potager Fou | 1 500 | 3 000 | 5 000 |
 | Bulles en Folie | 800 | 2 000 | 4 000 |
 
@@ -264,11 +264,15 @@ quitting at once.
 - Gravity: the piece falls one row every interval; interval (ms) = max(150, 800 + 80 × slowStartLevel − 50 ×
   floor(lines / 10)). The « level » shown is floor(lines / 10) + 1.
 - Lock: a piece that cannot fall locks after 300 ms; completed rows disappear; rows above shift down.
-- Scoring: 1 / 2 / 3 / 4 lines at once = 100 / 300 / 500 / 800 points; hard drop = 2 points per row dropped.
+- Scoring: 1 / 2 / 3 / 4 lines at once = 100 / 300 / 500 / 800 points; hard drop = 1 point per row dropped
+  (1 point, not more: the stars must reward lines, not drops).
   Back-to-back: clearing lines with two consecutive locked pieces adds 50 × (chain length − 1).
 - Combo (for challenges): a clear of 2 or more lines at once, or a back-to-back clear.
 - End: a new piece overlaps existing blocks at spawn. Expected round: 1-3 min.
-- Tutorial bubbles (guided first round, fall paused while a bubble is shown): « Glisse pour déplacer » (dismissed
+- Ghost piece: the landing position of the current piece is outlined for the first 5 locked pieces of each
+  round, then hidden (the player has seen how the piece lands; the shadow would clutter the board afterwards).
+- Tutorial bubbles (guided first round, fall slowed to one row every 2 s while a bubble is shown, normal
+  interval from the moment the last bubble is dismissed): « Glisse pour déplacer » (dismissed
   by a horizontal drag), « Touche pour tourner » (by a tap), « Glisse vers le bas pour lâcher » (by a swipe down).
 
 ### Potager Fou (world Puzzle)
@@ -332,7 +336,8 @@ clears it. Real-time games pause their timers while a bubble is shown.
 
 - Pixel art drawn in code: each sprite is a small grid (8×8 to 16×16) of palette indices in TypeScript, rendered
   with crisp scaling; UI chrome uses rounded pixel frames. Limited palette, colour-blind safe (every game piece has
-  a distinct shape). Free pixel font (Press Start 2P or similar, OFL) for titles and HUD, a readable pixel or
+  a distinct shape). Free pixel font (Pixelify Sans, OFL, Regular and Bold; softer than Press Start 2P, which the first phone test found
+  too harsh) for titles and HUD, a readable pixel or
   system font for body text. No external image file, no copyrighted material; game and world names are original.
 - Theme: follows the phone (light / dark) with a choice in Settings; each world has a dominant colour.
 - Animations: short and juicy (≤ 400 ms): piece lock flash, line clear, cascades, bubble pop and drop, result
@@ -455,7 +460,7 @@ Pluie de Blocs
 
 - AC-17 [unit] Given a 7-bag generator, then every 7 consecutive pieces contain each tetromino once.
 - AC-18 [unit] Given a piece, when it is moved, rotated (with wall kicks) or hard-dropped, then it never overlaps
-  blocks or leaves the board, a refused rotation leaves the piece unchanged, and a hard drop scores 2 points per
+  blocks or leaves the board, a refused rotation leaves the piece unchanged, and a hard drop scores 1 point per
   row.
 - AC-19 [unit] Given completed rows, when a piece locks, then 1 / 2 / 3 / 4 rows score 100 / 300 / 500 / 800,
   rows above shift down, back-to-back clears add 50 × (chain − 1), and the fall interval is max(150, 800 + 80 × slowStartLevel − 50 ×
@@ -530,6 +535,13 @@ Telemetry and technical
   and every game piece type has a distinct sprite.
 - AC-45 [manual] Given the release APK on the user's phone, when each game is played for a few rounds, then the
   controls feel responsive, the animations are short and readable, and a round lasts 30 s to 3 min.
+- AC-46 [unit] Given a round of Pluie de Blocs, then the ghost piece (landing outline) is available while fewer than 5
+  pieces have locked and is null from the 5th locked piece on; a new round shows it again.
+- AC-47 [unit] Given a tutorial bubble shown in Pluie de Blocs, when the engine ticks in tutorial mode, then the piece
+  falls one row every 2 000 ms (whatever the slow-start level), and at the normal interval once the tutorial
+  mode ends; the guided first round therefore never freezes.
+- AC-48 [unit] Given the app fonts, then titles and HUD use Pixelify Sans (Regular and Bold files present, loaded at
+  start, listed in assets/LICENSES.md under the OFL) and Press Start 2P is no longer shipped.
 
 ## Player copy
 

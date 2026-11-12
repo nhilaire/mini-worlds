@@ -11,6 +11,13 @@ export const BASE_INTERVAL_MS = 800;
 export const SLOW_START_MS_PER_LEVEL = 80;
 export const LINE_SCORES = [0, 100, 300, 500, 800] as const;
 export const HARD_DROP_POINTS_PER_ROW = 1; // 1, not 2: stars reward lines, not drops (first phone test)
+/** Fall interval while a tutorial bubble is shown: slow, never frozen (AC-47). */
+export const TUTORIAL_INTERVAL_MS = 2000;
+/** The ghost (landing outline) is shown for the first pieces of a round only (AC-46). */
+export const GHOST_PIECES = 5;
+/** The fall speeds up with the pieces locked, not only with the lines (AC-49). */
+export const PIECES_PER_SPEEDUP = 5;
+export const SPEEDUP_MS_PER_STEP = 25;
 export const BACK_TO_BACK_BONUS = 50;
 export const QUEUE_LENGTH = 3;
 
@@ -84,6 +91,8 @@ export type BlocksState = RoundState<BlocksEvent> & {
   bag: readonly Tetromino[];
   rngState: number;
   lines: number;
+  /** Pieces locked since the start of the round (ghost rule, fall speed-up). */
+  locked: number;
   /** Consecutive locked pieces that cleared lines (0 when the last lock cleared nothing). */
   chain: number;
   fallMs: number;
@@ -92,7 +101,12 @@ export type BlocksState = RoundState<BlocksEvent> & {
   previewLevel: number;
 };
 
-export type BlocksAction = { type: 'move'; dx: -1 | 1 } | { type: 'rotate' } | { type: 'hardDrop' } | { type: 'tick'; dt: number };
+export type BlocksAction =
+  | { type: 'move'; dx: -1 | 1 }
+  | { type: 'rotate' }
+  | { type: 'hardDrop' }
+  /** `tutorial`: a help bubble is shown, the piece falls at the slow tutorial interval. */
+  | { type: 'tick'; dt: number; tutorial?: boolean };
 
 export function pieceCells(piece: Piece): [number, number][] {
   return SHAPES[piece.type][piece.rotation & 3].map(([c, r]) => [piece.x + c, piece.y + r]);
@@ -102,9 +116,12 @@ export function fits(board: Board, piece: Piece): boolean {
   return pieceCells(piece).every(([c, r]) => c >= 0 && c < BLOCKS_COLS && r >= 0 && r < BLOCKS_ROWS && board[r][c] === null);
 }
 
-/** Fall interval in ms: max(150, 800 + 80 × slowStart − 50 × floor(lines / 10)). */
-export function fallInterval(lines: number, slowStartLevel: number): number {
-  return Math.max(MIN_INTERVAL_MS, BASE_INTERVAL_MS + SLOW_START_MS_PER_LEVEL * slowStartLevel - 50 * Math.floor(lines / 10));
+/** Fall interval in ms: max(150, 800 + 80 × slowStart − 50 × floor(lines / 10) − 25 × floor(locked / 5)). */
+export function fallInterval(lines: number, slowStartLevel: number, locked = 0): number {
+  return Math.max(
+    MIN_INTERVAL_MS,
+    BASE_INTERVAL_MS + SLOW_START_MS_PER_LEVEL * slowStartLevel - 50 * Math.floor(lines / 10) - SPEEDUP_MS_PER_STEP * Math.floor(locked / PIECES_PER_SPEEDUP),
+  );
 }
 
 export function displayLevel(lines: number): number {
@@ -149,6 +166,7 @@ export function createBlocks(seed: number, upgrades: { slow_start?: number; prev
     bag,
     rngState,
     lines: 0,
+    locked: 0,
     chain: 0,
     fallMs: 0,
     lockMs: 0,
@@ -188,6 +206,7 @@ function lockPiece(state: BlocksState, events: BlocksEvent[]): BlocksState {
     }
   }
   const lines = state.lines + fullRows.length;
+  const locked = state.locked + 1;
 
   // Next piece from the queue; the round ends when it does not fit at spawn.
   const queue = state.queue.slice();
@@ -196,9 +215,9 @@ function lockPiece(state: BlocksState, events: BlocksEvent[]): BlocksState {
   queue.push(d.type);
   if (!fits(cleared, next)) {
     events.push({ kind: 'over', score });
-    return { ...state, board: cleared, piece: null, queue, bag: d.bag, rngState: d.rngState, lines, chain, score, combos, status: 'over', events, fallMs: 0, lockMs: 0 };
+    return { ...state, board: cleared, piece: null, queue, bag: d.bag, rngState: d.rngState, lines, locked, chain, score, combos, status: 'over', events, fallMs: 0, lockMs: 0 };
   }
-  return { ...state, board: cleared, piece: next, queue, bag: d.bag, rngState: d.rngState, lines, chain, score, combos, events, fallMs: 0, lockMs: 0 };
+  return { ...state, board: cleared, piece: next, queue, bag: d.bag, rngState: d.rngState, lines, locked, chain, score, combos, events, fallMs: 0, lockMs: 0 };
 }
 
 export function reduceBlocks(state: BlocksState, action: BlocksAction): BlocksState {
@@ -243,7 +262,7 @@ export function reduceBlocks(state: BlocksState, action: BlocksAction): BlocksSt
       while (remaining > 0 && current.status === 'playing' && current.piece) {
         const below = { ...current.piece, y: current.piece.y + 1 };
         if (fits(current.board, below)) {
-          const interval = fallInterval(current.lines, current.slowStartLevel);
+          const interval = action.tutorial ? TUTORIAL_INTERVAL_MS : fallInterval(current.lines, current.slowStartLevel, current.locked);
           const fallMs = current.fallMs + remaining;
           if (fallMs < interval) return { ...current, fallMs, lockMs: 0 };
           current = { ...current, piece: below, fallMs: 0, lockMs: 0 };
@@ -260,9 +279,9 @@ export function reduceBlocks(state: BlocksState, action: BlocksAction): BlocksSt
   }
 }
 
-/** Where the piece would land (ghost outline). */
+/** Where the piece would land (ghost outline); null once the first GHOST_PIECES pieces of the round have locked. */
 export function ghostPiece(state: BlocksState): Piece | null {
-  if (!state.piece) return null;
+  if (!state.piece || state.locked >= GHOST_PIECES) return null;
   let ghost = state.piece;
   while (fits(state.board, { ...ghost, y: ghost.y + 1 })) ghost = { ...ghost, y: ghost.y + 1 };
   return ghost;

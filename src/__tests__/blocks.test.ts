@@ -8,8 +8,10 @@ import {
   displayLevel,
   fallInterval,
   fits,
+  GHOST_PIECES,
   ghostPiece,
   LOCK_DELAY_MS,
+  TUTORIAL_INTERVAL_MS,
   pieceCells,
   reduceBlocks,
   TETROMINOES,
@@ -148,6 +150,14 @@ describe('lines, scoring, gravity, end (AC-19, AC-20)', () => {
     expect(fallInterval(200, 3)).toBe(150);
     expect(fallInterval(0, 3)).toBe(1040);
     expect(fallInterval(100, 1)).toBe(380);
+    // Pieces locked speed the fall up too (AC-49): −25 ms per 5 pieces, same floor.
+    expect(fallInterval(0, 0, 4)).toBe(800);
+    expect(fallInterval(0, 0, 5)).toBe(775);
+    expect(fallInterval(0, 0, 40)).toBe(600);
+    expect(fallInterval(0, 0, 100)).toBe(300);
+    expect(fallInterval(0, 3, 100)).toBe(540);
+    expect(fallInterval(0, 0, 1000)).toBe(150);
+    expect(fallInterval(10, 0, 5)).toBe(725);
     expect(displayLevel(0)).toBe(1);
     expect(displayLevel(23)).toBe(3);
   });
@@ -168,6 +178,15 @@ describe('lines, scoring, gravity, end (AC-19, AC-20)', () => {
     state = reduceBlocks(state, { type: 'tick', dt: 1 });
     expect(bottom(state.board, 0)).toBe('....XX....');
     expect(state.piece?.y).toBe(0); // next piece spawned
+  });
+
+  it('the gravity of a round follows the pieces locked (AC-49)', () => {
+    let state = withPiece(createBlocks(1), 'O');
+    state = { ...state, locked: 5 };
+    state = reduceBlocks(state, { type: 'tick', dt: 774 });
+    expect(state.piece?.y).toBe(0);
+    state = reduceBlocks(state, { type: 'tick', dt: 1 });
+    expect(state.piece?.y).toBe(1);
   });
 
   it('a move on the ground resets the lock delay', () => {
@@ -191,6 +210,58 @@ describe('lines, scoring, gravity, end (AC-19, AC-20)', () => {
     expect(state.piece).toBeNull();
     expect(state.events).toEqual(expect.arrayContaining([{ kind: 'over', score: state.score }]));
     expect(reduceBlocks(state, { type: 'tick', dt: 1000 }).status).toBe('over');
+  });
+});
+
+describe('ghost piece for the first pieces only (AC-46)', () => {
+  it('is shown while fewer than 5 pieces have locked, then hidden; a new round shows it again', () => {
+    expect(GHOST_PIECES).toBe(5);
+    let state = withPiece(createBlocks(1), 'O');
+    expect(state.locked).toBe(0);
+    for (let i = 0; i < GHOST_PIECES; i++) {
+      expect(ghostPiece(state)).not.toBeNull();
+      state = withPiece(reduceBlocks(state, { type: 'hardDrop' }), 'O', createBlocks(1).board); // lock, then an empty board again
+      expect(state.locked).toBe(i + 1);
+    }
+    expect(ghostPiece(state)).toBeNull();
+    state = withPiece(reduceBlocks(state, { type: 'hardDrop' }), 'O', createBlocks(1).board);
+    expect(ghostPiece(state)).toBeNull();
+    expect(ghostPiece(withPiece(createBlocks(2), 'T'))).not.toBeNull();
+  });
+
+  it('is counted by gravity locks as well as hard drops', () => {
+    let state = withPiece(createBlocks(1), 'O');
+    state = { ...state, piece: { ...state.piece!, y: 14 } };
+    state = reduceBlocks(state, { type: 'tick', dt: LOCK_DELAY_MS });
+    expect(state.locked).toBe(1);
+  });
+});
+
+describe('slow fall while a tutorial bubble is shown (AC-47)', () => {
+  it('falls one row every 2 s in tutorial mode, whatever the slow-start level', () => {
+    expect(TUTORIAL_INTERVAL_MS).toBe(2000);
+    let state = withPiece(createBlocks(1, { slow_start: 3 }), 'O');
+    state = reduceBlocks(state, { type: 'tick', dt: 1999, tutorial: true });
+    expect(state.piece?.y).toBe(0);
+    state = reduceBlocks(state, { type: 'tick', dt: 1, tutorial: true });
+    expect(state.piece?.y).toBe(1);
+    state = reduceBlocks(state, { type: 'tick', dt: 4000, tutorial: true });
+    expect(state.piece?.y).toBe(3);
+  });
+
+  it('returns to the normal interval once the tutorial mode ends', () => {
+    let state = withPiece(createBlocks(1), 'O');
+    state = reduceBlocks(state, { type: 'tick', dt: 1000, tutorial: true });
+    expect(state.piece?.y).toBe(0);
+    state = reduceBlocks(state, { type: 'tick', dt: 800 }); // 1000 ms already elapsed: 1800 ≥ 800 → two rows
+    expect(state.piece?.y).toBe(2);
+  });
+
+  it('still locks on the ground in tutorial mode', () => {
+    let state = withPiece(createBlocks(1), 'O');
+    state = { ...state, piece: { ...state.piece!, y: 14 } };
+    state = reduceBlocks(state, { type: 'tick', dt: LOCK_DELAY_MS, tutorial: true });
+    expect(bottom(state.board, 0)).toBe('....XX....');
   });
 });
 

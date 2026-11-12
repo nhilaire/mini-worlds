@@ -262,7 +262,8 @@ quitting at once.
 - Controls: horizontal drag moves the piece one cell per 1/10 of the board width; tap rotates clockwise (wall
   kicks: try 1 cell left then right; otherwise the rotation is refused); swipe down hard-drops.
 - Gravity: the piece falls one row every interval; interval (ms) = max(150, 800 + 80 × slowStartLevel − 50 ×
-  floor(lines / 10)). The « level » shown is floor(lines / 10) + 1.
+  floor(lines / 10) − 25 × floor(piecesLocked / 5)): the fall speeds up gently with every 5 pieces locked, even
+  when no line is cleared (first phone test: a round without lines never felt faster). The « level » shown is floor(lines / 10) + 1.
 - Lock: a piece that cannot fall locks after 300 ms; completed rows disappear; rows above shift down.
 - Scoring: 1 / 2 / 3 / 4 lines at once = 100 / 300 / 500 / 800 points; hard drop = 1 point per row dropped
   (1 point, not more: the stars must reward lines, not drops).
@@ -464,7 +465,7 @@ Pluie de Blocs
   row.
 - AC-19 [unit] Given completed rows, when a piece locks, then 1 / 2 / 3 / 4 rows score 100 / 300 / 500 / 800,
   rows above shift down, back-to-back clears add 50 × (chain − 1), and the fall interval is max(150, 800 + 80 × slowStartLevel − 50 ×
-  floor(lines / 10)) ms (e.g. 200 lines, level 3: 150 ms).
+  floor(lines / 10) − 25 × floor(piecesLocked / 5)) ms (e.g. 200 lines, level 3: 150 ms).
 - AC-20 [unit] Given a stack reaching the spawn area, when the next piece cannot spawn, then the round ends with
   the current score.
 - AC-21 [e2e] Given Home on a fresh install, when « Jouer » is tapped, then Pluie de Blocs starts with the bubble
@@ -542,6 +543,9 @@ Telemetry and technical
   mode ends; the guided first round therefore never freezes.
 - AC-48 [unit] Given the app fonts, then titles and HUD use Pixelify Sans (Regular and Bold files present, loaded at
   start, listed in assets/LICENSES.md under the OFL) and Press Start 2P is no longer shipped.
+- AC-49 [unit] Given a round of Pluie de Blocs without any line cleared, when pieces lock, then the fall interval
+  shortens by 25 ms every 5 locked pieces (800 → 775 ms at the 5th, 600 ms at the 40th, 300 ms at the 100th), never
+  below 150 ms, and the slow-start upgrade keeps adding its 80 ms per level.
 
 ## Player copy
 

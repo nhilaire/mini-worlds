@@ -63,9 +63,10 @@ Proof on the emulator and the phone
 After the first phone test (2026-11-12, RELEASE.md notes)
 
 - [x] T-35 Blocks scoring and stars: hard drop 1 point per row, star thresholds 1 000 / 2 500 / 5 000 (AC-08, AC-18) - proof: unit
-- [ ] T-36 Tutorial fall: slow tick (one row per 2 s) while a bubble is shown instead of a frozen piece (AC-47, AC-21) - proof: unit
-- [ ] T-37 Ghost piece for the first 5 locked pieces of each round only (AC-46) - proof: unit
+- [x] T-36 Tutorial fall: slow tick (one row per 2 s) while a bubble is shown instead of a frozen piece (AC-47, AC-21) - proof: unit
+- [x] T-37 Ghost piece for the first 5 locked pieces of each round only (AC-46) - proof: unit
 - [ ] T-38 Pixel font: Pixelify Sans (Regular, Bold) replaces Press Start 2P in titles, HUD and buttons; licences and README (AC-48, AC-45) - proof: unit
+- [x] T-39 Fall speed-up with the pieces locked (−25 ms per 5 pieces) in addition to the lines (AC-49, AC-19) - proof: unit
 
 ## Notes
 

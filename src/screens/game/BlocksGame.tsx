@@ -57,13 +57,16 @@ function boardPicture(state: BlocksState, cell: number, tiles: Record<Tetromino,
         canvas.restore();
       }),
     );
+    // The ghost outline exists for the first pieces of the round only (engine rule); the piece is always drawn.
     const ghost = ghostPiece(state);
-    if (ghost && state.piece) {
+    if (ghost) {
       const paint = Skia.Paint();
       paint.setColor(Skia.Color(ghostColor));
       paint.setStyle(1);
       paint.setStrokeWidth(2);
       for (const [c, r] of pieceCells(ghost)) canvas.drawRect({ x: c * cell + 2, y: r * cell + 2, width: cell - 4, height: cell - 4 }, paint);
+    }
+    if (state.piece) {
       for (const [c, r] of pieceCells(state.piece)) {
         canvas.save();
         canvas.translate(c * cell, r * cell);
@@ -124,19 +127,21 @@ export function BlocksGame({ seed, onFinish }: { seed: number; onFinish: OnFinis
     [finish, setCombos],
   );
 
-  // Frame loop: ticks the engine with the elapsed time while the round is active.
+  // Frame loop: ticks the engine with the elapsed time while the round is active, and at the slow tutorial
+  // interval while a help bubble is shown (the piece keeps falling gently instead of freezing).
+  const tutorial = frame.tutorialStep !== null && !paused;
   useEffect(() => {
-    if (!active) return;
+    if (!active && !tutorial) return;
     let last = 0;
     let handle = 0;
     const loop = (time: number) => {
-      if (last > 0) dispatch({ type: 'tick', dt: Math.min(100, time - last) });
+      if (last > 0) dispatch({ type: 'tick', dt: Math.min(100, time - last), tutorial });
       last = time;
       handle = requestAnimationFrame(loop);
     };
     handle = requestAnimationFrame(loop);
     return () => cancelAnimationFrame(handle);
-  }, [active, dispatch]);
+  }, [active, tutorial, dispatch]);
 
   const inputsLocked = paused || state.status !== 'playing';
   const dragCells = useRef(0);

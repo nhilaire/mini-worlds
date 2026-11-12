@@ -8,6 +8,7 @@ import { StyleSheet, useWindowDimensions, View } from 'react-native';
 import { Gesture, GestureDetector } from 'react-native-gesture-handler';
 
 import { VEGETABLES } from '../../art/sprites';
+import { now } from '../../game/clock';
 import { upgradeLevels } from '../../game/core/upgrades';
 import { Board, Cell, createGarden, GARDEN_COLS, GARDEN_ROWS, reduceGarden, Veg } from '../../game/garden/engine';
 import { buildReplay, Phase } from '../../game/garden/replay';
@@ -141,7 +142,7 @@ export function GardenGame({ seed, onFinish }: { seed: number; onFinish: OnFinis
       setState(next);
       const phases = buildReplay(previous.board, next);
       if (phases.length > 0) {
-        replay.current = { phases, index: 0, startedAt: Date.now() };
+        replay.current = { phases, index: 0, startedAt: now() };
         setShownFrame({ phase: phases[0], progress: 0 });
         setReplaying(true);
       }
@@ -164,7 +165,7 @@ export function GardenGame({ seed, onFinish }: { seed: number; onFinish: OnFinis
         return;
       }
       let phase = current.phases[current.index];
-      let elapsed = Date.now() - current.startedAt;
+      let elapsed = now() - current.startedAt; // injectable clock: Jest drives the replay deterministically
       while (elapsed >= phase.ms) {
         current.index += 1;
         current.startedAt += phase.ms;

@@ -9,6 +9,7 @@ import { setClock } from '../game/clock';
 import { BUBBLE_COLS, createBubbles, LAUNCHER, reduceBubbles, ROW_HEIGHT } from '../game/bubbles/engine';
 import { defaultSave, serializeSave } from '../game/core/save';
 import { createGarden, findValidMoves, GARDEN_COLS, reduceGarden } from '../game/garden/engine';
+import { SWAP_MS } from '../game/garden/replay';
 import { deviceLanguageTags } from '../i18n/deviceLocale';
 
 // The session seed comes from the deep link; the first round of the session uses seed + 1.
@@ -72,10 +73,13 @@ describe('game screens under the seed link', () => {
     });
     expect(screen.getByTestId('hud-score')).toHaveTextContent(new RegExp(`^${expected.score}$`));
     expect(screen.getByTestId('hud-moves')).toHaveTextContent(/^19$/);
-    // The replay shows the points of the first cascade step above the aligned pieces, then ends (AC-51).
+    // The replay shows the points of the first cascade step above the aligned pieces, then ends (AC-51). The replay
+    // reads the injectable clock: the test moves it into the flash phase, then past the end of the replay.
     const first = expected.events.find((e) => e.kind === 'match');
     if (!first || first.kind !== 'match') throw new Error('a match is expected');
+    nowMs += SWAP_MS + 50; // inside the flash phase whatever the machine load
     expect(await screen.findByTestId('garden-points-pop')).toHaveTextContent(new RegExp(`^\\+${Math.round(first.points)}$`));
+    nowMs += 10_000; // past every phase
     await waitFor(() => expect(screen.queryByTestId('garden-points-pop')).toBeNull(), { timeout: 4000 });
   });
 

@@ -132,6 +132,7 @@ export function GardenGame({ seed, onFinish }: { seed: number; onFinish: OnFinis
   const replay = useRef<{ phases: Phase[]; index: number; startedAt: number } | null>(null);
   const [replaying, setReplaying] = useState(false);
   const [shownFrame, setShownFrame] = useState<Frame | null>(null);
+  const lastFrame = useRef<{ index: number; progress: number } | null>(null);
 
   const swap = useCallback(
     (from: Cell, to: Cell) => {
@@ -143,6 +144,7 @@ export function GardenGame({ seed, onFinish }: { seed: number; onFinish: OnFinis
       const phases = buildReplay(previous.board, next);
       if (phases.length > 0) {
         replay.current = { phases, index: 0, startedAt: now() };
+        lastFrame.current = { index: 0, progress: 0 };
         setShownFrame({ phase: phases[0], progress: 0 });
         setReplaying(true);
       }
@@ -178,7 +180,13 @@ export function GardenGame({ seed, onFinish }: { seed: number; onFinish: OnFinis
         }
         phase = current.phases[current.index];
       }
-      setShownFrame({ phase, progress: elapsed / phase.ms });
+      // Re-render only when the drawing changes (a frozen clock, as in Jest, must not flood React with renders).
+      const progress = elapsed / phase.ms;
+      const last = lastFrame.current;
+      if (!last || last.index !== current.index || Math.abs(last.progress - progress) >= 0.004) {
+        lastFrame.current = { index: current.index, progress };
+        setShownFrame({ phase, progress });
+      }
       handle = requestAnimationFrame(loop);
     };
     handle = requestAnimationFrame(loop);

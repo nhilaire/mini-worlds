@@ -81,7 +81,7 @@ describe('game screens under the seed link', () => {
     expect(await screen.findByTestId('garden-points-pop')).toHaveTextContent(new RegExp(`^\\+${Math.round(first.points)}$`));
     nowMs += 10_000; // past every phase
     await waitFor(() => expect(screen.queryByTestId('garden-points-pop')).toBeNull(), { timeout: 4000 });
-  });
+  }, 60_000); // the whole App renders twice under the parallel suite of verify.mjs
 
   it('Bulles en Folie: one scripted shot updates the score as predicted, then Pause / Quitter shows the Result (AC-30)', async () => {
     await openGame('bubbles');

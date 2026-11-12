@@ -2,14 +2,14 @@ import { ReactNode } from 'react';
 import { StyleSheet, Text, TextProps } from 'react-native';
 
 import { useTheme } from './ThemeProvider';
-import { font, PIXEL_FONT, PIXEL_FONT_BOLD, PIXEL_SCALE } from './theme';
+import { font, PIXEL_FONT, PIXEL_FONT_BOLD, PIXEL_MIN_SIZE, PIXEL_SCALE } from './theme';
 
 type Props = TextProps & { children: ReactNode; color?: 'text' | 'muted' | 'accent' | 'danger' | 'success'; size?: number; bold?: boolean };
 
 /** Pixel-font text for titles, HUD values and labels (short strings, digits, names). `size` is in Press Start 2P units. */
 export function PixelText({ children, color = 'text', size = font.hud, bold = false, style, ...rest }: Props) {
   const { colors } = useTheme();
-  const fontSize = Math.round(size * PIXEL_SCALE);
+  const fontSize = Math.max(PIXEL_MIN_SIZE, Math.round(size * PIXEL_SCALE));
   return (
     <Text {...rest} style={[styles.pixel, bold && styles.pixelBold, { color: colors[color], fontSize, lineHeight: Math.round(fontSize * 1.25) }, style]}>
       {children}

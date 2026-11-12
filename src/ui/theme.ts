@@ -58,5 +58,7 @@ export const PIXEL_FONT_BOLD = 'PixelifySans-Bold';
  * normal cap height, so the same visual height needs a larger font size: PixelText and the buttons apply this scale.
  */
 export const PIXEL_SCALE = 1.4;
+/** Below this size the digits of Pixelify Sans blur (a 5 reads as an S on the emulator captures). */
+export const PIXEL_MIN_SIZE = 13;
 
 export const radius = { card: 14, button: 12, chip: 8 } as const;

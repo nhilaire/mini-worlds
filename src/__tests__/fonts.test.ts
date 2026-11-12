@@ -1,7 +1,7 @@
 import fs from 'node:fs';
 import path from 'node:path';
 
-import { PIXEL_FONT, PIXEL_FONT_BOLD, PIXEL_SCALE } from '../ui/theme';
+import { PIXEL_FONT, PIXEL_FONT_BOLD, PIXEL_MIN_SIZE, PIXEL_SCALE } from '../ui/theme';
 
 const ROOT = path.join(__dirname, '..', '..');
 const read = (p: string) => fs.readFileSync(path.join(ROOT, p), 'utf8');
@@ -24,6 +24,7 @@ describe('pixel font (AC-48)', () => {
     expect(PIXEL_FONT).toBe('PixelifySans');
     expect(PIXEL_FONT_BOLD).toBe('PixelifySans-Bold');
     expect(PIXEL_SCALE).toBeGreaterThan(1);
+    expect(PIXEL_MIN_SIZE).toBeGreaterThanOrEqual(13); // digits stay legible (5 vs S)
   });
 
   it('is credited under the OFL in the asset licences and the README', () => {

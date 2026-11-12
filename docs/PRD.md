@@ -161,7 +161,7 @@ forever (a lower score later never removes one). 9 stars exist in v0.1.0.
 - XP per round = 10 + floor(score / 50), capped at 100; plus 25 XP per new star earned in that round.
 - Level starts at 1. XP needed to go from level L to L+1 = 100 × L (1→2: 100, 2→3: 200, 3→4: 300...).
   XP in excess carries over; several levels can be gained in one round. Level cap: 50 (XP still accumulates).
-- Level-up reward: 50 × new level coins, granted immediately and shown on the Result screen, or on the Daily
+- Level-up reward: 25 × new level coins, granted immediately and shown on the Result screen, or on the Daily
   reward screen when the level-up comes from the day-7 XP (same for a world unlock triggered there).
 
 ### Coins
@@ -174,8 +174,8 @@ forever (a lower score later never removes one). 9 stars exist in v0.1.0.
 
 ### Upgrades
 
-Each game has three upgrades with three levels each. Cost of level 1 / 2 / 3: 100 / 250 / 500 coins (same for every
-upgrade). Buying is immediate; the effect applies from the next round.
+Each game has three upgrades with three levels each. Cost of level 1 / 2 / 3: 250 / 600 / 1 200 coins (same for every
+upgrade; raised ×2.5 after the first phone test, where one session bought a whole upgrade line). Buying is immediate; the effect applies from the next round.
 
 | Game | Upgrade (fr) | Effect per level |
 |---|---|---|
@@ -209,18 +209,18 @@ upgrade). Buying is immediate; the effect applies from the next round.
   (« Jouer à 2 jeux différents » needs at least 2 unlocked games). The draw is recomputed when the date changes;
   progress of the previous date is discarded.
 - Progress is counted from rounds ended on that date (including rounds quit from Pause). Each completed
-  challenge grants its reward once; completing all three grants 100 bonus coins.
+  challenge grants its reward once; completing all three grants 50 bonus coins.
 
 | ID | Challenge (fr) | Target | Reward |
 |---|---|---|---|
-| rounds3 | Jouer 3 parties | 3 rounds | 50 coins |
-| games2 | Jouer à 2 jeux différents | 2 distinct games | 50 coins |
-| star1 | Gagner une étoile | 1 new star | 75 coins |
-| combos5 | Faire 5 combos | 5 combos (see per-game definition) | 75 coins |
+| rounds3 | Jouer 3 parties | 3 rounds | 25 coins |
+| games2 | Jouer à 2 jeux différents | 2 distinct games | 25 coins |
+| star1 | Gagner une étoile | 1 new star | 50 coins |
+| combos5 | Faire 5 combos | 5 combos (see per-game definition) | 50 coins |
 | coins200 | Gagner 200 pièces en jouant | 200 coins from rounds | 50 XP |
-| score_blocks | Marquer 1000 points à Pluie de Blocs | one round ≥ 1000 | 75 coins |
-| score_garden | Marquer 1500 points à Potager Fou | one round ≥ 1500 | 75 coins |
-| score_bubbles | Marquer 800 points à Bulles en Folie | one round ≥ 800 | 75 coins |
+| score_blocks | Marquer 1000 points à Pluie de Blocs | one round ≥ 1000 | 50 coins |
+| score_garden | Marquer 1500 points à Potager Fou | one round ≥ 1500 | 50 coins |
+| score_bubbles | Marquer 800 points à Bulles en Folie | one round ≥ 800 | 50 coins |
 
 ### Achievements
 
@@ -428,16 +428,16 @@ Core engine
   s = 3000, n = 1, bonus 0 → 95 XP and 180 coins; s = 0, n = 0 → 10 XP, 10 coins); given a round shorter than
   20 s, when it ends, then it grants nothing and is not counted.
 - AC-07 [unit] Given level L and XP, when XP reaches 100 × L, then the level becomes L+1, the excess carries
-  over, the level-up grants 50 × (L+1) coins, and one round can gain several levels (e.g. 350 XP at level 1 →
-  level 3 with 50 XP left and 100 + 150 coins); the level never exceeds 50.
+  over, the level-up grants 25 × (L+1) coins, and one round can gain several levels (e.g. 350 XP at level 1 →
+  level 3 with 50 XP left and 50 + 75 coins); the level never exceeds 50.
 - AC-08 [unit] Given the star thresholds, when a round scores exactly a threshold, then the star is earned; a
   later lower score keeps every star; stars earned twice are not counted twice.
 - AC-09 [unit] Given the unlock rules, then world 1 is open at start; world 2 unlocks exactly when world 1 has 2
   stars; world 5 unlocks exactly when total stars ≥ 4 and level ≥ 3 (not before, e.g. 4 stars at level 2); worlds
   3, 4, 6-10 never unlock in v0.1.0; unlocks are permanent.
-- AC-10 [unit] Given 300 coins, when the player buys an upgrade at level 0, then its level is 1 and 200 coins
-  remain; buying level 2 (250) is then refused as unaffordable; levels above 3 are refused; costs are 100 / 250 /
-  500.
+- AC-10 [unit] Given 300 coins, when the player buys an upgrade at level 0, then its level is 1 and 50 coins
+  remain; buying level 2 (600) is then refused as unaffordable; levels above 3 are refused; costs are 250 / 600 /
+  1 200.
 - AC-11 [unit] Given the daily reward state, when the player collects on consecutive local dates, then the first
   collection is day 1 and the calendar advances 1 → 2 → ... → 7 → 1 with rewards 100 / 150 / 200 / 250 / 300 / 400 / 600 (+100 XP on day
   7); a second collection on the same date is refused; a one-day gap keeps the calendar day; a two-day gap resets
@@ -546,6 +546,10 @@ Telemetry and technical
 - AC-49 [unit] Given a round of Pluie de Blocs without any line cleared, when pieces lock, then the fall interval
   shortens by 25 ms every 5 locked pieces (800 → 775 ms at the 5th, 600 ms at the 40th, 300 ms at the 100th), never
   below 150 ms, and the slow-start upgrade keeps adding its 80 ms per level.
+- AC-50 [unit] Given a first session of three Pluie de Blocs rounds at 1 000, 1 500 and 2 000 points on one date plus
+  the day-1 reward, when everything is settled (achievements, challenges of that date, level-ups), then the
+  balance affords the first upgrade level (250) but not the first two levels together (850): coins pace the
+  progression instead of being spent at once.
 
 ## Player copy
 
@@ -660,7 +664,7 @@ no spoken audio). French tone: tu.
 | challenge.score_garden | Marquer 1500 points à Potager Fou | Score 1500 in Crazy Patch |
 | challenge.score_bubbles | Marquer 800 points à Bulles en Folie | Score 800 in Bubble Frenzy |
 | challenge.progress | {done} / {target} | {done} / {target} |
-| challenge.allDone | Les 3 défis réussis : +100 pièces ! | All 3 challenges done: +100 coins! |
+| challenge.allDone | Les 3 défis réussis : +50 pièces ! | All 3 challenges done: +50 coins! |
 | achievement.toast | Succès : {name} | Achievement: {name} |
 | achievement.first_round | Première partie | First round |
 | achievement.rounds10 | Dix parties | Ten rounds |

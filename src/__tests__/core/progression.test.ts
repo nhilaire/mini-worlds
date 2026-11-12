@@ -52,17 +52,17 @@ describe('levels (AC-07)', () => {
     const { profile: p, levelUps } = addXp(profile, 130);
     expect(p.level).toBe(2);
     expect(p.xp).toBe(30);
-    expect(levelUps).toEqual([{ level: 2, coins: 100 }]);
-    expect(p.coins).toBe(100);
-    expect(p.lifetimeCoins).toBe(100);
+    expect(levelUps).toEqual([{ level: 2, coins: 50 }]);
+    expect(p.coins).toBe(50);
+    expect(p.lifetimeCoins).toBe(50);
   });
 
-  it('can gain several levels in one go: 350 XP at level 1 → level 3 with 50 XP left and 100 + 150 coins', () => {
+  it('can gain several levels in one go: 350 XP at level 1 → level 3 with 50 XP left and 50 + 75 coins', () => {
     const { profile: p, levelUps } = addXp(profile, 350);
     expect(p.level).toBe(3);
     expect(p.xp).toBe(50);
     expect(levelUps.map((l) => l.level)).toEqual([2, 3]);
-    expect(p.coins).toBe(250);
+    expect(p.coins).toBe(125);
   });
 
   it('needs 100 × L XP to leave level L', () => {
@@ -96,7 +96,7 @@ describe('settled round summary', () => {
     expect(result.levelUps).toEqual([]); // 65 XP < 100
     expect(result.achievementsUnlocked).toEqual(['first_round', 'first_star']);
     const challengeCoins = result.challengesCompleted.reduce((n, id) => n + (CHALLENGES.find((c) => c.id === id)?.reward.coins ?? 0), 0);
-    expect(save.profile.coins).toBe(120 + 25 + 50 + challengeCoins + (result.allChallengesBonus ? 100 : 0));
+    expect(save.profile.coins).toBe(120 + 25 + 50 + challengeCoins + (result.allChallengesBonus ? 50 : 0));
     expect(save.games.blocks.rounds).toBe(1);
 
     const again = settleRound(save, { game: 'blocks', score: 600, durationS: 60, combos: 0, outcome: 'ended', date: DATE });

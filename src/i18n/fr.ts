@@ -136,7 +136,7 @@ export const fr = {
     score_garden: 'Marquer 1500 points à Potager Fou',
     score_bubbles: 'Marquer 800 points à Bulles en Folie',
     progress: (done: number, target: number) => `${integer(done)} / ${integer(target)}`,
-    allDone: `Les 3 défis réussis${NBSP}: +100 pièces${NBSP}!`,
+    allDone: `Les 3 défis réussis${NBSP}: +50 pièces${NBSP}!`,
   },
   achievement: {
     toast: (name: string) => `Succès${NBSP}: ${name}`,

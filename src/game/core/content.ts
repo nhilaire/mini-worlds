@@ -62,7 +62,7 @@ export type Game = {
   realTime: boolean;
 };
 
-export const UPGRADE_COSTS: readonly number[] = [100, 250, 500]; // cost of level 1, 2, 3
+export const UPGRADE_COSTS: readonly number[] = [250, 600, 1200]; // cost of level 1, 2, 3 (x2.5 after the first phone test: coins came too fast)
 export const UPGRADE_MAX_LEVEL = 3;
 
 const coinsUpgrade: Upgrade = { id: 'coins', maxLevel: UPGRADE_MAX_LEVEL };
@@ -137,18 +137,18 @@ export type ChallengeDef = {
 };
 
 export const CHALLENGES: readonly ChallengeDef[] = [
-  { id: 'rounds3', kind: 'rounds', target: 3, reward: { coins: 50 }, minGames: 1, fixedFirst: true },
-  { id: 'games2', kind: 'distinctGames', target: 2, reward: { coins: 50 }, minGames: 2 },
-  { id: 'star1', kind: 'newStars', target: 1, reward: { coins: 75 }, minGames: 1 },
-  { id: 'combos5', kind: 'combos', target: 5, reward: { coins: 75 }, minGames: 1 },
+  { id: 'rounds3', kind: 'rounds', target: 3, reward: { coins: 25 }, minGames: 1, fixedFirst: true },
+  { id: 'games2', kind: 'distinctGames', target: 2, reward: { coins: 25 }, minGames: 2 },
+  { id: 'star1', kind: 'newStars', target: 1, reward: { coins: 50 }, minGames: 1 },
+  { id: 'combos5', kind: 'combos', target: 5, reward: { coins: 50 }, minGames: 1 },
   { id: 'coins200', kind: 'coins', target: 200, reward: { xp: 50 }, minGames: 1 },
-  { id: 'score_blocks', kind: 'score', target: 1000, game: 'blocks', reward: { coins: 75 }, minGames: 1 },
-  { id: 'score_garden', kind: 'score', target: 1500, game: 'garden', reward: { coins: 75 }, minGames: 1 },
-  { id: 'score_bubbles', kind: 'score', target: 800, game: 'bubbles', reward: { coins: 75 }, minGames: 1 },
+  { id: 'score_blocks', kind: 'score', target: 1000, game: 'blocks', reward: { coins: 50 }, minGames: 1 },
+  { id: 'score_garden', kind: 'score', target: 1500, game: 'garden', reward: { coins: 50 }, minGames: 1 },
+  { id: 'score_bubbles', kind: 'score', target: 800, game: 'bubbles', reward: { coins: 50 }, minGames: 1 },
 ];
 
 export const CHALLENGES_PER_DAY = 3;
-export const ALL_CHALLENGES_BONUS_COINS = 100;
+export const ALL_CHALLENGES_BONUS_COINS = 50;
 
 export type AchievementId =
   | 'first_round'
@@ -210,5 +210,5 @@ export function xpToNextLevel(level: number): number {
 
 /** Coins granted when reaching `newLevel`. */
 export function levelUpCoins(newLevel: number): number {
-  return 50 * newLevel;
+  return 25 * newLevel;
 }

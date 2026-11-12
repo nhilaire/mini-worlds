@@ -58,10 +58,10 @@ describe('daily challenge progress (AC-13)', () => {
     expect(step.save.challenges.progress).toEqual({ rounds3: 1, games2: 1, star1: 0 });
     step = applyRoundToChallenges(step.save, { game: 'garden', score: 100, newStars: 1, combos: 0, coins: 14 });
     expect(step.completed).toEqual(['games2', 'star1']);
-    expect(step.coins).toBe(50 + 75);
+    expect(step.coins).toBe(25 + 50);
     step = applyRoundToChallenges(step.save, { game: 'garden', score: 100, newStars: 1, combos: 0, coins: 14 });
     expect(step.completed).toEqual(['rounds3']);
-    expect(step.coins).toBe(50 + 100); // third challenge → all-done bonus
+    expect(step.coins).toBe(25 + 50); // third challenge → all-done bonus
     expect(step.allDone).toBe(true);
     save = step.save;
     expect(challengeProgress(save, 'rounds3')).toEqual({ done: 3, target: 3, completed: true });
@@ -88,8 +88,8 @@ describe('daily challenge progress (AC-13)', () => {
     const save = withChallenges(['rounds3', 'star1', 'score_blocks']);
     const { save: next, result } = settleRound(save, { game: 'blocks', score: 1000, durationS: 30, combos: 0, outcome: 'ended', date: DATE });
     expect(result.challengesCompleted).toEqual(['star1', 'score_blocks']);
-    const expectedCoins = result.coins + 75 + 75 + 25 + 50; // round + two challenges + first_round + first_star
+    const expectedCoins = result.coins + 50 + 50 + 25 + 50; // round + two challenges + first_round + first_star
     expect(next.profile.coins).toBe(expectedCoins);
-    expect(CHALLENGES.find((c) => c.id === 'star1')?.reward.coins).toBe(75);
+    expect(CHALLENGES.find((c) => c.id === 'star1')?.reward.coins).toBe(50);
   });
 });

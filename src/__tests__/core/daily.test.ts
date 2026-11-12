@@ -20,7 +20,7 @@ describe('daily reward (AC-11)', () => {
       expect(next.dailyReward).toEqual({ lastCollectedDate: date, calendarDay: days[i] });
       save = next;
     });
-    expect(save.profile.coins).toBe(100 + 150 + 200 + 250 + 300 + 400 + 600 + 100 + 200 + 100); // + « Semaine complète » 200 + level-up 2 (100)
+    expect(save.profile.coins).toBe(100 + 150 + 200 + 250 + 300 + 400 + 600 + 100 + 200 + 50); // + « Semaine complète » 200 + level-up 2 (50)
     expect(save.profile.level).toBe(2); // 100 XP on day 7
     expect(save.achievements).toContain('week');
   });

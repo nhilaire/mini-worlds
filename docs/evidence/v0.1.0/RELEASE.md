@@ -25,3 +25,8 @@ with the user (PRD amendment, fixed through /build-game, then re-verify and re-r
 4. The Puzzle world unlocked after a mediocre first round (2 stars = 1500 points, inflated by the hard drop at
    2 points per row): hard drop = 1 point per row, blocks star thresholds 1000 / 2500 / 5000; the unlock
    conditions do not change.
+5. (raised after the first fixes) Coins come too fast: a first session (three rounds, day-1 reward, three
+   challenges, level 2) reached ~835 coins against an upgrade line of 850. Decision: upgrades 250 / 600 / 1 200,
+   level-up 25 × level, challenges 25-50 coins, all-done bonus 50; round earnings unchanged (AC-50).
+6. (raised during the fixes) The fall of Pluie de Blocs never felt faster in a round without lines: the interval
+   now also shortens by 25 ms every 5 pieces locked (AC-49).

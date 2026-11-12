@@ -93,12 +93,12 @@ describe('meta-game screens', () => {
     await fireEvent.press(await screen.findByTestId('sheet-upgrades'));
     await fireEvent.press(await screen.findByTestId('upgrade-preview-buy'));
     expect(screen.getByTestId('upgrade-preview-level')).toHaveTextContent(/Niveau 1 \/ 3/);
-    // 300 − 100, plus 50 for the « Bricoleur » achievement announced by a toast
-    expect(screen.getByTestId('upgrades-coins')).toHaveTextContent(/^250$/);
+    // 300 − 250, plus 50 for the « Bricoleur » achievement announced by a toast
+    expect(screen.getByTestId('upgrades-coins')).toHaveTextContent(/^100$/);
     expect(await screen.findByTestId('achievement-toast')).toHaveTextContent(/Succès.: Bricoleur/);
-    await fireEvent.press(screen.getByTestId('upgrade-preview-buy')); // level 2 costs 250
-    expect(screen.getByTestId('upgrade-preview-level')).toHaveTextContent(/Niveau 2 \/ 3/);
-    expect(screen.getByTestId('upgrades-coins')).toHaveTextContent(/^0$/);
+    await fireEvent.press(screen.getByTestId('upgrade-preview-buy')); // level 2 costs 600: refused
+    expect(screen.getByTestId('upgrade-preview-level')).toHaveTextContent(/Niveau 1 \/ 3/);
+    expect(screen.getByTestId('upgrades-coins')).toHaveTextContent(/^100$/);
     expect(screen.getByTestId('upgrade-preview-buy')).toBeDisabled();
   });
 
@@ -175,12 +175,12 @@ describe('result screen (AC-33)', () => {
 
   it('shows new best, new stars, level-up, unlock and challenges only when applicable', async () => {
     const { result } = settleRound(defaultSave(), { game: 'blocks', score: 2500, durationS: 60, combos: 0, outcome: 'ended', date: '2026-11-11' });
-    await render(wrap(<ResultScreen game="blocks" result={{ ...result, levelUps: [{ level: 2, coins: 100 }], worldsUnlocked: ['puzzle'] }} onReplay={() => {}} onUpgrade={() => {}} onBack={() => {}} />));
+    await render(wrap(<ResultScreen game="blocks" result={{ ...result, levelUps: [{ level: 2, coins: 50 }], worldsUnlocked: ['puzzle'] }} onReplay={() => {}} onUpgrade={() => {}} onBack={() => {}} />));
     expect(screen.getByTestId('result-new-best')).toBeTruthy();
     expect(screen.getAllByTestId('result-stars-on')).toHaveLength(2);
     expect(screen.getByTestId('result-coins')).toHaveTextContent(/\+210 pièces/); // 10 + 2500/25 + 2 × 50
     expect(screen.getByTestId('result-xp')).toHaveTextContent(/\+110 XP/); // 10 + 2500/50 + 2 × 25
-    expect(screen.getByTestId('result-level-2')).toHaveTextContent(/Niveau 2.! \+100 pièces/);
+    expect(screen.getByTestId('result-level-2')).toHaveTextContent(/Niveau 2.! \+50 pièces/);
     expect(screen.getByTestId('result-unlock-puzzle')).toHaveTextContent(/Monde débloqué.: Puzzle.!/);
     expect(screen.queryByTestId('result-short')).toBeNull();
     await screen.unmount();

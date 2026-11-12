@@ -136,7 +136,7 @@ export const en: Strings = {
     score_garden: 'Score 1500 in Crazy Patch',
     score_bubbles: 'Score 800 in Bubble Frenzy',
     progress: (done: number, target: number) => `${integer(done)} / ${integer(target)}`,
-    allDone: 'All 3 challenges done: +100 coins!',
+    allDone: 'All 3 challenges done: +50 coins!',
   },
   achievement: {
     toast: (name: string) => `Achievement: ${name}`,

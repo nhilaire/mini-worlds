@@ -38,13 +38,13 @@ describe('content catalogue', () => {
     expect(gameById(id).stars).toEqual(thresholds);
   });
 
-  it('every game has 3 upgrades of 3 levels including the coin bonus, costs 100 / 250 / 500', () => {
+  it('every game has 3 upgrades of 3 levels including the coin bonus, costs 250 / 600 / 1200', () => {
     for (const game of GAMES) {
       expect(game.upgrades).toHaveLength(3);
       expect(game.upgrades.map((u) => u.id)).toContain('coins');
       for (const u of game.upgrades) expect(u.maxLevel).toBe(3);
     }
-    expect(UPGRADE_COSTS).toEqual([100, 250, 500]);
+    expect(UPGRADE_COSTS).toEqual([250, 600, 1200]);
   });
 
   it('challenge pool has 8 entries, Jouer 3 parties fixed first, games2 needs 2 games', () => {

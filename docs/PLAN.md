@@ -67,6 +67,7 @@ After the first phone test (2026-11-12, RELEASE.md notes)
 - [x] T-37 Ghost piece for the first 5 locked pieces of each round only (AC-46) - proof: unit
 - [x] T-38 Pixel font: Pixelify Sans (Regular, Bold) replaces Press Start 2P in titles, HUD and buttons; licences and README (AC-48, AC-45) - proof: unit
 - [x] T-39 Fall speed-up with the pieces locked (−25 ms per 5 pieces) in addition to the lines (AC-49, AC-19) - proof: unit
+- [x] T-40 Coin economy: upgrades 250 / 600 / 1 200, level-up 25 × level, challenges 25-50 and all-done bonus 50; first-session budget test (AC-07, AC-10, AC-13, AC-50) - proof: unit
 
 ## Notes
 

@@ -1,11 +1,11 @@
 # Release: Bric-à-Jeux v0.1.0
 
 Phone install: PASS
-User acceptance: pending
+User acceptance: confirmed (2026-11-12)
 Date: 2026-11-12
-Commit: f858ae8
-APK: mini-worlds-0.1.0-arm64-v8a.apk (49.4 MB, arm64-v8a)
-SHA-256: 70f615d1d2da7967f5c683b829ebcb6bf64ce5c2cdd6733b6f7b80a6eb07d7d5
+Commit: 976e246
+APK: mini-worlds-0.1.0-arm64-v8a.apk (49.5 MB, arm64-v8a)
+SHA-256: 79893fe60d41bbc5b2d2a969a1f68997f15b7b3e6ce9b05fd04cea024f37a10e
 Signature: release signature valid
 Phone: Android 11 (API 30, arm64-v8a)
 Launch check: alive after 10 s, no fatal error

@@ -8,6 +8,11 @@ French and English (it follows the phone's language; you can change it in the se
 ## Screenshots
 
 <!-- factory:screenshots:start -->
+<p>
+  <img src="docs/screenshots/readme-1-home.png" width="240" alt="home">
+  <img src="docs/screenshots/readme-2-game.png" width="240" alt="game">
+  <img src="docs/screenshots/readme-3-result.png" width="240" alt="result">
+</p>
 <!-- factory:screenshots:end -->
 
 ## Play

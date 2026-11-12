@@ -156,9 +156,13 @@ function build() {
   panel(icon, 192, 192, 16);
   files['icon.png'] = png(icon);
 
-  // Splash image: the panel alone on a transparent background (the splash background colour comes from app.json).
+  // Splash image: Android 12+ masks it to a circle, so the four pieces alone (no tile), kept inside the inscribed
+  // circle of the 40 px square (content 28 px wide: the corners stay within the radius). Background from app.json.
   const splash = canvas(1000, 1000);
-  panel(splash, 0, 0, 25);
+  sprite(splash, SPRITES.arcade, 6 * 25, 6 * 25, 25);
+  sprite(splash, SPRITES.bubble, 22 * 25, 6 * 25, 25);
+  sprite(splash, SPRITES.tomato, 6 * 25, 22 * 25, 25);
+  sprite(splash, SPRITES.trophy, 22 * 25, 22 * 25, 25);
   files['splash-icon.png'] = png(splash);
 
   const favicon = canvas(48, 48);

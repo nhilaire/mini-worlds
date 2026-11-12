@@ -64,7 +64,7 @@ describe('meta-game screens', () => {
     expect(await screen.findByTestId('game-sheet-screen')).toBeTruthy();
     expect(screen.getByTestId('sheet-name')).toHaveTextContent(/Pluie de Blocs/);
     expect(screen.getByTestId('sheet-play')).toBeTruthy();
-    expect(screen.getByTestId('sheet-thresholds')).toHaveTextContent(/500 · 1.500 · 3.000/);
+    expect(screen.getByTestId('sheet-thresholds')).toHaveTextContent(/1.000 · 2.500 · 5.000/);
     await fireEvent.press(screen.getByTestId('sheet-back'));
     expect(await screen.findByTestId('world-detail-screen')).toBeTruthy();
   });
@@ -128,7 +128,7 @@ describe('meta-game screens', () => {
   });
 
   it('shows the profile stats and achievements', async () => {
-    const played = settleRound(defaultSave(), { game: 'blocks', score: 600, durationS: 60, combos: 0, outcome: 'ended', date: '2026-11-11' }).save;
+    const played = settleRound(defaultSave(), { game: 'blocks', score: 1000, durationS: 60, combos: 0, outcome: 'ended', date: '2026-11-11' }).save;
     await seed(played);
     await render(<App />);
     await fireEvent.press(await screen.findByTestId('tab-profile'));
@@ -174,12 +174,12 @@ describe('result screen (AC-33)', () => {
   );
 
   it('shows new best, new stars, level-up, unlock and challenges only when applicable', async () => {
-    const { result } = settleRound(defaultSave(), { game: 'blocks', score: 1500, durationS: 60, combos: 0, outcome: 'ended', date: '2026-11-11' });
+    const { result } = settleRound(defaultSave(), { game: 'blocks', score: 2500, durationS: 60, combos: 0, outcome: 'ended', date: '2026-11-11' });
     await render(wrap(<ResultScreen game="blocks" result={{ ...result, levelUps: [{ level: 2, coins: 100 }], worldsUnlocked: ['puzzle'] }} onReplay={() => {}} onUpgrade={() => {}} onBack={() => {}} />));
     expect(screen.getByTestId('result-new-best')).toBeTruthy();
     expect(screen.getAllByTestId('result-stars-on')).toHaveLength(2);
-    expect(screen.getByTestId('result-coins')).toHaveTextContent(/\+170 pièces/);
-    expect(screen.getByTestId('result-xp')).toHaveTextContent(/\+90 XP/);
+    expect(screen.getByTestId('result-coins')).toHaveTextContent(/\+210 pièces/); // 10 + 2500/25 + 2 × 50
+    expect(screen.getByTestId('result-xp')).toHaveTextContent(/\+110 XP/); // 10 + 2500/50 + 2 × 25
     expect(screen.getByTestId('result-level-2')).toHaveTextContent(/Niveau 2.! \+100 pièces/);
     expect(screen.getByTestId('result-unlock-puzzle')).toHaveTextContent(/Monde débloqué.: Puzzle.!/);
     expect(screen.queryByTestId('result-short')).toBeNull();

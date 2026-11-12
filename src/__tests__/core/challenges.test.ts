@@ -73,20 +73,20 @@ describe('daily challenge progress (AC-13)', () => {
   });
 
   it('combos, coins and score challenges', () => {
-    let step = applyRoundToChallenges(withChallenges(['combos5', 'coins200', 'score_blocks']), { game: 'blocks', score: 499, newStars: 0, combos: 3, coins: 150 });
+    let step = applyRoundToChallenges(withChallenges(['combos5', 'coins200', 'score_blocks']), { game: 'blocks', score: 999, newStars: 0, combos: 3, coins: 150 });
     expect(step.completed).toEqual([]);
     step = applyRoundToChallenges(step.save, { game: 'garden', score: 600, newStars: 0, combos: 2, coins: 60 });
     expect(step.completed).toEqual(['combos5', 'coins200']);
     expect(step.xp).toBe(50);
-    expect(step.save.challenges.progress.score_blocks).toBe(499);
-    step = applyRoundToChallenges(step.save, { game: 'blocks', score: 500, newStars: 0, combos: 0, coins: 30 });
+    expect(step.save.challenges.progress.score_blocks).toBe(999);
+    step = applyRoundToChallenges(step.save, { game: 'blocks', score: 1000, newStars: 0, combos: 0, coins: 30 });
     expect(step.completed).toEqual(['score_blocks']);
     expect(step.allDone).toBe(true);
   });
 
   it('a settled round through the engine grants the challenge rewards once', () => {
     const save = withChallenges(['rounds3', 'star1', 'score_blocks']);
-    const { save: next, result } = settleRound(save, { game: 'blocks', score: 500, durationS: 30, combos: 0, outcome: 'ended', date: DATE });
+    const { save: next, result } = settleRound(save, { game: 'blocks', score: 1000, durationS: 30, combos: 0, outcome: 'ended', date: DATE });
     expect(result.challengesCompleted).toEqual(['star1', 'score_blocks']);
     const expectedCoins = result.coins + 75 + 75 + 25 + 50; // round + two challenges + first_round + first_star
     expect(next.profile.coins).toBe(expectedCoins);

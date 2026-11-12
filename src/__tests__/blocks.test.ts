@@ -92,11 +92,11 @@ describe('moves, rotation, hard drop (AC-18)', () => {
     expect(moved.events).toEqual([{ kind: 'refused' }]);
   });
 
-  it('hard drop scores 2 points per row and locks the piece', () => {
+  it('hard drop scores 1 point per row and locks the piece', () => {
     const state = withPiece(createBlocks(1), 'O');
     const dropped = reduceBlocks(state, { type: 'hardDrop' });
-    expect(dropped.score).toBe(14 * 2); // O piece: rows 0-1 of the shape, lands with bottom at row 15 → 14 rows
-    expect(dropped.events).toEqual(expect.arrayContaining([{ kind: 'drop', rows: 14 }, { kind: 'score', points: 28 }]));
+    expect(dropped.score).toBe(14); // O piece: rows 0-1 of the shape, lands with bottom at row 15 → 14 rows
+    expect(dropped.events).toEqual(expect.arrayContaining([{ kind: 'drop', rows: 14 }, { kind: 'score', points: 14 }]));
     expect(bottom(dropped.board, 0)).toBe('....XX....');
     expect(ghostPiece(state)?.y).toBe(14);
   });
@@ -116,7 +116,7 @@ describe('lines, scoring, gravity, end (AC-19, AC-20)', () => {
     state = reduceBlocks(state, { type: 'hardDrop' });
     const dropRows = BLOCKS_ROWS - 4; // column 9 is free down to the bottom: the vertical I drops 12 rows
     expect(state.lines).toBe(count);
-    expect(state.score).toBe(points + dropRows * 2);
+    expect(state.score).toBe(points + dropRows);
     expect(state.events).toEqual(expect.arrayContaining([{ kind: 'lines', rows: expect.any(Array), points, chain: 1 }]));
     // marker row shifted down to the bottom; the rest of the I above it
     expect(bottom(state.board, 0).startsWith('.X')).toBe(true);
@@ -132,7 +132,7 @@ describe('lines, scoring, gravity, end (AC-19, AC-20)', () => {
     state = { ...state, piece: { type: 'I', rotation: 1, x: 7, y: 0 } };
     state = reduceBlocks(state, { type: 'hardDrop' }); // 4 lines, chain 2 → +50
     expect(state.chain).toBe(2);
-    expect(state.score - after1).toBe(800 + 50 + (BLOCKS_ROWS - 4) * 2);
+    expect(state.score - after1).toBe(800 + 50 + (BLOCKS_ROWS - 4));
     expect(state.combos).toBe(2);
     // a lock that clears nothing resets the chain
     state = { ...state, piece: { type: 'O', rotation: 0, x: 0, y: 0 } };

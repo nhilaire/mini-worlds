@@ -89,20 +89,20 @@ describe('settled round summary', () => {
     expect(result.newBest).toBe(true);
     expect(result.bestScore).toBe(1500);
     expect(result.starsBefore).toBe(0);
-    expect(result.starsAfter).toBe(2);
-    expect(result.newStars).toBe(2);
-    expect(result.xp).toBe(40 + 50);
-    expect(result.coins).toBe(70 + 100);
-    expect(result.levelUps).toEqual([]); // 90 XP < 100
+    expect(result.starsAfter).toBe(1); // 1500 < 2500: one star with the thresholds of the first phone test
+    expect(result.newStars).toBe(1);
+    expect(result.xp).toBe(40 + 25);
+    expect(result.coins).toBe(70 + 50);
+    expect(result.levelUps).toEqual([]); // 65 XP < 100
     expect(result.achievementsUnlocked).toEqual(['first_round', 'first_star']);
     const challengeCoins = result.challengesCompleted.reduce((n, id) => n + (CHALLENGES.find((c) => c.id === id)?.reward.coins ?? 0), 0);
-    expect(save.profile.coins).toBe(170 + 25 + 50 + challengeCoins + (result.allChallengesBonus ? 100 : 0));
+    expect(save.profile.coins).toBe(120 + 25 + 50 + challengeCoins + (result.allChallengesBonus ? 100 : 0));
     expect(save.games.blocks.rounds).toBe(1);
 
     const again = settleRound(save, { game: 'blocks', score: 600, durationS: 60, combos: 0, outcome: 'ended', date: DATE });
     expect(again.result.newBest).toBe(false);
     expect(again.result.newStars).toBe(0);
-    expect(again.result.starsAfter).toBe(2);
+    expect(again.result.starsAfter).toBe(1);
     expect(again.save.games.blocks.bestScore).toBe(1500);
   });
 

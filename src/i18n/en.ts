@@ -132,7 +132,7 @@ export const en: Strings = {
     star1: 'Earn a star',
     combos5: 'Make 5 combos',
     coins200: 'Earn 200 coins by playing',
-    score_blocks: 'Score 500 in Block Rain',
+    score_blocks: 'Score 1000 in Block Rain',
     score_garden: 'Score 1500 in Crazy Patch',
     score_bubbles: 'Score 800 in Bubble Frenzy',
     progress: (done: number, target: number) => `${integer(done)} / ${integer(target)}`,

@@ -71,7 +71,7 @@ export const GAMES: readonly Game[] = [
   {
     id: 'blocks',
     world: 'arcade',
-    stars: [500, 1500, 3000],
+    stars: [1000, 2500, 5000],
     upgrades: [{ id: 'preview', maxLevel: UPGRADE_MAX_LEVEL }, { id: 'slow_start', maxLevel: UPGRADE_MAX_LEVEL }, coinsUpgrade],
     realTime: true,
   },
@@ -142,7 +142,7 @@ export const CHALLENGES: readonly ChallengeDef[] = [
   { id: 'star1', kind: 'newStars', target: 1, reward: { coins: 75 }, minGames: 1 },
   { id: 'combos5', kind: 'combos', target: 5, reward: { coins: 75 }, minGames: 1 },
   { id: 'coins200', kind: 'coins', target: 200, reward: { xp: 50 }, minGames: 1 },
-  { id: 'score_blocks', kind: 'score', target: 500, game: 'blocks', reward: { coins: 75 }, minGames: 1 },
+  { id: 'score_blocks', kind: 'score', target: 1000, game: 'blocks', reward: { coins: 75 }, minGames: 1 },
   { id: 'score_garden', kind: 'score', target: 1500, game: 'garden', reward: { coins: 75 }, minGames: 1 },
   { id: 'score_bubbles', kind: 'score', target: 800, game: 'bubbles', reward: { coins: 75 }, minGames: 1 },
 ];

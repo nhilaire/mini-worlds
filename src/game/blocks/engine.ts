@@ -10,7 +10,7 @@ export const MIN_INTERVAL_MS = 150;
 export const BASE_INTERVAL_MS = 800;
 export const SLOW_START_MS_PER_LEVEL = 80;
 export const LINE_SCORES = [0, 100, 300, 500, 800] as const;
-export const HARD_DROP_POINTS_PER_ROW = 2;
+export const HARD_DROP_POINTS_PER_ROW = 1; // 1, not 2: stars reward lines, not drops (first phone test)
 export const BACK_TO_BACK_BONUS = 50;
 export const QUEUE_LENGTH = 3;
 

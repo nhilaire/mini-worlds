@@ -16,7 +16,7 @@ describe('achievements (AC-14)', () => {
     expect(save.achievements).toEqual(['first_round']);
     for (let i = 0; i < 8; i++) save = round(save, 'blocks', 100);
     expect(save.achievements).not.toContain('rounds10');
-    save = round(save, 'blocks', 500);
+    save = round(save, 'blocks', 1000);
     expect(save.achievements).toEqual(expect.arrayContaining(['rounds10', 'first_star']));
     save = round(save, 'garden', 100);
     save = round(save, 'bubbles', 100);

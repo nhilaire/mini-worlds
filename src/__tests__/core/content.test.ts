@@ -31,7 +31,7 @@ describe('content catalogue', () => {
   });
 
   it.each([
-    ['blocks', [500, 1500, 3000]],
+    ['blocks', [1000, 2500, 5000]],
     ['garden', [1500, 3000, 5000]],
     ['bubbles', [800, 2000, 4000]],
   ] as const)('%s star thresholds are increasing and match the PRD', (id, thresholds) => {
@@ -68,11 +68,11 @@ describe('content catalogue', () => {
 describe('stars (AC-08)', () => {
   it.each([
     [0, 0],
-    [499, 0],
-    [500, 1],
-    [1499, 1],
-    [1500, 2],
-    [3000, 3],
+    [999, 0],
+    [1000, 1],
+    [2499, 1],
+    [2500, 2],
+    [5000, 3],
     [10000, 3],
   ])('blocks score %i earns %i star(s), threshold inclusive', (score, stars) => {
     expect(starsForScore('blocks', score)).toBe(stars);

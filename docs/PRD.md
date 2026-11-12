@@ -218,7 +218,7 @@ upgrade). Buying is immediate; the effect applies from the next round.
 | star1 | Gagner une étoile | 1 new star | 75 coins |
 | combos5 | Faire 5 combos | 5 combos (see per-game definition) | 75 coins |
 | coins200 | Gagner 200 pièces en jouant | 200 coins from rounds | 50 XP |
-| score_blocks | Marquer 500 points à Pluie de Blocs | one round ≥ 500 | 75 coins |
+| score_blocks | Marquer 1000 points à Pluie de Blocs | one round ≥ 1000 | 75 coins |
 | score_garden | Marquer 1500 points à Potager Fou | one round ≥ 1500 | 75 coins |
 | score_bubbles | Marquer 800 points à Bulles en Folie | one round ≥ 800 | 75 coins |
 
@@ -652,7 +652,7 @@ no spoken audio). French tone: tu.
 | challenge.star1 | Gagner une étoile | Earn a star |
 | challenge.combos5 | Faire 5 combos | Make 5 combos |
 | challenge.coins200 | Gagner 200 pièces en jouant | Earn 200 coins by playing |
-| challenge.score_blocks | Marquer 500 points à Pluie de Blocs | Score 500 in Block Rain |
+| challenge.score_blocks | Marquer 1000 points à Pluie de Blocs | Score 1000 in Block Rain |
 | challenge.score_garden | Marquer 1500 points à Potager Fou | Score 1500 in Crazy Patch |
 | challenge.score_bubbles | Marquer 800 points à Bulles en Folie | Score 800 in Bubble Frenzy |
 | challenge.progress | {done} / {target} | {done} / {target} |

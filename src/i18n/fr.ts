@@ -132,7 +132,7 @@ export const fr = {
     star1: 'Gagner une étoile',
     combos5: 'Faire 5 combos',
     coins200: 'Gagner 200 pièces en jouant',
-    score_blocks: 'Marquer 500 points à Pluie de Blocs',
+    score_blocks: 'Marquer 1000 points à Pluie de Blocs',
     score_garden: 'Marquer 1500 points à Potager Fou',
     score_bubbles: 'Marquer 800 points à Bulles en Folie',
     progress: (done: number, target: number) => `${integer(done)} / ${integer(target)}`,

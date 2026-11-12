@@ -39,7 +39,7 @@ describe('Pluie de Blocs screen (AC-21, AC-39)', () => {
     expect(screen.getByTestId('hud-lines')).toHaveTextContent(/^0/);
     expect(screen.getByTestId('blocks-board')).toBeTruthy();
     expect(screen.queryByTestId('tutorial-bubble')).toBeNull();
-    expect(screen.getByText(/Étoile à 500/)).toBeTruthy();
+    expect(screen.getByText(/Étoile à 1.000/)).toBeTruthy();
   });
 
   it('quitting from Pause after 20 s settles the round and shows the Result screen', async () => {

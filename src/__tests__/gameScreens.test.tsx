@@ -1,5 +1,5 @@
 import AsyncStorage from '@react-native-async-storage/async-storage';
-import { act, fireEvent, render, screen } from '@testing-library/react-native';
+import { act, fireEvent, render, screen, waitFor } from '@testing-library/react-native';
 import * as Linking from 'expo-linking';
 import { fireGestureHandler, getByGestureTestId } from 'react-native-gesture-handler/jest-utils';
 
@@ -72,6 +72,11 @@ describe('game screens under the seed link', () => {
     });
     expect(screen.getByTestId('hud-score')).toHaveTextContent(new RegExp(`^${expected.score}$`));
     expect(screen.getByTestId('hud-moves')).toHaveTextContent(/^19$/);
+    // The replay shows the points of the first cascade step above the aligned pieces, then ends (AC-51).
+    const first = expected.events.find((e) => e.kind === 'match');
+    if (!first || first.kind !== 'match') throw new Error('a match is expected');
+    expect(await screen.findByTestId('garden-points-pop')).toHaveTextContent(new RegExp(`^\\+${Math.round(first.points)}$`));
+    await waitFor(() => expect(screen.queryByTestId('garden-points-pop')).toBeNull(), { timeout: 4000 });
   });
 
   it('Bulles en Folie: one scripted shot updates the score as predicted, then Pause / Quitter shows the Result (AC-30)', async () => {

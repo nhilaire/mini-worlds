@@ -1,13 +1,16 @@
 // « Potager Fou » screen: the match-3 engine (src/game/garden) drawn in a Skia canvas; a swipe on a vegetable
-// towards a neighbour dispatches a swap. Turn-based: no frame loop.
+// towards a neighbour dispatches a swap. Turn-based: the engine settles the swap at once (HUD, score, moves),
+// then the screen replays it for the eye (slide, flash of the aligned pieces with the points, pop, fall) from the
+// pure replay plan (src/game/garden/replay). Inputs are locked while the replay runs.
 import { Canvas, createPicture, Picture, Skia, SkPicture } from '@shopify/react-native-skia';
-import { useCallback, useMemo, useRef, useState } from 'react';
+import { useCallback, useEffect, useMemo, useRef, useState } from 'react';
 import { StyleSheet, useWindowDimensions, View } from 'react-native';
 import { Gesture, GestureDetector } from 'react-native-gesture-handler';
 
 import { VEGETABLES } from '../../art/sprites';
 import { upgradeLevels } from '../../game/core/upgrades';
-import { Cell, createGarden, GARDEN_COLS, GARDEN_ROWS, GardenState, reduceGarden, Veg } from '../../game/garden/engine';
+import { Board, Cell, createGarden, GARDEN_COLS, GARDEN_ROWS, reduceGarden, Veg } from '../../game/garden/engine';
+import { buildReplay, Phase } from '../../game/garden/replay';
 import { useI18n } from '../../i18n/I18nProvider';
 import { useGameStore } from '../../state/GameStore';
 import { recordSprite } from '../../ui/PixelSprite';
@@ -27,27 +30,80 @@ function vegPictures(cell: number): Record<Veg, SkPicture> {
   return out;
 }
 
-function boardPicture(state: GardenState, cell: number, sprites: Record<Veg, SkPicture>, gridColor: string, highlight: Cell | null, highlightColor: string): SkPicture {
+type Frame = { phase: Phase; progress: number };
+type Colors = { grid: string; select: string; flash: string };
+
+const sameCell = (a: Cell, b: Cell) => a.col === b.col && a.row === b.row;
+const easeOut = (p: number) => 1 - (1 - p) * (1 - p);
+
+/** The board of the current frame: the settled board, or the phase of the replay at `progress` (0..1). */
+function boardPicture(board: Board, cell: number, sprites: Record<Veg, SkPicture>, colors: Colors, selected: Cell | null, frame: Frame | null): SkPicture {
   const width = GARDEN_COLS * cell;
   const height = GARDEN_ROWS * cell;
   return createPicture((canvas) => {
     const grid = Skia.Paint();
-    grid.setColor(Skia.Color(gridColor));
+    grid.setColor(Skia.Color(colors.grid));
     grid.setStyle(1);
     grid.setStrokeWidth(1);
     for (let c = 1; c < GARDEN_COLS; c++) canvas.drawLine(c * cell, 0, c * cell, height, grid);
     for (let r = 1; r < GARDEN_ROWS; r++) canvas.drawLine(0, r * cell, width, r * cell, grid);
-    if (highlight) {
+    if (selected && !frame) {
       const paint = Skia.Paint();
-      paint.setColor(Skia.Color(highlightColor));
+      paint.setColor(Skia.Color(colors.select));
       paint.setStyle(1);
       paint.setStrokeWidth(3);
-      canvas.drawRect({ x: highlight.col * cell + 2, y: highlight.row * cell + 2, width: cell - 4, height: cell - 4 }, paint);
+      canvas.drawRect({ x: selected.col * cell + 2, y: selected.row * cell + 2, width: cell - 4, height: cell - 4 }, paint);
     }
-    state.board.forEach((row, r) =>
+
+    const phase = frame?.phase;
+    const p = frame?.progress ?? 0;
+    const shown = phase ? phase.board : board;
+    const flashing = phase && phase.kind === 'flash';
+    if (flashing) {
+      // Frame + pulsing glow on the aligned pieces (two pulses over the phase).
+      const glow = Skia.Paint();
+      glow.setColor(Skia.Color(colors.flash));
+      glow.setAlphaf(0.25 + 0.3 * (0.5 + 0.5 * Math.sin(p * Math.PI * 4)));
+      const outline = Skia.Paint();
+      outline.setColor(Skia.Color(colors.flash));
+      outline.setStyle(1);
+      outline.setStrokeWidth(3);
+      for (const c of phase.cells) {
+        canvas.drawRect({ x: c.col * cell, y: c.row * cell, width: cell, height: cell }, glow);
+        canvas.drawRect({ x: c.col * cell + 1.5, y: c.row * cell + 1.5, width: cell - 3, height: cell - 3 }, outline);
+      }
+    }
+
+    shown.forEach((row, r) =>
       row.forEach((veg, c) => {
+        let x = c * cell + 2;
+        let y = r * cell + 2;
+        let scale = 1;
+        if (phase) {
+          const here = { col: c, row: r };
+          if (phase.kind === 'swap' || phase.kind === 'swap_back') {
+            // The two pieces trade places (swap: from → to; swap_back: the swapped pieces return).
+            const target = sameCell(here, phase.from) ? phase.to : sameCell(here, phase.to) ? phase.from : null;
+            if (target) {
+              const q = easeOut(p);
+              x += (target.col - c) * cell * q;
+              y += (target.row - r) * cell * q;
+            }
+          } else if (phase.kind === 'pop') {
+            if (phase.cells.some((cc) => sameCell(cc, here))) scale = 1 - p;
+          } else if (phase.kind === 'fall') {
+            y -= phase.fallen[r][c] * cell * (1 - easeOut(p));
+          }
+        }
+        if (scale <= 0) return;
         canvas.save();
-        canvas.translate(c * cell + 2, r * cell + 2);
+        canvas.translate(x, y);
+        if (scale < 1) {
+          const half = (cell - 4) / 2;
+          canvas.translate(half, half);
+          canvas.scale(scale, scale);
+          canvas.translate(-half, -half);
+        }
         canvas.drawPicture(sprites[veg]);
         canvas.restore();
       }),
@@ -71,6 +127,11 @@ export function GardenGame({ seed, onFinish }: { seed: number; onFinish: OnFinis
   const { paused, advanceTutorial, finish, setCombos } = frame;
   useGameFeedback(state.events);
 
+  // Replay of the last swap: phases and the frame being drawn.
+  const replay = useRef<{ phases: Phase[]; index: number; startedAt: number } | null>(null);
+  const [replaying, setReplaying] = useState(false);
+  const [shownFrame, setShownFrame] = useState<Frame | null>(null);
+
   const swap = useCallback(
     (from: Cell, to: Cell) => {
       const previous = stateRef.current;
@@ -78,6 +139,12 @@ export function GardenGame({ seed, onFinish }: { seed: number; onFinish: OnFinis
       const next = reduceGarden(previous, { type: 'swap', from, to });
       stateRef.current = next;
       setState(next);
+      const phases = buildReplay(previous.board, next);
+      if (phases.length > 0) {
+        replay.current = { phases, index: 0, startedAt: Date.now() };
+        setShownFrame({ phase: phases[0], progress: 0 });
+        setReplaying(true);
+      }
       if (next.events.some((e) => e.kind === 'swap')) advanceTutorial('swap');
       if (next.status === 'over') finish(next.score, next.combos);
       else setCombos(next.combos);
@@ -85,7 +152,39 @@ export function GardenGame({ seed, onFinish }: { seed: number; onFinish: OnFinis
     [advanceTutorial, finish, setCombos],
   );
 
-  const inputsLocked = paused || state.status !== 'playing';
+  // Frame loop of the replay: advances through the phases by elapsed time, then shows the settled board.
+  useEffect(() => {
+    if (!replaying) return;
+    let handle = 0;
+    const loop = () => {
+      const current = replay.current;
+      if (!current) {
+        setShownFrame(null);
+        setReplaying(false);
+        return;
+      }
+      let phase = current.phases[current.index];
+      let elapsed = Date.now() - current.startedAt;
+      while (elapsed >= phase.ms) {
+        current.index += 1;
+        current.startedAt += phase.ms;
+        elapsed -= phase.ms;
+        if (current.index >= current.phases.length) {
+          replay.current = null;
+          setShownFrame(null);
+          setReplaying(false);
+          return;
+        }
+        phase = current.phases[current.index];
+      }
+      setShownFrame({ phase, progress: elapsed / phase.ms });
+      handle = requestAnimationFrame(loop);
+    };
+    handle = requestAnimationFrame(loop);
+    return () => cancelAnimationFrame(handle);
+  }, [replaying]);
+
+  const inputsLocked = paused || replaying || state.status !== 'playing';
   const origin = useRef<Cell | null>(null);
   /* eslint-disable react-hooks/refs -- the gesture callbacks run on touch events, never during render */
   const pan = useMemo(
@@ -120,7 +219,19 @@ export function GardenGame({ seed, onFinish }: { seed: number; onFinish: OnFinis
   );
   /* eslint-enable react-hooks/refs */
 
-  const picture = useMemo(() => boardPicture(state, cell, sprites, colors.border, selected, colors.accent), [state, cell, sprites, colors.border, selected, colors.accent]);
+  const paletteColors = useMemo<Colors>(() => ({ grid: colors.border, select: colors.accent, flash: colors.accent }), [colors.border, colors.accent]);
+  const picture = useMemo(() => boardPicture(state.board, cell, sprites, paletteColors, selected, shownFrame), [state.board, cell, sprites, paletteColors, selected, shownFrame]);
+
+  // Points popping above the aligned pieces during the flash and pop phases.
+  const pop = useMemo(() => {
+    const phase = shownFrame?.phase;
+    if (!phase || (phase.kind !== 'flash' && phase.kind !== 'pop')) return null;
+    const points = phase.kind === 'flash' ? phase.points : null;
+    if (points === null) return null;
+    const cx = phase.cells.reduce((s, c) => s + c.col + 0.5, 0) / phase.cells.length;
+    const top = Math.min(...phase.cells.map((c) => c.row));
+    return { text: `+${Math.round(points)}`, left: cx * cell, top: Math.max(0, top * cell - 10) };
+  }, [shownFrame, cell]);
 
   const hud = (
     <View style={styles.hudItem}>
@@ -142,6 +253,13 @@ export function GardenGame({ seed, onFinish }: { seed: number; onFinish: OnFinis
           {state.board.map((row, r) =>
             row.map((_, c) => <View key={`${c}-${r}`} testID={`garden-cell-${c}-${r}`} pointerEvents="none" style={{ position: 'absolute', left: c * cell, top: r * cell, width: cell, height: cell }} />),
           )}
+          {pop && (
+            <View pointerEvents="none" style={[styles.pop, { left: pop.left - 60, top: pop.top }]}>
+              <PixelText testID="garden-points-pop" color="accent" bold style={styles.popText}>
+                {pop.text}
+              </PixelText>
+            </View>
+          )}
         </View>
       </GestureDetector>
     </GameFrame>
@@ -151,4 +269,6 @@ export function GardenGame({ seed, onFinish }: { seed: number; onFinish: OnFinis
 const styles = StyleSheet.create({
   board: { borderWidth: 2, borderRadius: 4, overflow: 'hidden' },
   hudItem: { gap: 2 },
+  pop: { position: 'absolute', width: 120, alignItems: 'center' },
+  popText: { textShadowColor: 'rgba(0, 0, 0, 0.35)', textShadowOffset: { width: 1, height: 1 }, textShadowRadius: 1 },
 });

@@ -293,7 +293,12 @@ quitting at once.
   1 + (k − 1) × m, with m = 1 (+0.5 per « Récolte en cascade » level).
 - Combo (for challenges): a cascade step with k ≥ 2.
 - End: no move left (after the last cascade). Expected round: 1-2 min.
-- Tutorial bubble: « Glisse un légume vers son voisin pour aligner 3 identiques » (dismissed by a valid swap).
+- Feedback of a swap (first phone test: the board looked like a new puzzle after each move): the engine settles
+  the swap at once (score, moves, HUD), then the screen replays it from the engine events: the two pieces slide
+  (160 ms); a refused swap slides back; for each cascade step the aligned pieces are framed and flash with the
+  points of the step popping above them (300 ms), shrink away (140 ms), then the pieces above slide down and the
+  new ones enter from the top (240 ms). Inputs are locked while the replay runs (under 1 s per step).
+- Tutorial bubble: « Glisse un légume vers son voisin pour aligner 3 identiques » (dismissed by a valid swap).
 
 ### Bulles en Folie (world Bubbles)
 
@@ -550,6 +555,12 @@ Telemetry and technical
   the day-1 reward, when everything is settled (achievements, challenges of that date, level-ups), then the
   balance affords the first upgrade level (250) but not the first two levels together (850): coins pace the
   progression instead of being spent at once.
+- AC-51 [unit] Given the board before a swap and the engine events of that swap, when the replay plan is built,
+  then it holds a swap phase, then per cascade step a flash phase (aligned cells, points), a pop phase and a fall
+  phase whose per-cell distances match the collapse (survivors keep their order, new pieces enter from above the
+  board); the board of the first match equals the swapped board, the board of the last fall equals the settled
+  board; a refused swap yields a swap and a swap-back phase; and the Potager screen shows the points of the first
+  step above the pieces after a valid swap, then removes them when the replay ends.
 
 ## Player copy
 

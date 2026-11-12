@@ -30,3 +30,7 @@ with the user (PRD amendment, fixed through /build-game, then re-verify and re-r
    level-up 25 × level, challenges 25-50 coins, all-done bonus 50; round earnings unchanged (AC-50).
 6. (raised during the fixes) The fall of Pluie de Blocs never felt faster in a round without lines: the interval
    now also shortens by 25 ms every 5 pieces locked (AC-49).
+7. (raised during the fixes) Potager Fou looked like a new puzzle after each move: no transition between the
+   board before the swap and the settled board, nothing showed which pieces were aligned. Decision: the screen
+   replays the swap from the engine events (slide, frame + flash of the aligned pieces with the points, pop,
+   fall of the pieces above and arrival of the new ones), inputs locked during the replay (AC-51).

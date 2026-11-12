@@ -26,8 +26,11 @@ export type Move = { from: Cell; to: Cell };
 export type GardenEvent =
   | { kind: 'swap'; from: Cell; to: Cell }
   | { kind: 'swap_back'; from: Cell; to: Cell }
-  /** One cascade step: the lines found, the union of their cells (removed) and the multiplied points. */
-  | { kind: 'match'; step: number; lines: readonly Line[]; cells: readonly Cell[]; points: number }
+  /**
+   * One cascade step: the lines found, the union of their cells (removed), the multiplied points and the board in
+   * which the lines are visible (the screen replays the step from it, AC-51).
+   */
+  | { kind: 'match'; step: number; lines: readonly Line[]; cells: readonly Cell[]; points: number; board: Board }
   | { kind: 'cascade'; step: number }
   | { kind: 'shuffle' };
 
@@ -264,7 +267,7 @@ export function reduceGarden(state: GardenState, action: GardenAction): GardenSt
     step += 1;
     const cells = uniqueCells(lines);
     const points = lines.reduce((sum, line) => sum + line.points, 0) * (1 + (step - 1) * m);
-    events.push({ kind: 'match', step, lines, cells, points });
+    events.push({ kind: 'match', step, lines, cells, points, board });
     if (step >= 2) {
       combos += 1;
       events.push({ kind: 'cascade', step }, { kind: 'combo' });

@@ -124,6 +124,7 @@ describe('Potager Fou engine: swaps and scoring (AC-23)', () => {
         lines: [{ cells: [{ col: 0, row: 7 }, { col: 1, row: 7 }, { col: 2, row: 7 }], points: 100 }],
         cells: [{ col: 0, row: 7 }, { col: 1, row: 7 }, { col: 2, row: 7 }],
         points: 100,
+        board: expect.any(Array), // the swapped board, replayed by the screen (AC-51)
       },
     ]);
     expect(s1.events).toContainEqual({ kind: 'score', points: 100 });

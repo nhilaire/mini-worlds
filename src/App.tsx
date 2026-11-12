@@ -33,7 +33,11 @@ import { TabBar } from './ui/TabBar';
 import { ThemeProvider, useTheme } from './ui/ThemeProvider';
 import { PixelText } from './ui/Typography';
 
-const FONTS = { PressStart2P: require('../assets/fonts/PressStart2P-Regular.ttf') };
+// Pixelify Sans (OFL): a soft pixel font for titles, HUD and buttons (Press Start 2P was found too harsh on the phone).
+const FONTS = {
+  PixelifySans: require('../assets/fonts/PixelifySans-Regular.ttf'),
+  'PixelifySans-Bold': require('../assets/fonts/PixelifySans-Bold.ttf'),
+};
 
 /** Test link from the deep link (null = normal play). Resolved before the store loads. */
 function useTestLink(): TestLink | null | 'pending' {

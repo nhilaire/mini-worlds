@@ -1,7 +1,7 @@
 import { Pressable, StyleSheet, Text } from 'react-native';
 
 import { useTheme } from './ThemeProvider';
-import { font, PIXEL_FONT, radius, spacing } from './theme';
+import { font, PIXEL_FONT_BOLD, PIXEL_SCALE, radius, spacing } from './theme';
 
 type Props = {
   label: string;
@@ -38,6 +38,6 @@ const styles = StyleSheet.create({
   compact: { minHeight: 40, paddingHorizontal: spacing.md },
   pressed: { opacity: 0.8, transform: [{ scale: 0.98 }] },
   disabled: { opacity: 0.45 },
-  label: { fontSize: font.hud, fontFamily: PIXEL_FONT, textAlign: 'center', lineHeight: 18 },
-  compactLabel: { fontSize: 10 },
+  label: { fontSize: Math.round(font.hud * PIXEL_SCALE), fontFamily: PIXEL_FONT_BOLD, textAlign: 'center', lineHeight: Math.round(font.hud * PIXEL_SCALE * 1.3) },
+  compactLabel: { fontSize: Math.round(10 * PIXEL_SCALE) },
 });

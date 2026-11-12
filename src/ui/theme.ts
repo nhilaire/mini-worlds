@@ -51,6 +51,12 @@ export const spacing = { xs: 4, sm: 8, md: 16, lg: 24, xl: 40 } as const;
 /** Body text uses the system font (accents, long sentences); titles and HUD use the pixel font. */
 export const font = { title: 22, heading: 16, body: 17, small: 14, hud: 12, pixelBig: 18 } as const;
 
-export const PIXEL_FONT = 'PressStart2P';
+export const PIXEL_FONT = 'PixelifySans';
+export const PIXEL_FONT_BOLD = 'PixelifySans-Bold';
+/**
+ * Pixel sizes in this app were tuned for Press Start 2P, whose glyphs fill the whole em square. Pixelify Sans has a
+ * normal cap height, so the same visual height needs a larger font size: PixelText and the buttons apply this scale.
+ */
+export const PIXEL_SCALE = 1.4;
 
 export const radius = { card: 14, button: 12, chip: 8 } as const;

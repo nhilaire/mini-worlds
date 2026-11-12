@@ -65,7 +65,7 @@ After the first phone test (2026-11-12, RELEASE.md notes)
 - [x] T-35 Blocks scoring and stars: hard drop 1 point per row, star thresholds 1 000 / 2 500 / 5 000 (AC-08, AC-18) - proof: unit
 - [x] T-36 Tutorial fall: slow tick (one row per 2 s) while a bubble is shown instead of a frozen piece (AC-47, AC-21) - proof: unit
 - [x] T-37 Ghost piece for the first 5 locked pieces of each round only (AC-46) - proof: unit
-- [x] T-38 Pixel font: Pixelify Sans (Regular, Bold) replaces Press Start 2P in titles, HUD and buttons; licences and README (AC-48, AC-45) - proof: unit
+- [x] T-38 Pixel font: Jersey 20 replaces Press Start 2P (Pixelify Sans tried first, its 5 reads as an S) in titles, HUD and buttons; licences and README (AC-48, AC-45) - proof: unit
 - [x] T-39 Fall speed-up with the pieces locked (−25 ms per 5 pieces) in addition to the lines (AC-49, AC-19) - proof: unit
 - [x] T-40 Coin economy: upgrades 250 / 600 / 1 200, level-up 25 × level, challenges 25-50 and all-done bonus 50; first-session budget test (AC-07, AC-10, AC-13, AC-50) - proof: unit
 - [x] T-41 Potager Fou replay: match events carry their board, pure replay plan (slide, flash + points, pop, fall), animated canvas with inputs locked (AC-51, AC-45) - proof: unit

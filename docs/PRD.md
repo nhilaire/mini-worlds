@@ -342,9 +342,9 @@ clears it. Real-time games pause their timers while a bubble is shown.
 
 - Pixel art drawn in code: each sprite is a small grid (8×8 to 16×16) of palette indices in TypeScript, rendered
   with crisp scaling; UI chrome uses rounded pixel frames. Limited palette, colour-blind safe (every game piece has
-  a distinct shape). Free pixel font (Pixelify Sans, OFL, Regular and Bold; softer than Press Start 2P, which the first phone test found
-  too harsh) for titles and HUD, a readable pixel or
-  system font for body text. No external image file, no copyrighted material; game and world names are original.
+  a distinct shape). Free pixel font (Jersey 20, OFL; softer than Press Start 2P, which the first phone test found too harsh, and with
+  digits that stay distinct from letters, unlike Pixelify Sans whose 5 reads as an S) for titles and HUD, a readable
+  pixel or system font for body text. No external image file, no copyrighted material; game and world names are original.
 - Theme: follows the phone (light / dark) with a choice in Settings; each world has a dominant colour.
 - Animations: short and juicy (≤ 400 ms): piece lock flash, line clear, cascades, bubble pop and drop, result
   count-up, stars lighting one by one, coins flying to the counter, level-up banner, world unlock reveal.
@@ -546,8 +546,8 @@ Telemetry and technical
 - AC-47 [unit] Given a tutorial bubble shown in Pluie de Blocs, when the engine ticks in tutorial mode, then the piece
   falls one row every 2 000 ms (whatever the slow-start level), and at the normal interval once the tutorial
   mode ends; the guided first round therefore never freezes.
-- AC-48 [unit] Given the app fonts, then titles and HUD use Pixelify Sans (Regular and Bold files present, loaded at
-  start, listed in assets/LICENSES.md under the OFL) and Press Start 2P is no longer shipped.
+- AC-48 [unit] Given the app fonts, then titles and HUD use Jersey 20 (file present, loaded at start, listed in
+  assets/LICENSES.md under the OFL) and neither Press Start 2P nor Pixelify Sans is shipped.
 - AC-49 [unit] Given a round of Pluie de Blocs without any line cleared, when pieces lock, then the fall interval
   shortens by 25 ms every 5 locked pieces (800 → 775 ms at the 5th, 600 ms at the 40th, 300 ms at the 100th), never
   below 150 ms, and the slow-start upgrade keeps adding its 80 ms per level.

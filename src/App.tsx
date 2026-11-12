@@ -33,11 +33,9 @@ import { TabBar } from './ui/TabBar';
 import { ThemeProvider, useTheme } from './ui/ThemeProvider';
 import { PixelText } from './ui/Typography';
 
-// Pixelify Sans (OFL): a soft pixel font for titles, HUD and buttons (Press Start 2P was found too harsh on the phone).
-const FONTS = {
-  PixelifySans: require('../assets/fonts/PixelifySans-Regular.ttf'),
-  'PixelifySans-Bold': require('../assets/fonts/PixelifySans-Bold.ttf'),
-};
+// Jersey 20 (OFL): a soft pixel font for titles, HUD and buttons. Press Start 2P was found too harsh on the phone,
+// Pixelify Sans drew its 5 like an S (see docs/evidence/v0.1.0/RELEASE.md).
+const FONTS = { Jersey20: require('../assets/fonts/Jersey20-Regular.ttf') };
 
 /** Test link from the deep link (null = normal play). Resolved before the store loads. */
 function useTestLink(): TestLink | null | 'pending' {

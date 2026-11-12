@@ -51,14 +51,15 @@ export const spacing = { xs: 4, sm: 8, md: 16, lg: 24, xl: 40 } as const;
 /** Body text uses the system font (accents, long sentences); titles and HUD use the pixel font. */
 export const font = { title: 22, heading: 16, body: 17, small: 14, hud: 12, pixelBig: 18 } as const;
 
-export const PIXEL_FONT = 'PixelifySans';
-export const PIXEL_FONT_BOLD = 'PixelifySans-Bold';
+export const PIXEL_FONT = 'Jersey20';
+/** Jersey 20 ships one weight: bold pixel text uses the same face (kept as a separate name for a future weight). */
+export const PIXEL_FONT_BOLD = 'Jersey20';
 /**
- * Pixel sizes in this app were tuned for Press Start 2P, whose glyphs fill the whole em square. Pixelify Sans has a
+ * Pixel sizes in this app were tuned for Press Start 2P, whose glyphs fill the whole em square. Jersey 20 has a
  * normal cap height, so the same visual height needs a larger font size: PixelText and the buttons apply this scale.
  */
 export const PIXEL_SCALE = 1.4;
-/** Below this size the digits of Pixelify Sans blur (a 5 reads as an S on the emulator captures). */
+/** Below this size pixel digits blur on a phone screen (checked on the emulator captures). */
 export const PIXEL_MIN_SIZE = 13;
 
 export const radius = { card: 14, button: 12, chip: 8 } as const;

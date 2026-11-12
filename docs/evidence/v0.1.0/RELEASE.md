@@ -16,8 +16,9 @@ First phone test (2026-11-12, OnePlus BE2029, Android 11, APK ceceb816..., play 
 `raw/phone-logcat-play.txt`: 2747 lines, 0 fatal): not accepted. Four points raised, with the decisions taken
 with the user (PRD amendment, fixed through /build-game, then re-verify and re-release):
 
-1. Pixel font too harsh (Press Start 2P on titles and HUD): replace it with a softer pixel font (Pixelify Sans,
-   OFL); body text keeps the system font.
+1. Pixel font too harsh (Press Start 2P on titles and HUD): replace it with a softer pixel font; body text keeps
+   the system font. Pixelify Sans was tried first: on the emulator captures its 5 reads as an S at every size
+   (« 2S0 pièces »), so Jersey 20 (OFL, distinct digits, full French accents) was chosen instead.
 2. Pluie de Blocs does not fall while the tutorial bubbles are shown: fall slowly instead (one row every 2 s
    while a bubble is shown, normal interval once the last bubble is dismissed).
 3. The ghost piece (destination shadow) stays all round long: show it for the first 5 locked pieces of each

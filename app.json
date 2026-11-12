@@ -11,7 +11,7 @@
     },
     "android": {
       "adaptiveIcon": {
-        "backgroundColor": "#E6F4FE",
+        "backgroundColor": "#F77F00",
         "foregroundImage": "./assets/android-icon-foreground.png",
         "backgroundImage": "./assets/android-icon-background.png",
         "monochromeImage": "./assets/android-icon-monochrome.png"
@@ -25,7 +25,19 @@
       "@react-native-firebase/app",
       "@react-native-firebase/analytics",
       "@react-native-firebase/crashlytics",
-      "expo-localization"
+      "expo-localization",
+      [
+        "expo-splash-screen",
+        {
+          "image": "./assets/splash-icon.png",
+          "imageWidth": 200,
+          "resizeMode": "contain",
+          "backgroundColor": "#F4F1E8",
+          "dark": {
+            "backgroundColor": "#141226"
+          }
+        }
+      ]
     ],
     "scheme": "miniworlds"
   }

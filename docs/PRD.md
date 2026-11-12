@@ -345,6 +345,11 @@ clears it. Real-time games pause their timers while a bubble is shown.
   a distinct shape). Free pixel font (Jersey 20, OFL; softer than Press Start 2P, which the first phone test found too harsh, and with
   digits that stay distinct from letters, unlike Pixelify Sans whose 5 reads as an S) for titles and HUD, a readable
   pixel or system font for body text. No external image file, no copyrighted material; game and world names are original.
+- Launcher icon and splash screen (first phone test: the Expo placeholders were still there): a pixel « toy box »,
+  a cream rounded tile holding four game pieces (arcade box, bubble, tomato, trophy) on the orange accent, drawn by
+  `scripts/generate-icons.mjs` from the game sprites (adaptive icon layers, monochrome layer, legacy icon, splash
+  image, favicon). The splash shows the tile on the light background (dark background in dark mode), no text (the
+  app name differs per language).
 - Theme: follows the phone (light / dark) with a choice in Settings; each world has a dominant colour.
 - Animations: short and juicy (≤ 400 ms): piece lock flash, line clear, cascades, bubble pop and drop, result
   count-up, stars lighting one by one, coins flying to the counter, level-up banner, world unlock reveal.
@@ -561,6 +566,11 @@ Telemetry and technical
   board); the board of the first match equals the swapped board, the board of the last fall equals the settled
   board; a refused swap yields a swap and a swap-back phase; and the Potager screen shows the points of the first
   step above the pieces after a valid swap, then removes them when the replay ends.
+- AC-52 [unit] Given the icon generator, then the committed PNG files (icon, adaptive foreground / background /
+  monochrome, splash, favicon) are byte for byte what it produces, have the expected sizes, embed the game sprites
+  and palette unchanged, and app.json points the icon, the adaptive icon and the expo-splash-screen plugin at them.
+- AC-53 [device] Given the release APK on the emulator, when the launcher is shown, then the app icon is the toy box
+  tile (not the Expo placeholder) and the cold start shows the splash tile on the light background before Home.
 
 ## Player copy
 

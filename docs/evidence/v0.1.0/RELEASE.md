@@ -3,9 +3,9 @@
 Phone install: PASS
 User acceptance: pending
 Date: 2026-11-12
-Commit: 3fb1a55
+Commit: ac9c80f
 APK: mini-worlds-0.1.0-arm64-v8a.apk (49.8 MB, arm64-v8a)
-SHA-256: ceceb8162509e1f06a34b95a2d42b262cf7f15aac58e75fa04f2d308eab3d044
+SHA-256: eee4733de1bc2e0b14bf7259b196d8ae9e1abd5dd5de75620e58105f3a8e0d9d
 Signature: release signature valid
 Phone: Android 11 (API 30, arm64-v8a)
 Launch check: alive after 10 s, no fatal error
@@ -35,3 +35,6 @@ with the user (PRD amendment, fixed through /build-game, then re-verify and re-r
    board before the swap and the settled board, nothing showed which pieces were aligned. Decision: the screen
    replays the swap from the engine events (slide, frame + flash of the aligned pieces with the points, pop,
    fall of the pieces above and arrival of the new ones), inputs locked during the replay (AC-51).
+8. (second phone test, 2026-11-12 afternoon) The launcher icon and the splash screen were still the Expo
+   placeholders. Decision: a pixel « toy box » icon generated from the game sprites (adaptive layers, monochrome,
+   legacy icon, favicon) and a splash image on the app background through expo-splash-screen (AC-52, AC-53).

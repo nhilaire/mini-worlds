@@ -453,7 +453,7 @@ Core engine
   for the same session seed), and progress is discarded when the date changes.
 - AC-13 [unit] Given the challenges of the day, when rounds end, then each challenge's progress follows its
   definition (rounds, distinct games, new star, combos, coins from rounds, score per game), each reward is
-  granted once, and 100 bonus coins are granted when the third completes.
+  granted once, and 50 bonus coins are granted when the third completes.
 - AC-14 [unit] Given the achievement list, when rounds, stars, upgrades, levels, calendar day 7 and lifetime
   coins reach each condition, then the matching achievement unlocks exactly once with its reward.
 - AC-15 [unit] Given a save file, when it is written and read back, then the state is identical; a save with

@@ -1,27 +1,27 @@
 # Verification report: Bric-à-Jeux v0.1.0
 
 Overall: PASS
-Commit: deed8a3
-Date: 2026-11-12 12:55 UTC
+Commit: c93b4dd
+Date: 2026-11-12 15:01 UTC
 Stack: expo
 Target: emulator sdk_gphone64_x86_64, Android 16 (API 36, x86_64)
-APK: mini-worlds-0.1.0-universal.apk (136.1 MB)
-SHA-256: 0be02d9b8d5137df1a670338d2e1ee3027552995b86742534871a58244f1890a
+APK: mini-worlds-0.1.0-universal.apk (135.7 MB)
+SHA-256: 4b9049123233385e57e3b6a56695412dd82a045c7f84be013f318e78d8f8228a
 
 | # | Step | Result | Evidence |
 |---|---|---|---|
-| 1 | clean working tree | PASS | commit deed8a3 |
+| 1 | clean working tree | PASS | commit c93b4dd |
 | 2 | typecheck | PASS | `tsc --noEmit` exit 0 |
 | 3 | lint | PASS | `npm run lint` exit 0 |
-| 4 | unit tests (Jest) | PASS | Tests:       280 passed, 280 total |
+| 4 | unit tests (Jest) | PASS | Tests:       284 passed, 284 total |
 | 5 | expo-doctor | PASS | all checks passed |
 | 6 | secrets & personal data scan | PASS | secret-scan (worktree): clean |
-| 7 | release build | PASS | mini-worlds-0.1.0-universal.apk, 136.1 MB, Firebase off |
+| 7 | release build | PASS | mini-worlds-0.1.0-universal.apk, 135.7 MB, Firebase off |
 | 8 | release signature | PASS | release signature valid; cert SHA-256 54da35e17c99b321... |
 | 9 | install (adb) | PASS | Performing Streamed Install Success |
 | 10 | launch, alive after 8 s, no fatal error | PASS | process alive, 0 fatal log lines |
-| 11 | cold start time | PASS | median 2662 ms of 1342 / 2662 / 2669 ms after a warm-up launch (target < 3000 ms) |
-| 12 | Maestro E2E flows | PASS | 8/8 flows passed, 32 screenshots in screens/ |
+| 11 | cold start time | PASS | median 721 ms of 721 / 683 / 992 ms after a warm-up launch (target < 3000 ms) |
+| 12 | Maestro E2E flows | PASS | 8/8 flows passed, 33 screenshots in screens/ |
 | 13 | no crash during e2e flows | PASS | 0 fatal log lines (crash buffer + errors, raw/logcat-e2e.txt) |
 
 Screenshots: `screens/` (emulator only, no personal data). Raw logs: `raw/` (local, git-ignored).

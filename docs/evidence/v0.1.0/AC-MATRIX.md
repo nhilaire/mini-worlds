@@ -2,13 +2,16 @@
 
 Produced by the `verifier` agent from the PRD and the evidence of this version. One row per acceptance criterion.
 
-Verified commit: deed8a3 (REPORT.md Overall PASS, 2026-11-12 12:55 UTC, after the fixes of the first phone test).
-APK SHA-256: 0be02d9b8d5137df1a670338d2e1ee3027552995b86742534871a58244f1890a.
+Verified commit: c93b4dd (REPORT.md Overall PASS, 2026-11-12 15:01 UTC, after the fixes of the first phone test and the
+launcher icon / splash of the second test).
+APK SHA-256: 4b9049123233385e57e3b6a56695412dd82a045c7f84be013f318e78d8f8228a.
 
-Sources: docs/PRD.md (AC-01..AC-51), REPORT.md (Overall PASS), raw/jest.txt (280 / 280), raw/maestro.txt +
-raw/maestro-junit.xml (8 / 8, run folder raw/maestro-output/2026-11-12_134758), raw/logcat-*.txt, raw/device-*.txt,
-screens/*.png, DEVICE-CHECKS.md. Every test name was checked in raw/jest.txt and every flow step in the
-.maestro/*.yaml files; the screenshots were opened. The emulator runs in English, so `01-consent.png` is in English.
+Sources: docs/PRD.md (AC-01..AC-53), REPORT.md (Overall PASS), raw/jest.txt (284 / 284), raw/maestro.txt +
+raw/maestro-junit.xml (8 / 8, run folder raw/maestro-output/2026-11-12_155436), raw/logcat-*.txt, raw/device-*.txt,
+screens/*.png, DEVICE-CHECKS.md. Rows AC-01..AC-51 were written by the verifier agent on the deed8a3 run (every test
+name checked in raw/jest.txt, every flow step in the .maestro/*.yaml files, screenshots opened) and re-checked on
+this run (same tests and flows, 284 / 284 and 8 / 8); rows AC-52 and AC-53 were added for the icon and splash work
+from raw/jest.txt lines 296-300 and the launcher / splash captures. The emulator runs in English, so `01-consent.png` is in English.
 `firebase: deferred` in factory-app.json: AC-41 is DEFERRED (firebase). `[manual]` criteria are proven at release on
 the user's phone (PENDING RELEASE).
 
@@ -65,5 +68,7 @@ the user's phone (PENDING RELEASE).
 | AC-49 | −25 ms every 5 locked pieces (775 at 5th, 600 at 40th, 300 at 100th), floor 150, slow-start +80/level kept | unit | blocks.test.ts "fall interval follows …" body: `fallInterval(0,0,4) = 800`, `(0,0,5) = 775`, `(0,0,40) = 600`, `(0,0,100) = 300`, `(0,3,100) = 540`, `(0,0,1000) = 150`; "the gravity of a round follows the pieces locked (AC-49)" (locked 5: no fall at 774 ms, one row at 775 ms) | PASS |
 | AC-50 | First session (3 Blocks rounds 1000/1500/2000 + day-1 reward, all settled) affords 250 but not 850 | unit | economy.test.ts "coin economy pacing (AC-50) › a first session on <date> affords one upgrade level, not two" (4 dates; `collectDailyReward` then 3× `settleRound` at 1000/1500/2000, 90 s; coins ≥ `UPGRADE_COSTS[0]` and < `UPGRADE_COSTS[0] + UPGRADE_COSTS[1]`), "a full upgrade line costs 2050 coins and the nine lines 18 450" | PASS |
 | AC-51 | Replay plan: swap, then flash/pop/fall per step with consistent boards and fall distances; refused swap → swap + swap-back; screen shows step-1 points then removes them | unit | gardenReplay.test.ts "replay plan of a swap (AC-51) › a valid swap gives swap, then flash + pop + fall per cascade step, the first match board being the swapped board" (flash.board = swapped board, points 100, fall.board = settled board, fallen distances per column), "a refused swap gives a slide and a slide back", "fall distances: survivors keep their order, a hole in the middle pulls the pieces above it", "every engine-generated swap replays with consistent boards (seeds 1-30)"; screen side: gameScreens.test.tsx AC-26 test asserts `garden-points-pop` shows `+<first step points>` then `waitFor` it to be null | PASS |
+| AC-52 | Icon generator: committed PNGs byte for byte, sizes, sprites and palette unchanged, app.json wiring | unit | icons.test.ts "launcher icon and splash (AC-52) › the committed PNG files are exactly what the generator produces" (`node scripts/generate-icons.mjs --check` → "6 icon files up to date"), "files have the expected sizes (RGBA)" (1024² ×4, splash 1000², favicon 48²), "the generator embeds the game sprites and palette colours unchanged" (arcade / bubble.blue / tomato / challenges vs src/art), "app.json uses the generated files for the icon, the adaptive icon and the splash screen" (adaptive layers, `#F77F00`, expo-splash-screen image / contain / `#F4F1E8` / dark) — raw/jest.txt lines 296-300 | PASS |
+| AC-53 | Launcher shows the toy box icon, cold start shows the splash tile | device | `screens/device-launcher-icon.png` (emulator app drawer, crop: cream tile with the four pieces on the orange circle, label « Game Grab-… » as the emulator is English; full capture raw/device-launcher.png); `screens/device-splash.png` (screencap 350 ms after `am start` from a stopped state: the four pieces centred on the light background before Home); `raw/device-labels.txt` `application-icon-640:'res/BW.xml'` (adaptive icon resource, not the placeholder PNG); REPORT.md row 11 cold start median 721 ms | PASS |
 
-Summary: 49 PASS, 1 DEFERRED (firebase), 1 PENDING RELEASE, 0 FAIL, 0 NOT PROVEN.
+Summary: 51 PASS, 1 DEFERRED (firebase), 1 PENDING RELEASE, 0 FAIL, 0 NOT PROVEN.

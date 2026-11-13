@@ -2,14 +2,18 @@
 // A frame loop reads the injectable clock and ticks the engine while the round is active (not during the tutorial
 // bubble or the pause); a tap anywhere on the field jumps. The jump arc is the move animation; a hit makes the bunny
 // blink for 250 ms.
+//
+// Performance (phone test: the round lagged on an Android 11 phone): the frame loop never re-renders React. The bunny
+// height and the fence positions are Animated values set on every tick; React re-renders only when something else
+// changes (a fence spawns or leaves, an event such as a pass or a hit, the end of the round).
 import { useCallback, useEffect, useMemo, useRef, useState } from 'react';
-import { Pressable, StyleSheet, useWindowDimensions, View } from 'react-native';
+import { Animated, Pressable, StyleSheet, useWindowDimensions, View } from 'react-native';
 
 import { BUNNY } from '../../art/games/hop';
 import { PALETTE } from '../../art/palette';
 import { now } from '../../game/clock';
 import { upgradeLevels } from '../../game/core/upgrades';
-import { BUNNY_SIZE, BUNNY_X, createHop, FIELD_WIDTH, HIT_BLINK_MS, HopAction, HopEvent, OBSTACLE_WIDTH, reduceHop } from '../../game/hop/engine';
+import { BUNNY_SIZE, BUNNY_X, createHop, FIELD_WIDTH, HIT_BLINK_MS, HopAction, HopEvent, HopState, OBSTACLE_WIDTH, reduceHop } from '../../game/hop/engine';
 import { useI18n } from '../../i18n/I18nProvider';
 import { useGameStore } from '../../state/GameStore';
 import { PixelSprite } from '../../ui/PixelSprite';
@@ -19,14 +23,23 @@ import { spacing } from '../../ui/theme';
 import { GameFrame, OnFinish, useRoundFrame } from './GameFrame';
 import { useGameFeedback } from './useGameFeedback';
 
-/** Sky height in units (apex of a jump: 2 + 0.8) and ground band below it. */
+/** Sky height in units (apex of a jump: 2.53 + 0.8) and ground band below it. */
 const SKY_UNITS = 4;
 const GROUND_UNITS = 0.6;
 /** Longest tick fed to the engine (a dropped frame must not teleport the fences). */
 const MAX_DT_MS = 50;
+/** Fences on screen at once never exceed 3 (12 units, gaps of 5+); the pool keeps a margin. */
+const FENCE_SLOTS = 6;
 
 /** Engine events → feedback kinds of the sound kit (tick: move, pop: success, drop: failure, combo, over). */
 const FEEDBACK_KIND: Partial<Record<HopEvent['kind'], string>> = { jump: 'move', pass: 'pop', hit: 'drop', combo: 'combo', over: 'over' };
+
+/** React must re-render only when what it draws changes: fences spawned or removed, an event, the end, the shields. */
+export function needsRender(previous: HopState, next: HopState): boolean {
+  if (next.events.length > 0 || next.status !== previous.status || next.shields !== previous.shields) return true;
+  if (next.obstacles.length !== previous.obstacles.length) return true;
+  return next.obstacles.some((o, i) => o.id !== previous.obstacles[i].id);
+}
 
 export function HopGame({ seed, onFinish }: { seed: number; onFinish: OnFinish }) {
   const { t } = useI18n();
@@ -37,6 +50,10 @@ export function HopGame({ seed, onFinish }: { seed: number; onFinish: OnFinish }
 
   const [state, setState] = useState(() => createHop(seed, upgradeLevels(save, 'hop')));
   const stateRef = useRef(state);
+  // Positions in engine units, set on every tick without re-rendering.
+  const [bunnyY] = useState(() => new Animated.Value(0));
+  const [fenceX] = useState(() => Array.from({ length: FENCE_SLOTS }, () => new Animated.Value(FIELD_WIDTH)));
+  const [blink] = useState(() => new Animated.Value(1));
   const steps = useMemo(() => [{ key: 'jump', text: t.tutorial.hop.jump }], [t]);
   const frame = useRoundFrame({ game: 'hop', tutorialSteps: steps, onFinish, score: () => stateRef.current.score });
   const { paused, active, advanceTutorial, finish, setCombos } = frame;
@@ -49,11 +66,19 @@ export function HopGame({ seed, onFinish }: { seed: number; onFinish: OnFinish }
       if (previous.status !== 'playing') return;
       const next = reduceHop(previous, action);
       stateRef.current = next;
-      if (next.events.length > 0 || next.y !== previous.y || next.obstacles !== previous.obstacles || next.status !== previous.status) setState(next);
+      bunnyY.setValue(next.y);
+      next.obstacles.forEach((o, i) => {
+        if (i < FENCE_SLOTS) fenceX[i].setValue(o.x);
+      });
+      if (next.events.some((e) => e.kind === 'hit')) {
+        const step = HIT_BLINK_MS / 4;
+        Animated.sequence([0.25, 1, 0.25, 1].map((toValue) => Animated.timing(blink, { toValue, duration: step, useNativeDriver: false }))).start();
+      }
+      if (needsRender(previous, next)) setState(next);
       if (next.status === 'over') finish(next.score, next.combos);
       else setCombos(next.combos);
     },
-    [finish, setCombos],
+    [blink, bunnyY, fenceX, finish, setCombos],
   );
 
   // Frame loop: elapsed time from the injectable clock, clamped, only while the round is active.
@@ -81,8 +106,6 @@ export function HopGame({ seed, onFinish }: { seed: number; onFinish: OnFinish }
 
   const fieldW = FIELD_WIDTH * unit;
   const ground = GROUND_UNITS * unit;
-  const blinking = state.lastHitMs !== null && state.timeMs - state.lastHitMs < HIT_BLINK_MS;
-  const bunnyHidden = blinking && Math.floor((state.timeMs - (state.lastHitMs ?? 0)) / 50) % 2 === 0;
   const bunnyScale = (BUNNY_SIZE * unit) / 8;
 
   const hud = (
@@ -104,26 +127,26 @@ export function HopGame({ seed, onFinish }: { seed: number; onFinish: OnFinish }
         style={[styles.field, { width: fieldW, height: (SKY_UNITS + GROUND_UNITS) * unit, backgroundColor: colors.surface, borderColor: colors.border }]}
       >
         <View style={[styles.ground, { height: ground }]} />
-        {state.obstacles.map((o) => (
-          <View
+        {state.obstacles.slice(0, FENCE_SLOTS).map((o, i) => (
+          <Animated.View
             key={o.id}
             testID={`hop-fence-${o.id}`}
             pointerEvents="none"
-            style={[styles.fence, { left: o.x * unit, bottom: ground, width: OBSTACLE_WIDTH * unit, height: o.height * unit }]}
+            style={[styles.fence, { left: 0, bottom: ground, width: OBSTACLE_WIDTH * unit, height: o.height * unit, transform: [{ translateX: Animated.multiply(fenceX[i], unit) }] }]}
           >
             <View style={[styles.post, { left: 0, width: unit * 0.22 }]} />
             <View style={[styles.post, { right: 0, width: unit * 0.22 }]} />
             <View style={[styles.rail, { top: unit * 0.15, height: unit * 0.18 }]} />
             <View style={[styles.rail, { top: o.height * unit * 0.55, height: unit * 0.18 }]} />
-          </View>
+          </Animated.View>
         ))}
-        <View
+        <Animated.View
           testID="hop-bunny"
           pointerEvents="none"
-          style={{ position: 'absolute', left: BUNNY_X * unit, bottom: ground + state.y * unit, opacity: bunnyHidden ? 0.25 : 1 }}
+          style={{ position: 'absolute', left: BUNNY_X * unit, bottom: ground, opacity: blink, transform: [{ translateY: Animated.multiply(bunnyY, -unit) }] }}
         >
           <PixelSprite sprite={BUNNY} scale={bunnyScale} />
-        </View>
+        </Animated.View>
       </Pressable>
     </GameFrame>
   );

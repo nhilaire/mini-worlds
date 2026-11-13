@@ -1,5 +1,5 @@
 // « Saute-Lapin » (docs/PRD.md "Saute-Lapin"): side-view runner, pure reducer. The bunny stands at x = 2 on the
-// ground (y = 0); fences spawn at x = 12 and run left. Time comes in through `tick` (elapsed ms); randomness through
+// ground (y = 0); obstacles (fence, tall fence, hedge, bird) spawn at x = 12 and run left. Time comes in through `tick` (elapsed ms); randomness through
 // the seeded generator kept in the state. Units: field units, seconds for the physics.
 import type { BaseEvent, RoundState } from '../contract';
 import { createRng } from '../rng';
@@ -11,10 +11,11 @@ export const SPAWN_X = 12;
 export const OBSTACLE_WIDTH = 1;
 export const LOW_HEIGHT = 1;
 export const HIGH_HEIGHT = 1.5;
-export const HIGH_CHANCE = 0.25;
 export const BASE_SPEED = 6;
-export const SPEED_PER_PASS = 0.2;
-export const MAX_SPEED = 14;
+export const SPEED_PER_PASS = 0.35;
+export const MAX_SPEED = 15;
+/** Birds (and the second kind table) appear once this many obstacles were passed. */
+export const BIRDS_FROM_PASSED = 10;
 export const JUMP_SPEED = 13.5;
 export const GRAVITY = 36;
 export const POINTS_PER_PASS = 10;
@@ -22,7 +23,33 @@ export const COMBO_EVERY = 5;
 /** Physics sub-step (ms): long ticks are split so that a fence cannot slip between two collision checks. */
 export const STEP_MS = 10;
 
-export type Obstacle = { id: number; x: number; height: number };
+export type ObstacleKind = 'fence' | 'tall' | 'hedge' | 'bird';
+export type ObstacleShape = { width: number; bottom: number; height: number };
+
+/** Size of each kind (units): fence 1 × 1, tall fence 1 × 1.5, hedge 2 × 1, bird 1 wide flying from 1.3 to 1.9. */
+export const OBSTACLE_SHAPES: Record<ObstacleKind, ObstacleShape> = {
+  fence: { width: 1, bottom: 0, height: LOW_HEIGHT },
+  tall: { width: 1, bottom: 0, height: HIGH_HEIGHT },
+  hedge: { width: 2, bottom: 0, height: 1 },
+  bird: { width: 1, bottom: 1.3, height: 0.6 },
+};
+
+/** Cumulative kind table: before 10 passed 60 / 25 / 15 %, from 10 passed 40 / 20 / 20 / 20 %. */
+const KINDS_EARLY: readonly [ObstacleKind, number][] = [['fence', 0.6], ['tall', 0.85], ['hedge', 1]];
+const KINDS_LATE: readonly [ObstacleKind, number][] = [['fence', 0.4], ['tall', 0.6], ['hedge', 0.8], ['bird', 1]];
+
+export type Obstacle = { id: number; kind: ObstacleKind; x: number } & ObstacleShape;
+
+/** An obstacle of a kind with its left edge at `x`. */
+export function makeObstacle(id: number, kind: ObstacleKind, x: number): Obstacle {
+  return { id, kind, x, ...OBSTACLE_SHAPES[kind] };
+}
+
+/** The kind for a uniform roll in [0, 1) with `passed` obstacles passed so far. */
+export function kindFor(roll: number, passed: number): ObstacleKind {
+  const table = passed < BIRDS_FROM_PASSED ? KINDS_EARLY : KINDS_LATE;
+  return (table.find(([, upTo]) => roll < upTo) ?? table[table.length - 1])[0];
+}
 
 export type HopEvent =
   | BaseEvent
@@ -53,30 +80,30 @@ export type HopState = RoundState<HopEvent> & {
 
 export type HopAction = { type: 'jump' } | { type: 'tick'; dt: number };
 
-/** Run speed (units/s) after `passed` obstacles: 6 + 0.2 per obstacle, capped at 14. */
+/** Run speed (units/s) after `passed` obstacles: 6 + 0.35 per obstacle, capped at 15. */
 export function runSpeed(passed: number): number {
   return Math.min(MAX_SPEED, BASE_SPEED + SPEED_PER_PASS * passed);
 }
 
 /**
- * Range of the seeded spawn gap at a speed: [max(5, 0.8 × speed), max(10, 1.2 × speed)] (PRD amended after the
- * tall-fence review: at least 0.8 s between two fences, longer than one jump of 0.75 s).
+ * Range of the seeded spawn gap at a speed: [max(5, 0.8 × speed), max(10, 1.8 × speed)] (at least 0.8 s between two
+ * obstacles, longer than one jump of 0.75 s; up to 1.8 s so that distances vary).
  */
 export function gapRange(speed: number): { min: number; max: number } {
-  return { min: Math.max(5, 0.8 * speed), max: Math.max(10, 1.2 * speed) };
+  return { min: Math.max(5, 0.8 * speed), max: Math.max(10, 1.8 * speed) };
 }
 
-/** Draws one obstacle height and the gap after it. The gap uses the speed at the moment of the spawn. */
-function drawSpawn(rngState: number, speed: number): { height: number; gap: number; rngState: number } {
+/** One draw per spawn: the obstacle kind (table of `passed`) and the gap after it (range of `speed`). */
+function drawSpawn(rngState: number, speed: number, passed: number): { kind: ObstacleKind; gap: number; rngState: number } {
   const rng = createRng(rngState);
-  const height = rng.next() < HIGH_CHANCE ? HIGH_HEIGHT : LOW_HEIGHT;
+  const kind = kindFor(rng.next(), passed);
   const { min, max } = gapRange(speed);
   const gap = min + rng.next() * (max - min);
-  return { height, gap, rngState: rng.state() };
+  return { kind, gap, rngState: rng.state() };
 }
 
 export function createHop(seed: number, upgrades: { shield?: number } = {}): HopState {
-  const first = drawSpawn(seed >>> 0, runSpeed(0));
+  const first = drawSpawn(seed >>> 0, runSpeed(0), 0);
   return {
     score: 0,
     combos: 0,
@@ -84,11 +111,11 @@ export function createHop(seed: number, upgrades: { shield?: number } = {}): Hop
     events: [],
     y: 0,
     vy: 0,
-    obstacles: [{ id: 0, x: SPAWN_X, height: first.height }],
+    obstacles: [makeObstacle(0, first.kind, SPAWN_X)],
     passed: 0,
     streak: 0,
     shields: upgrades.shield ?? 0,
-    trail: SPAWN_X + OBSTACLE_WIDTH,
+    trail: SPAWN_X + OBSTACLE_SHAPES[first.kind].width,
     nextGap: first.gap,
     nextId: 1,
     rngState: first.rngState,
@@ -101,9 +128,9 @@ export function onGround(state: HopState): boolean {
   return state.y <= 0 && state.vy === 0;
 }
 
-/** Boxes overlap (touching edges do not count). */
+/** The bunny box [2, 2.8] × [y, y + 0.8] overlaps the obstacle box (touching edges do not count). */
 export function overlaps(y: number, o: Obstacle): boolean {
-  return o.x < BUNNY_X + BUNNY_SIZE && o.x + OBSTACLE_WIDTH > BUNNY_X && y < o.height;
+  return o.x < BUNNY_X + BUNNY_SIZE && o.x + o.width > BUNNY_X && y < o.bottom + o.height && y + BUNNY_SIZE > o.bottom;
 }
 
 /** One physics sub-step of `ms` (≤ STEP_MS). Mutates the working copy `s` and pushes events. */
@@ -121,17 +148,16 @@ function step(s: HopState, ms: number, events: HopEvent[]): HopState {
       vy = 0;
     }
   }
-  // Fences run left; the spawn trail runs with them.
+  // Obstacles run left; the spawn trail runs with them.
   let obstacles = s.obstacles.map((o) => ({ ...o, x: o.x - speed * dt }));
   let trail = s.trail - speed * dt;
   let { nextGap, nextId, rngState } = s;
   while (SPAWN_X - trail >= nextGap) {
     const x = trail + nextGap;
-    const spawn = drawSpawn(rngState, speed);
-    // One draw per fence: its height and the gap that follows it.
-    obstacles.push({ id: nextId, x, height: spawn.height });
+    const spawn = drawSpawn(rngState, speed, s.passed);
+    obstacles.push(makeObstacle(nextId, spawn.kind, x));
     nextId += 1;
-    trail = x + OBSTACLE_WIDTH;
+    trail = x + OBSTACLE_SHAPES[spawn.kind].width;
     nextGap = spawn.gap;
     rngState = spawn.rngState;
   }
@@ -147,7 +173,7 @@ function step(s: HopState, ms: number, events: HopEvent[]): HopState {
         streak = 0;
         lastHitMs = timeMs;
         events.push({ kind: 'hit', id: o.id, shieldsLeft: shields });
-        continue; // the fence is removed, no points
+        continue; // the obstacle is removed, no points
       }
       over = true;
       kept.push(o);
@@ -155,7 +181,7 @@ function step(s: HopState, ms: number, events: HopEvent[]): HopState {
     }
     // Passed once its right edge is behind the bunny's left edge (ids grow left to right: each passes once,
     // because a passed fence is dropped from the list).
-    if (o.x + OBSTACLE_WIDTH <= BUNNY_X) {
+    if (o.x + o.width <= BUNNY_X) {
       passed += 1;
       streak += 1;
       score += POINTS_PER_PASS;

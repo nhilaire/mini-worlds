@@ -5,7 +5,7 @@ Project slug: mini-worlds
 Final app name: Bric-à-Jeux
 Android package: io.github.nhilaire.miniworlds
 Version target: 0.2.0
-Last updated: 2026-11-13 (v0.2.0 phone test: Tour Bancale stars, Bougies Folles throw cooldown and pause between cakes, Saute-Lapin smoothness)
+Last updated: 2026-11-13 (v0.2.0 phone test: Tour Bancale stars, Bougies Folles guards, Saute-Lapin smoothness, speed-up and obstacle variety)
 
 > Written in English. Player-facing text is quoted in the "Player copy" section, in every language of the game
 > (`factory-app.json` "languages"; French is the reference).
@@ -392,11 +392,16 @@ Common rules of the ten games:
 
 #### Saute-Lapin (world Arcade, 3rd game) - real time
 
-- Side view, ground at y = 0, the bunny at x = 2 (box 0.8 × 0.8). Obstacles (fences, 1 unit wide, 1 unit high,
-  25 % of them 1.5 high) spawn at x = 12 and move left at 6 units/s + 0.2 per obstacle passed (capped at 14).
-  The next obstacle spawns when the gap between the last obstacle's right edge and x = 12 reaches a seeded
-  distance between max(5, 0.8 × speed) and max(10, 1.2 × speed) units (speed in units/s: at least 0.8 s between
-  two fences, longer than one jump).
+- Side view, ground at y = 0, the bunny at x = 2 (box 0.8 × 0.8). Obstacles spawn at x = 12 and move left at
+  6 units/s + 0.35 per obstacle passed (capped at 15: reached around the 26th obstacle; phone test: the speed-up of
+  + 0.2 up to 14 was not felt and the game got boring fast).
+- Obstacle kinds, one seeded draw per spawn: before 10 obstacles passed, fence 60 % (1 wide, 1 high), tall fence
+  25 % (1 wide, 1.5 high), hedge 15 % (2 wide, 1 high); from 10 obstacles passed, fence 40 %, tall fence 20 %,
+  hedge 20 %, bird 20 % (1 wide, flying from y = 1.3 to 1.9: the bunny on the ground passes under it, a jump at the
+  wrong moment hits it). A hit is an overlap of the boxes (touching edges do not count).
+- The next obstacle spawns when the gap between the last obstacle's right edge and x = 12 reaches a seeded
+  distance between max(5, 0.8 × speed) and max(10, 1.8 × speed) units (speed in units/s: from 0.8 s, longer than
+  one jump, to 1.8 s between two obstacles, so quick sequences alternate with breathers).
 - Tap while on the ground: jump (vertical speed 13.5 units/s, gravity 36 units/s²: apex 2.53 units, 0.75 s in the
   air; 12 units/s left only a 33 ms window over a 1.5-high fence at the start, found while building the game).
   A tap in the air is ignored.
@@ -783,7 +788,9 @@ Telemetry and technical
 - AC-59 [unit] Tour Bancale: the block slides and bounces at the speed of the rules; a drop keeps the overlap, a
   perfect drop (offset ≤ 0.15) keeps the width and scores 10 + 5 × streak; no overlap ends the round; « Grand
   plateau » widens the base. AC-59 to AC-68 also check that each engine emits a combo exactly per its rule.
-- AC-60 [unit] Saute-Lapin: a jump follows the speed and gravity of the rules and is ignored in the air; a jump in
+- AC-60 [unit] Saute-Lapin: the run speeds up by 0.35 per obstacle up to 15; obstacle kinds follow their seeded
+  shares (no bird before 10 obstacles), a hedge is cleared by a timely jump, a bird passes over a bunny on the
+  ground and hits a bunny jumping into it; a jump follows the speed and gravity of the rules and is ignored in the air; a jump in
   the middle of its window clears a 1.5-high fence at 6 and at 14 units/s and lands before the next fence; an
   obstacle passed scores 10 and speeds up the run; a hit consumes a shield or ends the round; spawns are seeded.
 - AC-61 [unit] Lucioles: a tap toggles the cell and its neighbours; every generated grid is solvable at par; the

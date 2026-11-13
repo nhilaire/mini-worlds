@@ -1,6 +1,7 @@
 // « Saute-Lapin » screen: the pure runner engine (src/game/hop) drawn with plain views (side view, 12 units wide).
 // A frame loop reads the injectable clock and ticks the engine while the round is active (not during the tutorial
-// bubble or the pause); a tap anywhere on the field jumps. The jump arc is the move animation; a hit makes the bunny
+// bubble or the pause); a tap anywhere on the field jumps. Obstacles: fence, tall fence (posts and rails), hedge (a
+// green bush 2 units wide) and bird (a pixel bird flying at 1.3 to 1.9 units), each drawn from its width and bottom. The jump arc is the move animation; a hit makes the bunny
 // blink for 250 ms.
 //
 // Performance (phone test: the round lagged on an Android 11 phone): the frame loop never re-renders React. The bunny
@@ -9,11 +10,11 @@
 import { useCallback, useEffect, useMemo, useRef, useState } from 'react';
 import { Animated, Pressable, StyleSheet, useWindowDimensions, View } from 'react-native';
 
-import { BUNNY } from '../../art/games/hop';
+import { BIRD, BUNNY } from '../../art/games/hop';
 import { PALETTE } from '../../art/palette';
 import { now } from '../../game/clock';
 import { upgradeLevels } from '../../game/core/upgrades';
-import { BUNNY_SIZE, BUNNY_X, createHop, FIELD_WIDTH, HIT_BLINK_MS, HopAction, HopEvent, HopState, OBSTACLE_WIDTH, reduceHop } from '../../game/hop/engine';
+import { BUNNY_SIZE, BUNNY_X, createHop, FIELD_WIDTH, HIT_BLINK_MS, HopAction, HopEvent, HopState, Obstacle, reduceHop } from '../../game/hop/engine';
 import { useI18n } from '../../i18n/I18nProvider';
 import { useGameStore } from '../../state/GameStore';
 import { PixelSprite } from '../../ui/PixelSprite';
@@ -28,11 +29,36 @@ const SKY_UNITS = 4;
 const GROUND_UNITS = 0.6;
 /** Longest tick fed to the engine (a dropped frame must not teleport the fences). */
 const MAX_DT_MS = 50;
-/** Fences on screen at once never exceed 3 (12 units, gaps of 5+); the pool keeps a margin. */
+/** Obstacles on screen at once never exceed 3 (12 units, gaps of 5+); the pool keeps a margin. */
 const FENCE_SLOTS = 6;
 
 /** Engine events → feedback kinds of the sound kit (tick: move, pop: success, drop: failure, combo, over). */
 const FEEDBACK_KIND: Partial<Record<HopEvent['kind'], string>> = { jump: 'move', pass: 'pop', hit: 'drop', combo: 'combo', over: 'over' };
+
+/** The look of one obstacle inside its box (unit = pixels per field unit). */
+function ObstacleBody({ o, unit }: { o: Obstacle; unit: number }) {
+  switch (o.kind) {
+    case 'hedge':
+      return (
+        <View style={[styles.hedge, { borderTopLeftRadius: unit * 0.5, borderTopRightRadius: unit * 0.5 }]}>
+          {[0.3, 0.9, 1.5].map((left) => (
+            <View key={left} style={[styles.leaf, { left: left * unit, top: unit * (left === 0.9 ? 0.2 : 0.45), width: unit * 0.2, height: unit * 0.2 }]} />
+          ))}
+        </View>
+      );
+    case 'bird':
+      return <PixelSprite sprite={BIRD} scale={unit / 10} />;
+    default:
+      return (
+        <>
+          <View style={[styles.post, { left: 0, width: unit * 0.22 }]} />
+          <View style={[styles.post, { right: 0, width: unit * 0.22 }]} />
+          <View style={[styles.rail, { top: unit * 0.15, height: unit * 0.18 }]} />
+          <View style={[styles.rail, { top: o.height * unit * 0.55, height: unit * 0.18 }]} />
+        </>
+      );
+  }
+}
 
 /** React must re-render only when what it draws changes: fences spawned or removed, an event, the end, the shields. */
 export function needsRender(previous: HopState, next: HopState): boolean {
@@ -131,13 +157,11 @@ export function HopGame({ seed, onFinish }: { seed: number; onFinish: OnFinish }
           <Animated.View
             key={o.id}
             testID={`hop-fence-${o.id}`}
+            accessibilityLabel={o.kind}
             pointerEvents="none"
-            style={[styles.fence, { left: 0, bottom: ground, width: OBSTACLE_WIDTH * unit, height: o.height * unit, transform: [{ translateX: Animated.multiply(fenceX[i], unit) }] }]}
+            style={[styles.fence, { left: 0, bottom: ground + o.bottom * unit, width: o.width * unit, height: o.height * unit, transform: [{ translateX: Animated.multiply(fenceX[i], unit) }] }]}
           >
-            <View style={[styles.post, { left: 0, width: unit * 0.22 }]} />
-            <View style={[styles.post, { right: 0, width: unit * 0.22 }]} />
-            <View style={[styles.rail, { top: unit * 0.15, height: unit * 0.18 }]} />
-            <View style={[styles.rail, { top: o.height * unit * 0.55, height: unit * 0.18 }]} />
+            <ObstacleBody o={o} unit={unit} />
           </Animated.View>
         ))}
         <Animated.View
@@ -158,5 +182,7 @@ const styles = StyleSheet.create({
   fence: { position: 'absolute' },
   post: { position: 'absolute', top: 0, bottom: 0, backgroundColor: PALETTE.brown, borderWidth: 1, borderColor: PALETTE.outline },
   rail: { position: 'absolute', left: 0, right: 0, backgroundColor: PALETTE.darkBrown, borderWidth: 1, borderColor: PALETTE.outline },
+  hedge: { position: 'absolute', left: 0, right: 0, top: 0, bottom: 0, backgroundColor: PALETTE.lime, borderWidth: 2, borderColor: PALETTE.darkGreen },
+  leaf: { position: 'absolute', borderRadius: 2, backgroundColor: PALETTE.darkGreen },
   hudItem: { gap: 2 },
 });

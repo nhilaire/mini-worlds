@@ -1,4 +1,4 @@
-import { createHop, reduceHop } from '../game/hop/engine';
+import { createHop, makeObstacle, reduceHop } from '../game/hop/engine';
 import { needsRender } from '../screens/game/HopGame';
 
 // AC-73: the Saute-Lapin frame loop no longer re-renders React on every tick (phone test: the round lagged). Plain
@@ -27,7 +27,7 @@ describe('Saute-Lapin rendering (AC-73)', () => {
     expect(tick.y).toBeGreaterThan(0);
     expect(needsRender(s, tick)).toBe(false);
     expect(needsRender(s, { ...tick, events: [{ kind: 'combo' }] })).toBe(true);
-    expect(needsRender(s, { ...tick, obstacles: [...tick.obstacles, { id: 99, x: 12, height: 1 }] })).toBe(true);
+    expect(needsRender(s, { ...tick, obstacles: [...tick.obstacles, makeObstacle(99, 'fence', 12)] })).toBe(true);
     expect(needsRender(s, { ...tick, status: 'over' })).toBe(true);
   });
 });

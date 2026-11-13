@@ -16,8 +16,9 @@ Launch check: alive after 10 s, no fatal error
    (T-56).
 2. Saute-Lapin lagged on the phone (not because of the USB cable): the screen re-rendered React on every frame.
    Decision: bunny and fences on Animated values, React renders only on changes (T-58, AC-73).
-3. Saute-Lapin gets boring fast. Open: enrich it (carrots to catch, varied obstacles, double jump) or drop it; the
-   user chooses after the test.
+3. Saute-Lapin gets boring fast; the user wants it to speed up visibly and to vary distances and obstacles.
+   Decision: + 0.35 per obstacle up to 15, gaps from 0.8 to 1.8 s of run, hedges and (from the 10th obstacle) birds
+   to pass under (T-59, AC-60).
 4. Bougies Folles: tapping fast loses the round (two candles before the cake turns 14 degrees). Decision: a 250 ms
    cooldown between throws (T-57, AC-72).
 5. Bougies Folles: a pause without throws is needed between two cakes. Decision: the new cake stands still 1 s with

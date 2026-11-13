@@ -1,0 +1,72 @@
+appId: io.github.nhilaire.miniworlds
+name: v0.3.0 smoke - each of the ten v0.3.0 games opens from its world through the test link (one capture each), Pause and Quitter reach the Result (AC-87)
+tags:
+  - newgames030
+---
+- launchApp:
+    clearState: true
+- extendedWaitUntil:
+    visible:
+      id: "consent-screen"
+    timeout: 30000
+- tapOn:
+    id: "consent-refuse"
+- runFlow: helpers/french.yaml
+# The test link opens every world and every game for the session (nothing is written to the save).
+- openLink: miniworlds://seed/5/unlocked
+- extendedWaitUntil:
+    visible:
+      id: "home-screen"
+    timeout: 30000
+- tapOn:
+    id: "tab-games"
+- runFlow:
+    file: helpers/new-game.yaml
+    env:
+      WORLD: arcade
+      GAME: fruit
+- runFlow:
+    file: helpers/new-game.yaml
+    env:
+      WORLD: puzzle
+      GAME: slide
+- runFlow:
+    file: helpers/new-game.yaml
+    env:
+      WORLD: strategy
+      GAME: army
+- runFlow:
+    file: helpers/new-game.yaml
+    env:
+      WORLD: strategy
+      GAME: merge
+- runFlow:
+    file: helpers/new-game.yaml
+    env:
+      WORLD: cards
+      GAME: cardline
+- runFlow:
+    file: helpers/new-game.yaml
+    env:
+      WORLD: bubbles
+      GAME: marbles
+- runFlow:
+    file: helpers/new-game.yaml
+    env:
+      WORLD: exploration
+      GAME: maze
+- runFlow:
+    file: helpers/new-game.yaml
+    env:
+      WORLD: exploration
+      GAME: trail
+- runFlow:
+    file: helpers/new-game.yaml
+    env:
+      WORLD: exploration
+      GAME: treasure
+- runFlow:
+    file: helpers/new-game.yaml
+    env:
+      WORLD: memory
+      GAME: quicksum

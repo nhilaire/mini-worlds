@@ -110,7 +110,7 @@ v0.3.0: ten more games, worlds Stratégie and Exploration (PRD amended 2026-11-1
 - [ ] T-71 Fil d'Ariane engine + screen + casual bot (AC-84, AC-86) - proof: unit
 - [ ] T-72 Chasse au Trésor engine + screen + casual bot (AC-85, AC-86) - proof: unit
 - [ ] T-73 Plombier Express: solved grid shown 1 s with the water running, inputs locked (AC-88) - proof: unit
-- [ ] T-74 Maestro smoke flow of the ten v0.3.0 games through /unlocked (AC-87, AC-89) - proof: e2e
+- [x] T-74 Maestro smoke flow of the ten v0.3.0 games through /unlocked (AC-87, AC-89) - proof: e2e
 
 ## Notes
 

@@ -103,7 +103,7 @@ v0.3.0: ten more games, worlds Stratégie and Exploration (PRD amended 2026-11-1
 - [ ] T-64 Bloc Glissant engine + screen + casual bot (AC-77, AC-86) - proof: unit
 - [ ] T-65 Suite de Cartes engine + screen + casual bot (AC-78, AC-86) - proof: unit
 - [x] T-66 Tri de Billes engine + screen + casual bot (AC-79, AC-86) - proof: unit
-- [ ] T-67 Calcul Éclair engine + screen + casual bot (AC-80, AC-86) - proof: unit
+- [x] T-67 Calcul Éclair engine + screen + casual bot (AC-80, AC-86) - proof: unit
 - [ ] T-68 Armée de Poche engine + screen + casual bot (AC-81, AC-86) - proof: unit
 - [ ] T-69 Fusion de Guerriers engine + screen + casual bot (AC-82, AC-86) - proof: unit
 - [x] T-70 Labyrinthe Express engine + screen + casual bot (AC-83, AC-86) - proof: unit

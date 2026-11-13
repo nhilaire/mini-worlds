@@ -87,6 +87,12 @@ v0.2.0: ten more mini-games (concept test, PRD amended 2026-11-13)
 - [x] T-54 Champ de Taupes engine + screen (AC-68, AC-69) - proof: unit
 - [x] T-55 Maestro smoke flow of the ten new games through /unlocked, one capture each (AC-70, AC-71) - proof: e2e
 
+After the first phone test of v0.2.0 (2026-11-13, RELEASE.md notes)
+
+- [x] T-56 Tour Bancale stars 150 / 300 / 500 and its score challenge at 150 (AC-55, AC-57) - proof: unit
+- [x] T-57 Bougies Folles: 250 ms throw cooldown, 1 s still pause with a « Gâteau n » banner between cakes, no flight for an ignored throw (AC-72, AC-66) - proof: unit
+- [x] T-58 Saute-Lapin smoothness: bunny and fences on Animated values, React renders only on changes (AC-73) - proof: unit + device
+
 ## Notes
 
 - Order: foundations and engines first (pure TypeScript, Jest), then screens on top of the engines, then wiring.

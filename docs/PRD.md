@@ -5,7 +5,7 @@ Project slug: mini-worlds
 Final app name: Bric-à-Jeux
 Android package: io.github.nhilaire.miniworlds
 Version target: 0.2.0
-Last updated: 2026-11-13 (v0.2.0: ten more mini-games in six worlds to test the concept, games unlocked one by one inside a world)
+Last updated: 2026-11-13 (v0.2.0 phone test: Tour Bancale stars, Bougies Folles throw cooldown and pause between cakes, Saute-Lapin smoothness)
 
 > Written in English. Player-facing text is quoted in the "Player copy" section, in every language of the game
 > (`factory-app.json` "languages"; French is the reference).
@@ -161,7 +161,7 @@ forever (a lower score later never removes one). 39 stars exist in v0.2.0.
 | Pluie de Blocs | 1 000 | 2 500 | 5 000 |
 | Potager Fou | 1 500 | 3 000 | 5 000 |
 | Bulles en Folie | 800 | 2 000 | 4 000 |
-| Tour Bancale | 200 | 450 | 800 |
+| Tour Bancale | 150 | 300 | 500 |
 | Saute-Lapin | 150 | 350 | 600 |
 | Lucioles | 500 | 750 | 950 |
 | Plombier Express | 700 | 1 100 | 1 400 |
@@ -386,7 +386,8 @@ Common rules of the ten games:
   the offset from the top floor is ≤ 0.15 unit, the drop is perfect: the block is aligned, the width is kept and
   the perfect streak grows by 1; otherwise the new floor is the overlap only and the streak returns to 0.
 - Scoring: 10 points per floor placed, plus 5 × streak on a perfect drop (1st perfect +5, 2nd in a row +10...).
-- Combo (challenges): a perfect drop. HUD: floors. Stars 200 / 450 / 800.
+- Combo (challenges): a perfect drop. HUD: floors. Stars 150 / 300 / 500 (phone test: 26 floors gave one star
+  with 200 / 450 / 800).
 - Tutorial bubble: « Touche pour lâcher le bloc » (dismissed by the first drop).
 
 #### Saute-Lapin (world Arcade, 3rd game) - real time
@@ -476,6 +477,9 @@ Common rules of the ten games:
   clockwise for the first cake, and changes direction at each cake.
 - Tap: a candle is planted at once (a 120 ms flight is only drawn). If it lands less than 14° (cake frame) from
   another candle, the round is over.
+- Guards (phone test: a quick double tap lost the round, and a tap carried over onto the next cake): a throw within
+  250 ms of the previous one is ignored; when a cake is completed, the next cake stands still for 1 s with a
+  « Gâteau n » banner and throws are ignored meanwhile. No flight is drawn for an ignored throw.
 - Scoring: 10 points per candle planted, 100 per cake completed; the next cake follows.
 - Combo (challenges): a cake completed. HUD: cake n, candles left. Stars 200 / 450 / 800.
 - Tutorial bubble: « Touche pour lancer une bougie. Ne touche pas les autres ! » (dismissed by the first throw).
@@ -813,6 +817,12 @@ Telemetry and technical
   screen shows (one capture per game) and Pause → Quitter returns to the Result.
 - AC-71 [manual] Given the release APK on the user's phone, when the 10 new games are played, then each is
   understandable from its bubble and plays smoothly, and the user judges whether the collection concept holds.
+- AC-72 [unit] Given Bougies Folles, when a throw comes less than 250 ms after the previous one, then it is ignored
+  (no candle, no loss: two candles of a double tap are at least 22.5° apart at 90°/s); when a cake is completed, the
+  next cake does not turn for 1 s and throws are ignored, then it turns and throws are accepted again.
+- AC-73 [unit] Given a round of Saute-Lapin, then the frame loop moves the bunny and the fences through animated
+  values and React re-renders on less than 10 % of the ticks (fence spawned or removed, event, shields, end); a
+  plain tick re-renders nothing. [device] The round runs without visible lag on the user's phone.
 
 ## Player copy
 

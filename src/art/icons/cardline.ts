@@ -1,7 +1,20 @@
-// Icon of the game « cardline » (12×12), shown on its world card, Game sheet and Result. Placeholder until the game lands.
+// Icon of the game « cardline » (12×12): three cards in a rising line, with one, two and three heart pips.
 import type { Sprite } from '../sprites';
 
 export const ICON: Sprite = {
-  legend: { k: 'outline', c: 'light' },
-  rows: ['............','.kkkkkkkkkk.','.kcccccccck.','.kcccccccck.','.kcccccccck.','.kcccccccck.','.kcccccccck.','.kcccccccck.','.kcccccccck.','.kcccccccck.','.kkkkkkkkkk.','............'],
+  legend: { k: 'outline', w: 'white', r: 'red' },
+  rows: [
+    '........kkkk',
+    '........kwrk',
+    '........kwwk',
+    '....kkkkkwrk',
+    '....kwrkkwwk',
+    '....kwwkkwrk',
+    'kkkkkwrkkwwk',
+    'kwwkkwwkkwwk',
+    'kwrkkwwkkwwk',
+    'kwwkkwwkkwwk',
+    'kwwkkwwkkwwk',
+    'kkkkkkkkkkkk',
+  ],
 };

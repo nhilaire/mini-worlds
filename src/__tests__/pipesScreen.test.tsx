@@ -1,10 +1,10 @@
 import AsyncStorage from '@react-native-async-storage/async-storage';
-import { fireEvent, render, screen } from '@testing-library/react-native';
+import { act, fireEvent, render, screen } from '@testing-library/react-native';
 import { SafeAreaProvider } from 'react-native-safe-area-context';
 
 import { setClock } from '../game/clock';
 import { defaultSave, serializeSave } from '../game/core/save';
-import { createPipes, PIPES_SIZE, PipesState, reducePipes, turnsToFit, wateredCells } from '../game/pipes/engine';
+import { createPipes, filledCells, PIPES_SIZE, PipesState, reducePipes, SOLVED_SHOW_MS, turnsToFit, wateredCells } from '../game/pipes/engine';
 import type { OnFinish } from '../screens/game/GameFrame';
 import { PipesGame } from '../screens/game/PipesGame';
 import { GameStoreProvider, useGameStore } from '../state/GameStore';
@@ -34,6 +34,14 @@ async function start(hintLevel = 0) {
   );
   expect(await screen.findByTestId('pipes-screen')).toBeTruthy();
   return onFinish;
+}
+
+/** Moves the injectable clock and lets the frame loop (requestAnimationFrame) run. */
+async function advance(ms: number) {
+  nowMs += ms;
+  await act(async () => {
+    await new Promise((r) => setTimeout(r, 5));
+  });
 }
 
 const pos = (cell: number) => `${cell % PIPES_SIZE}-${Math.floor(cell / PIPES_SIZE)}`;
@@ -76,16 +84,69 @@ describe('Plombier Express screen (AC-69)', () => {
     let expected = afterTap;
     for (const p of afterTap.path) {
       const n = turnsToFit(expected.pieces[p.cell], p.need) as number;
-      for (let i = 0; i < n && expected.grid === 1; i++) {
+      for (let i = 0; i < n && expected.solvedMs === 0; i++) {
         expected = reducePipes(expected, { type: 'tap', cell: p.cell });
         await fireEvent.press(screen.getByTestId(`pipes-cell-${pos(p.cell)}`));
       }
     }
-    expect(expected.grid).toBe(2);
+    // The solved grid stays shown (AC-88) until 1 s of frames has run.
+    expect(expected.grid).toBe(1);
+    expect(expected.solvedMs).toBe(SOLVED_SHOW_MS);
     expect(screen.getByTestId('hud-score')).toHaveTextContent(new RegExp(`^${expected.score}$`));
-    expect(screen.getByTestId('hud-grid')).toHaveTextContent(/^2 \/ 5$/);
+    expect(screen.getByTestId('hud-grid')).toHaveTextContent(/^1 \/ 5$/);
     expect(screen.getByTestId('pipes-last')).toHaveTextContent(new RegExp(`^\\+${expected.score}$`));
-  });
+    for (let t = 0; t < SOLVED_SHOW_MS + 100; t += 50) await advance(50);
+    expect(screen.getByTestId('hud-grid')).toHaveTextContent(/^2 \/ 5$/);
+    expect(screen.queryByTestId('pipes-points')).toBeNull();
+  }, 60_000);
+
+  it('AC-88: the solved grid stays 1 s, its water runs in path order, its points pop and taps are ignored; then the next grid', async () => {
+    await start();
+    let expected = createPipes(SEED, {});
+    for (const p of expected.path) {
+      const n = turnsToFit(expected.pieces[p.cell], p.need) as number;
+      for (let i = 0; i < n && expected.solvedMs === 0; i++) {
+        expected = reducePipes(expected, { type: 'tap', cell: p.cell });
+        await fireEvent.press(screen.getByTestId(`pipes-cell-${pos(p.cell)}`));
+      }
+    }
+    expect(expected.solvedMs).toBe(SOLVED_SHOW_MS);
+    const points = expected.score;
+    expect(screen.getByTestId('pipes-points')).toHaveTextContent(new RegExp(`^\\+${points}$`));
+    // The water starts again from the entry cell alone.
+    expect(waterOnScreen(expected)).toEqual(filledCells(expected));
+    expect(waterOnScreen(expected).filter(Boolean)).toHaveLength(1);
+    const solvedRotations = expected.pieces.map((_, i) => rotationOf(i));
+
+    // A double tap during the pause turns nothing and counts no tap.
+    await fireEvent.press(screen.getByTestId(`pipes-cell-${pos(expected.path[0].cell)}`));
+    await fireEvent.press(screen.getByTestId(`pipes-cell-${pos(expected.path[0].cell)}`));
+    expect(expected.pieces.map((_, i) => rotationOf(i))).toEqual(solvedRotations);
+    expect(screen.getByTestId('hud-taps')).toHaveTextContent(new RegExp(`^${expected.taps}$`));
+
+    // Frame by frame (50 ms): the filled cells only grow, as the engine predicts, until the whole pipe is full.
+    let engine = expected;
+    let count = 1;
+    for (let t = 50; t < SOLVED_SHOW_MS; t += 50) {
+      await advance(50);
+      engine = reducePipes(engine, { type: 'tick', dt: 50 });
+      const shown = waterOnScreen(engine);
+      expect(shown).toEqual(filledCells(engine));
+      const filled = shown.filter(Boolean).length;
+      expect(filled).toBeGreaterThanOrEqual(count);
+      count = filled;
+      expect(screen.getByTestId('hud-grid')).toHaveTextContent(/^1 \/ 5$/);
+      expect(screen.getByTestId('pipes-points')).toBeTruthy();
+    }
+    expect(count).toBe(wateredCells(expected.pieces, expected.entryRow).filter(Boolean).length);
+    expect(count).toBeGreaterThan(1);
+    await advance(50);
+    await advance(50);
+    expect(screen.getByTestId('hud-grid')).toHaveTextContent(/^2 \/ 5$/);
+    expect(screen.getByTestId('hud-taps')).toHaveTextContent(/^0$/);
+    expect(screen.getByTestId('hud-score')).toHaveTextContent(new RegExp(`^${points}$`));
+    expect(screen.queryByTestId('pipes-points')).toBeNull();
+  }, 60_000);
 
   it('AC-69: the hint button highlights a path cell not yet turned right and counts down', async () => {
     await start(1);

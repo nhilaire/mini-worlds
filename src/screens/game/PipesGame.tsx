@@ -2,13 +2,17 @@
 // tap settles at once (HUD, score); the turned piece replays its quarter turn (200 ms Reanimated keyframe) and the
 // pieces connected to the entry are drawn filled with water. The water enters on the left of the entry row and
 // leaves on the right of the exit row. The « Indice » button highlights a path cell that is not yet turned right.
-import { useCallback, useMemo, useRef, useState } from 'react';
+// A solved grid stays shown 1 s (engine pause `solvedMs`, AC-88): the water runs from the entry through the connected
+// pieces in path order and the grid points pop above the board; a frame loop ticks the engine with the injectable
+// clock only during that pause, and React re-renders only when the water front moves or the grid changes.
+import { useCallback, useEffect, useMemo, useRef, useState } from 'react';
 import { Pressable, StyleSheet, useWindowDimensions, View } from 'react-native';
-import Animated, { FadeIn, FadeInUp, Keyframe } from 'react-native-reanimated';
+import Animated, { FadeIn, FadeInUp, Keyframe, ZoomIn } from 'react-native-reanimated';
 
 import { PALETTE } from '../../art/palette';
+import { now } from '../../game/clock';
 import { upgradeLevels } from '../../game/core/upgrades';
-import { createPipes, E, N, PieceKind, PIPES_GRIDS, PIPES_SIZE, PipesState, reducePipes, S, W, wateredCells } from '../../game/pipes/engine';
+import { createPipes, E, filledCells, N, PieceKind, PIPES_GRIDS, PIPES_SIZE, PipesAction, PipesState, reducePipes, S, W, waterFront } from '../../game/pipes/engine';
 import { useI18n } from '../../i18n/I18nProvider';
 import { useGameStore } from '../../state/GameStore';
 import { Button } from '../../ui/Button';
@@ -19,6 +23,7 @@ import { GameFrame, OnFinish, useRoundFrame } from './GameFrame';
 import { useGameFeedback } from './useGameFeedback';
 
 const TURN_MS = 200;
+const MAX_DT_MS = 50;
 /** A tapped piece starts a quarter turn back and turns into place. */
 const SPIN = new Keyframe({ 0: { transform: [{ rotate: '-90deg' }] }, 100: { transform: [{ rotate: '0deg' }] } }).duration(TURN_MS);
 /** Openings of each piece before its rotation (the View is then rotated by rot × 90°). */
@@ -82,18 +87,20 @@ export function PipesGame({ seed, onFinish }: { seed: number; onFinish: OnFinish
   const [last, setLast] = useState<GridResult | null>(null);
   const steps = useMemo(() => [{ key: 'turn', text: t.tutorial.pipes.turn }], [t]);
   const frame = useRoundFrame({ game: 'pipes', tutorialSteps: steps, onFinish, score: () => stateRef.current.score });
-  const { paused, advanceTutorial, finish, setCombos } = frame;
+  const { paused, active, advanceTutorial, finish, setCombos } = frame;
   const feedback = useMemo(() => feedbackOf(state.events), [state.events]);
   useGameFeedback(feedback);
-  const water = useMemo(() => wateredCells(state.pieces, state.entryRow), [state.pieces, state.entryRow]);
+  const water = useMemo(() => filledCells(state), [state]);
 
   const dispatch = useCallback(
-    (action: Parameters<typeof reducePipes>[1]) => {
+    (action: PipesAction) => {
       const previous = stateRef.current;
       if (previous.status !== 'playing') return;
       const next = reducePipes(previous, action);
       stateRef.current = next;
-      setState(next);
+      // A tick of the solved pause only re-renders when the water moves one step, the grid changes or the round ends.
+      const redraw = action.type !== 'tick' || next.grid !== previous.grid || next.status !== previous.status || waterFront(next) !== waterFront(previous);
+      if (redraw) setState(next);
       for (const e of next.events) {
         if (e.kind === 'solved') setLast({ grid: e.grid, points: e.points });
         else if (e.kind === 'failed') setLast({ grid: e.grid, points: 0 });
@@ -105,7 +112,30 @@ export function PipesGame({ seed, onFinish }: { seed: number; onFinish: OnFinish
     [advanceTutorial, finish, setCombos],
   );
 
-  const locked = paused || state.status !== 'playing';
+  // Frame loop of the solved pause (1 s): reads the injectable clock, keeps dispatch in a ref so that a new callback
+  // identity never restarts it.
+  const dispatchRef = useRef(dispatch);
+  useEffect(() => {
+    dispatchRef.current = dispatch;
+  }, [dispatch]);
+  const showing = active && state.solvedMs > 0;
+  useEffect(() => {
+    if (!showing) return;
+    let last = now();
+    let handle = 0;
+    const loop = () => {
+      const time = now();
+      const dt = Math.min(MAX_DT_MS, time - last);
+      last = time;
+      if (dt > 0) dispatchRef.current({ type: 'tick', dt });
+      if (stateRef.current.solvedMs > 0 && stateRef.current.status === 'playing') handle = requestAnimationFrame(loop);
+    };
+    handle = requestAnimationFrame(loop);
+    return () => cancelAnimationFrame(handle);
+  }, [showing]);
+
+  const solvedShown = state.solvedMs > 0;
+  const locked = paused || state.status !== 'playing' || solvedShown;
   const stub = Math.max(6, Math.round(cell * 0.34));
 
   const hud = (
@@ -160,8 +190,18 @@ export function PipesGame({ seed, onFinish }: { seed: number; onFinish: OnFinish
           </View>
           {/* Exit: the drain on the right of the exit row. */}
           <View style={{ width: gutter, height: PIPES_SIZE * cell + 4 }}>
-            <View testID="pipes-exit" style={[styles.abs, { right: 0, width: gutter, top: 2 + state.exitRow * cell + (cell - stub) / 2, height: stub, backgroundColor: PALETTE.grey, borderColor: PALETTE.outline, borderWidth: 3 }]} />
+            <View testID="pipes-exit" style={[styles.abs, { right: 0, width: gutter, top: 2 + state.exitRow * cell + (cell - stub) / 2, height: stub, backgroundColor: water[state.exitRow * PIPES_SIZE + PIPES_SIZE - 1] && solvedShown ? PALETTE.sky : PALETTE.grey, borderColor: PALETTE.outline, borderWidth: 3 }]} />
           </View>
+          {/* The grid points pop above the solved grid while its water runs. */}
+          {solvedShown && last && (
+            <View style={[styles.abs, styles.popLayer]} pointerEvents="none">
+              <Animated.View key={`pop-${last.grid}`} entering={ZoomIn.duration(250)} style={[styles.pop, { borderColor: PALETTE.outline }]}>
+                <PixelText testID="pipes-points" size={18} bold style={{ color: PALETTE.outline }}>
+                  {`+${last.points}`}
+                </PixelText>
+              </Animated.View>
+            </View>
+          )}
         </Animated.View>
 
         <View style={styles.footer}>
@@ -186,6 +226,8 @@ const styles = StyleSheet.create({
   cell: { overflow: 'hidden' },
   fill: { flex: 1 },
   abs: { position: 'absolute' },
+  popLayer: { left: 0, right: 0, top: 0, bottom: 0, alignItems: 'center', justifyContent: 'center' },
+  pop: { backgroundColor: PALETTE.yellow, borderWidth: 3, borderRadius: 6, paddingHorizontal: spacing.md, paddingVertical: spacing.sm },
   hudItem: { gap: 2 },
   footer: { alignItems: 'center', gap: spacing.sm, minHeight: 90, alignSelf: 'stretch', paddingHorizontal: spacing.md },
 });

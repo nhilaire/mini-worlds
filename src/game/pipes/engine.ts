@@ -7,6 +7,11 @@
 // of a seeded row), the other cells get random pieces, then every cell is turned a random number of quarter turns.
 // Par = the clockwise taps that bring each path cell back to a right orientation (a straight piece needs 0 or 1,
 // an elbow 0..3). A grid that starts solved is turned again until it is not (so par >= 1).
+//
+// v0.3.0 (AC-88): a solved grid stays on the board for SOLVED_SHOW_MS while the water runs from the entry through
+// the connected pieces (`waterOrder`, `waterFront`); taps and hints are ignored meanwhile. The pause is a ms counter
+// advanced by `tick`, like the pause between two cakes of Bougies Folles; the next grid (or the end of the round)
+// comes when it reaches 0. A failed grid has no water to show: the next grid still comes at once.
 
 import type { RoundState, UpgradeLevels } from '../contract';
 import { createRng, type Rng } from '../rng';
@@ -16,6 +21,10 @@ export const PIPES_CELLS = PIPES_SIZE * PIPES_SIZE;
 export const PIPES_GRIDS = 5;
 /** Taps beyond par after which an unsolved grid is failed. */
 export const PIPES_FAIL_AFTER = 20;
+/** A solved grid stays shown this long (water running, points popping) before the next grid. */
+export const SOLVED_SHOW_MS = 1000;
+/** Part of the pause during which the water runs from the entry to the exit; the full pipe is then held. */
+export const WATER_RUN_MS = 700;
 
 export const N = 1;
 export const E = 2;
@@ -53,7 +62,9 @@ export type PipesEvent =
   | { kind: 'failed'; grid: number }
   /** The next grid is on the board. */
   | { kind: 'grid'; grid: number }
-  | { kind: 'hint'; cell: number };
+  | { kind: 'hint'; cell: number }
+  /** A tap or a hint while the solved grid is shown: nothing changes. */
+  | { kind: 'ignored' };
 
 export type PipesState = RoundState<PipesEvent> & {
   pieces: readonly Piece[];
@@ -72,9 +83,11 @@ export type PipesState = RoundState<PipesEvent> & {
   /** Cell highlighted by the last hint, null when none is shown. */
   hint: number | null;
   rngState: number;
+  /** Time left of the solved grid on screen (ms); 0 while the grid is played. */
+  solvedMs: number;
 };
 
-export type PipesAction = { type: 'tap'; cell: number } | { type: 'hint' };
+export type PipesAction = { type: 'tap'; cell: number } | { type: 'hint' } | { type: 'tick'; dt: number };
 
 export function gridScore(taps: number, par: number): number {
   return Math.max(50, 300 - 15 * Math.max(0, taps - par));
@@ -108,6 +121,47 @@ export function wateredCells(pieces: readonly Piece[], entryRow: number): boolea
     }
   }
   return water;
+}
+
+/**
+ * Order in which the water reaches each cell: breadth-first steps from the entry cell (0), -1 for a dry cell. On a
+ * solved grid this is the path order of the connected pieces, from the entry to the exit.
+ */
+export function waterOrder(pieces: readonly Piece[], entryRow: number): number[] {
+  const order = new Array<number>(PIPES_CELLS).fill(-1);
+  const start = entryRow * PIPES_SIZE;
+  if (!(openings(pieces[start]) & W)) return order;
+  const queue = [start];
+  order[start] = 0;
+  while (queue.length > 0) {
+    const cell = queue.shift() as number;
+    const mask = openings(pieces[cell]);
+    for (const dir of DIRS) {
+      if (!(mask & dir)) continue;
+      const next = neighbour(cell, dir);
+      if (next === null || order[next] >= 0 || !(openings(pieces[next]) & OPPOSITE[dir])) continue;
+      order[next] = order[cell] + 1;
+      queue.push(next);
+    }
+  }
+  return order;
+}
+
+/**
+ * Number of water steps drawn: during the solved pause the water runs one step at a time (WATER_RUN_MS for the
+ * whole pipe), else every connected cell is drawn (Infinity). A cell is filled when its `waterOrder` is below it.
+ */
+export function waterFront(state: Pick<PipesState, 'pieces' | 'entryRow' | 'solvedMs'>): number {
+  if (state.solvedMs <= 0) return Infinity;
+  const steps = Math.max(...waterOrder(state.pieces, state.entryRow)) + 1;
+  const elapsed = SOLVED_SHOW_MS - state.solvedMs;
+  return Math.min(steps, 1 + Math.floor((elapsed * steps) / WATER_RUN_MS));
+}
+
+/** Cells drawn filled with water now: connected to the entry, and reached by the running water during the pause. */
+export function filledCells(state: Pick<PipesState, 'pieces' | 'entryRow' | 'solvedMs'>): boolean[] {
+  const front = waterFront(state);
+  return waterOrder(state.pieces, state.entryRow).map((o) => o >= 0 && o < front);
 }
 
 /** Solved when the water reaches the exit cell and that cell opens to the right side (any path counts). */
@@ -192,6 +246,7 @@ function startGrid(state: Carried, grid: number): PipesState {
     turns: new Array<number>(PIPES_CELLS).fill(0),
     hint: null,
     rngState: built.rngState,
+    solvedMs: 0,
   };
 }
 
@@ -205,8 +260,29 @@ export function hintCell(state: Pick<PipesState, 'pieces' | 'path'>): number | n
   return wrong ? wrong.cell : null;
 }
 
+/** After the solved pause (or a failed grid): the next grid, or the end of the round after grid 5. */
+function nextGrid(state: PipesState, events: PipesState['events'][number][]): PipesState {
+  if (state.grid >= PIPES_GRIDS) {
+    events.push({ kind: 'over', score: state.score });
+    return { ...state, hint: null, solvedMs: 0, status: 'over', events };
+  }
+  const next = startGrid({ score: state.score, combos: state.combos, status: 'playing', hintsLeft: state.hintsLeft, rngState: state.rngState }, state.grid + 1);
+  events.push({ kind: 'grid', grid: next.grid });
+  return { ...next, events };
+}
+
 export function reducePipes(state: PipesState, action: PipesAction): PipesState {
   if (state.status !== 'playing') return state.events.length === 0 ? state : { ...state, events: [] };
+
+  if (action.type === 'tick') {
+    if (state.solvedMs <= 0 || !(action.dt > 0)) return state.events.length === 0 ? state : { ...state, events: [] };
+    const solvedMs = Math.max(0, state.solvedMs - action.dt);
+    if (solvedMs > 0) return { ...state, solvedMs, events: [] };
+    return nextGrid({ ...state, solvedMs: 0 }, []);
+  }
+
+  // The solved grid is on show: taps and hints change nothing.
+  if (state.solvedMs > 0) return { ...state, events: [{ kind: 'ignored' }] };
 
   if (action.type === 'hint') {
     // Refused when none is left or one is already shown (a second hint would point at the same cell).
@@ -246,11 +322,6 @@ export function reducePipes(state: PipesState, action: PipesAction): PipesState 
     events.push({ kind: 'failed', grid: state.grid });
   }
 
-  if (state.grid >= PIPES_GRIDS) {
-    events.push({ kind: 'over', score });
-    return { ...state, pieces, turns, taps, hint: null, score, combos, status: 'over', events };
-  }
-  const next = startGrid({ score, combos, status: 'playing', hintsLeft: state.hintsLeft, rngState: state.rngState }, state.grid + 1);
-  events.push({ kind: 'grid', grid: next.grid });
-  return { ...next, events };
+  if (solved) return { ...state, pieces, turns, taps, hint: null, score, combos, solvedMs: SOLVED_SHOW_MS, events };
+  return nextGrid({ ...state, pieces, turns, taps, score, combos }, events);
 }

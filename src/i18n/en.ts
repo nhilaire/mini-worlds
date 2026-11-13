@@ -186,7 +186,7 @@ export const en: Strings = {
     score_blocks: 'Score 1000 in Block Rain',
     score_garden: 'Score 1500 in Crazy Patch',
     score_bubbles: 'Score 800 in Bubble Frenzy',
-    score_tower: `Score 200 at Wobbly Tower`,
+    score_tower: `Score 150 at Wobbly Tower`,
     score_hop: `Score 150 at Bunny Hop`,
     score_lights: `Score 500 at Fireflies`,
     score_pipes: `Score 700 at Pipe Rush`,

@@ -31,7 +31,7 @@ describe('v0.2.0 catalogue (AC-55)', () => {
   });
 
   it.each([
-    ['tower', [200, 450, 800], 'wide', true],
+    ['tower', [150, 300, 500], 'wide', true],
     ['hop', [150, 350, 600], 'shield', true],
     ['lights', [500, 750, 950], 'hint', false],
     ['pipes', [700, 1100, 1400], 'hint', false],

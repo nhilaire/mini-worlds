@@ -186,7 +186,7 @@ export const fr = {
     score_blocks: 'Marquer 1000 points à Pluie de Blocs',
     score_garden: 'Marquer 1500 points à Potager Fou',
     score_bubbles: 'Marquer 800 points à Bulles en Folie',
-    score_tower: `Marquer 200 points à Tour Bancale`,
+    score_tower: `Marquer 150 points à Tour Bancale`,
     score_hop: `Marquer 150 points à Saute-Lapin`,
     score_lights: `Marquer 500 points à Lucioles`,
     score_pipes: `Marquer 700 points à Plombier Express`,

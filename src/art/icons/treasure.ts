@@ -1,7 +1,20 @@
-// Icon of the game « treasure » (12×12), shown on its world card, Game sheet and Result. Placeholder until the game lands.
+// Icon of the game « treasure » (12×12): a treasure chest with its golden lock on the sand.
 import type { Sprite } from '../sprites';
 
 export const ICON: Sprite = {
-  legend: { k: 'outline', c: 'darkYellow' },
-  rows: ['............','.kkkkkkkkkk.','.kcccccccck.','.kcccccccck.','.kcccccccck.','.kcccccccck.','.kcccccccck.','.kcccccccck.','.kcccccccck.','.kcccccccck.','.kkkkkkkkkk.','............'],
+  legend: { k: 'outline', o: 'brown', y: 'yellow', s: 'darkYellow' },
+  rows: [
+    '............',
+    '............',
+    '..kkkkkkkk..',
+    '.kooooooook.',
+    '.kyyyyyyyyk.',
+    'kkkkkkkkkkkk',
+    'kooooyyooook',
+    'kooookkooook',
+    'kooooooooook',
+    'kkkkkkkkkkkk',
+    'ssssssssssss',
+    '.ssssssssss.',
+  ],
 };

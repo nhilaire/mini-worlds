@@ -93,7 +93,7 @@ After the first phone test of v0.2.0 (2026-11-13, RELEASE.md notes)
 - [x] T-57 Bougies Folles: 250 ms throw cooldown, 1 s still pause with a « Gâteau n » banner between cakes, no flight for an ignored throw (AC-72, AC-66) - proof: unit
 - [x] T-59 Saute-Lapin variety: speed-up 0.35 per obstacle up to 15, gaps 0.8-1.8 s, hedge and bird obstacles (AC-60) - proof: unit
 - [x] T-60 Perroquet show restarted for ever on the phone: stable round clock, show decoupled from dispatch identity, frame-by-frame screen test (AC-74) - proof: unit
-- [ ] T-61 Lucioles easier: par 1 + k, grids 1-2 in 4 × 4 (AC-61) - proof: unit
+- [x] T-61 Lucioles easier: par 1 + k, grids 1-2 in 4 × 4 (AC-61) - proof: unit
 - [x] T-58 Saute-Lapin smoothness: bunny and fences on Animated values, React renders only on changes (AC-73) - proof: unit + device
 
 ## Notes

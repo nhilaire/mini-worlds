@@ -4,7 +4,7 @@ import { SafeAreaProvider } from 'react-native-safe-area-context';
 
 import { setClock } from '../game/clock';
 import { defaultSave, serializeSave } from '../game/core/save';
-import { createLights, LIGHTS_SIZE, reduceLights } from '../game/lights/engine';
+import { createLights, reduceLights } from '../game/lights/engine';
 import type { OnFinish } from '../screens/game/GameFrame';
 import { LightsGame } from '../screens/game/LightsGame';
 import { GameStoreProvider, useGameStore } from '../state/GameStore';
@@ -36,8 +36,9 @@ async function start(hintLevel = 0) {
   return onFinish;
 }
 
-const cellId = (cell: number) => `lights-cell-${cell % LIGHTS_SIZE}-${Math.floor(cell / LIGHTS_SIZE)}`;
-const litOnScreen = () => Array.from({ length: LIGHTS_SIZE * LIGHTS_SIZE }, (_, i) => screen.queryByTestId(`lights-on-${i % LIGHTS_SIZE}-${Math.floor(i / LIGHTS_SIZE)}`) !== null);
+// Grids 1-2 are 4 × 4: the scripted round plays on the first one.
+const cellId = (cell: number, size = 4) => `lights-cell-${cell % size}-${Math.floor(cell / size)}`;
+const litOnScreen = (size = 4) => Array.from({ length: size * size }, (_, i) => screen.queryByTestId(`lights-on-${i % size}-${Math.floor(i / size)}`) !== null);
 
 describe('Lucioles screen (AC-69)', () => {
   let restore = () => {};
@@ -52,6 +53,9 @@ describe('Lucioles screen (AC-69)', () => {
     await start();
     expect(screen.getByTestId('tutorial-tap')).toHaveTextContent(/elle et ses voisines changent/);
     const engine = createLights(SEED, {});
+    expect(engine.size).toBe(4);
+    expect(screen.getByTestId('lights-cell-3-3')).toBeTruthy();
+    expect(screen.queryByTestId('lights-cell-4-0')).toBeNull(); // no 5th column on a 4 × 4 grid
     expect(litOnScreen()).toEqual(engine.lit);
     expect(screen.getByTestId('hud-grid')).toHaveTextContent(/^1 \/ 5$/);
     expect(screen.getByTestId('hud-taps')).toHaveTextContent(/^0$/);
@@ -59,8 +63,9 @@ describe('Lucioles screen (AC-69)', () => {
     expect(screen.getByTestId('lights-btn-hint')).toHaveTextContent(/Indice \(0\)/);
     expect(screen.getByTestId('lights-btn-hint')).toBeDisabled();
 
-    const afterTap = reduceLights(engine, { type: 'tap', cell: 12 });
-    await fireEvent.press(screen.getByTestId(cellId(12)));
+    const afterTap = reduceLights(engine, { type: 'tap', cell: 5 });
+    expect(afterTap.grid).toBe(1);
+    await fireEvent.press(screen.getByTestId(cellId(5)));
     expect(screen.queryByTestId('tutorial-bubble')).toBeNull();
     expect(screen.getByTestId('hud-taps')).toHaveTextContent(/^1$/);
     expect(litOnScreen()).toEqual(afterTap.lit);
@@ -72,6 +77,7 @@ describe('Lucioles screen (AC-69)', () => {
       await fireEvent.press(screen.getByTestId(cellId(cell)));
     }
     expect(expected.grid).toBe(2);
+    expect(expected.size).toBe(4);
     expect(screen.getByTestId('hud-score')).toHaveTextContent(new RegExp(`^${expected.score}$`));
     expect(screen.getByTestId('hud-grid')).toHaveTextContent(/^2 \/ 5$/);
     expect(screen.getByTestId('hud-taps')).toHaveTextContent(/^0$/);

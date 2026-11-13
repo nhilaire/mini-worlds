@@ -1,15 +1,15 @@
-// Lucioles: a « lights out » on a 5 × 5 grid of fireflies (docs/PRD.md "Lucioles", AC-61). Pure reducer on an
-// immutable state, see src/game/contract.ts. Cells are indexed `row * LIGHTS_SIZE + col`, row 0 at the top.
-// Grid k (1..5) is built by pressing 3 + k distinct seeded cells on an all-off grid, so pressing the same cells
-// again solves it in par = 3 + k taps. The engine keeps `solution` = seeded presses XOR the player's taps: pressing
-// exactly those cells switches every firefly off (taps commute and each one is its own inverse), so a hint taken
-// from it is always right.
+// Lucioles: a « lights out » on a grid of fireflies (docs/PRD.md "Lucioles", AC-61). Pure reducer on an immutable
+// state, see src/game/contract.ts. Grids 1-2 are 4 × 4, grids 3-5 are 5 × 5; cells are indexed `row * size + col`,
+// row 0 at the top. Grid k (1..5) is built by pressing 1 + k distinct seeded cells on an all-off grid, so pressing
+// the same cells again solves it in par = 1 + k taps (phone test: 3 + k presses on 5 × 5 grids was far too hard).
+// The engine keeps `solution` = seeded presses XOR the player's taps: pressing exactly those cells switches every
+// firefly off (taps commute and each one is its own inverse), so a hint taken from it is always right.
 
 import type { RoundState, UpgradeLevels } from '../contract';
 import { createRng } from '../rng';
 
+/** Largest grid side (grids 3-5); grids 1-2 are 4 × 4. */
 export const LIGHTS_SIZE = 5;
-export const LIGHTS_CELLS = LIGHTS_SIZE * LIGHTS_SIZE;
 export const LIGHTS_GRIDS = 5;
 /** Taps beyond par after which an unsolved grid is failed. */
 export const LIGHTS_FAIL_AFTER = 15;
@@ -24,7 +24,9 @@ export type LightsEvent =
   | { kind: 'hint'; cell: number };
 
 export type LightsState = RoundState<LightsEvent> & {
-  /** true = lit firefly. */
+  /** Side of the current grid (4 or 5). */
+  size: number;
+  /** true = lit firefly; size × size cells. */
   lit: readonly boolean[];
   /** Cells whose press switches the grid off (seeded presses XOR the player's taps). */
   solution: readonly boolean[];
@@ -41,50 +43,53 @@ export type LightsState = RoundState<LightsEvent> & {
 
 export type LightsAction = { type: 'tap'; cell: number } | { type: 'hint' };
 
-export const parOf = (grid: number): number => 3 + grid;
+export const parOf = (grid: number): number => 1 + grid;
+export const sizeOf = (grid: number): number => (grid <= 2 ? 4 : 5);
 
 export function gridScore(taps: number, par: number): number {
   return Math.max(50, 200 - 20 * Math.max(0, taps - par));
 }
 
-/** The cell and its orthogonal neighbours inside the grid. */
-export function toggledBy(cell: number): number[] {
-  const col = cell % LIGHTS_SIZE;
-  const row = Math.floor(cell / LIGHTS_SIZE);
+/** The cell and its orthogonal neighbours inside a grid of side `size`. */
+export function toggledBy(cell: number, size: number): number[] {
+  const col = cell % size;
+  const row = Math.floor(cell / size);
   const out = [cell];
-  if (row > 0) out.push(cell - LIGHTS_SIZE);
-  if (row < LIGHTS_SIZE - 1) out.push(cell + LIGHTS_SIZE);
+  if (row > 0) out.push(cell - size);
+  if (row < size - 1) out.push(cell + size);
   if (col > 0) out.push(cell - 1);
-  if (col < LIGHTS_SIZE - 1) out.push(cell + 1);
+  if (col < size - 1) out.push(cell + 1);
   return out;
 }
 
-export function press(lit: readonly boolean[], cell: number): boolean[] {
+export function press(lit: readonly boolean[], cell: number, size: number): boolean[] {
   const next = lit.slice();
-  for (const c of toggledBy(cell)) next[c] = !next[c];
+  for (const c of toggledBy(cell, size)) next[c] = !next[c];
   return next;
 }
 
 export const allOff = (lit: readonly boolean[]): boolean => lit.every((on) => !on);
 
-/** Grid k: 3 + k distinct seeded presses on an all-off grid (redrawn in the impossible case it ends all off). */
+/** Grid k: 1 + k distinct seeded presses on an all-off grid (redrawn if the presses cancel out). */
 export function buildGrid(rngState: number, grid: number): { lit: boolean[]; presses: number[]; rngState: number } {
   const rng = createRng(rngState);
-  const cells = Array.from({ length: LIGHTS_CELLS }, (_, i) => i);
+  const size = sizeOf(grid);
+  const cells = Array.from({ length: size * size }, (_, i) => i);
   for (;;) {
     const presses = rng.shuffle(cells).slice(0, parOf(grid));
-    let lit: boolean[] = new Array<boolean>(LIGHTS_CELLS).fill(false);
-    for (const cell of presses) lit = press(lit, cell);
-    // The quiet patterns of the 5 × 5 grid press 12 or more cells, so 4..8 presses never cancel out; kept as a guard.
+    let lit: boolean[] = new Array<boolean>(size * size).fill(false);
+    for (const cell of presses) lit = press(lit, cell, size);
+    // Guard: a press set that is a quiet pattern would leave the grid all off; it is drawn again.
     if (!allOff(lit)) return { lit, presses, rngState: rng.state() };
   }
 }
 
-function startGrid(state: Omit<LightsState, 'lit' | 'solution' | 'par' | 'taps' | 'hint'>, grid: number): LightsState {
+function startGrid(state: Omit<LightsState, 'size' | 'lit' | 'solution' | 'par' | 'taps' | 'hint'>, grid: number): LightsState {
   const built = buildGrid(state.rngState, grid);
-  const solution = new Array<boolean>(LIGHTS_CELLS).fill(false);
+  const size = sizeOf(grid);
+  const solution = new Array<boolean>(size * size).fill(false);
   for (const cell of built.presses) solution[cell] = true;
-  return { ...state, grid, lit: built.lit, solution, par: parOf(grid), taps: 0, hint: null, rngState: built.rngState };
+  return { ...state, grid, size, lit: built.lit, solution, par: parOf(grid), taps: 0, hint: null, rngState: built.rngState };
 }
 
 export function createLights(seed: number, upgrades: UpgradeLevels = {}): LightsState {
@@ -108,12 +113,12 @@ export function reduceLights(state: LightsState, action: LightsAction): LightsSt
   }
 
   const { cell } = action;
-  if (!Number.isInteger(cell) || cell < 0 || cell >= LIGHTS_CELLS) return { ...state, events: [] };
-  const lit = press(state.lit, cell);
+  if (!Number.isInteger(cell) || cell < 0 || cell >= state.size * state.size) return { ...state, events: [] };
+  const lit = press(state.lit, cell, state.size);
   const solution = state.solution.slice();
   solution[cell] = !solution[cell];
   const taps = state.taps + 1;
-  const events: LightsState['events'][number][] = [{ kind: 'toggle', cell, cells: toggledBy(cell) }];
+  const events: LightsState['events'][number][] = [{ kind: 'toggle', cell, cells: toggledBy(cell, state.size) }];
 
   const solved = allOff(lit);
   if (!solved && taps < state.par + LIGHTS_FAIL_AFTER) {

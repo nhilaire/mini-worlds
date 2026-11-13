@@ -1,6 +1,7 @@
-// « Lucioles » screen: the lights-out engine (src/game/lights) on a 5 × 5 grid of Pressable cells. Turn-based: a
-// tap settles at once (HUD, score); the fireflies that switch on zoom in and the ones that switch off zoom out
-// (≤ 180 ms, Reanimated layout animations). The « Indice » button highlights one cell of a solution.
+// « Lucioles » screen: the lights-out engine (src/game/lights) on a grid of Pressable cells, 4 × 4 for grids 1-2 and
+// 5 × 5 for grids 3-5 (same board size on screen). Turn-based: a tap settles at once (HUD, score); the fireflies that
+// switch on zoom in and the ones that switch off zoom out (≤ 180 ms, Reanimated layout animations). The « Indice »
+// button highlights one cell of a solution.
 import { useCallback, useMemo, useRef, useState } from 'react';
 import { Pressable, StyleSheet, useWindowDimensions, View } from 'react-native';
 import Animated, { FadeInUp, ZoomIn, ZoomOut } from 'react-native-reanimated';
@@ -41,8 +42,8 @@ export function LightsGame({ seed, onFinish }: { seed: number; onFinish: OnFinis
   const { colors } = useTheme();
   const { save } = useGameStore();
   const { width, height } = useWindowDimensions();
-  const cell = Math.min(88, Math.floor(Math.min((width - 2 * spacing.md) / LIGHTS_SIZE, (height - 340) / LIGHTS_SIZE)));
-  const spriteScale = Math.max(1, Math.floor((cell - 12) / SPRITE_PIXELS));
+  // The board keeps the same size on screen: 4 × 4 grids (grids 1-2) get bigger cells than 5 × 5 grids (3-5).
+  const boardPx = LIGHTS_SIZE * Math.min(88, Math.floor(Math.min((width - 2 * spacing.md) / LIGHTS_SIZE, (height - 340) / LIGHTS_SIZE)));
 
   const [state, setState] = useState(() => createLights(seed, upgradeLevels(save, 'lights')));
   const stateRef = useRef(state);
@@ -72,6 +73,9 @@ export function LightsGame({ seed, onFinish }: { seed: number; onFinish: OnFinis
   );
 
   const locked = paused || state.status !== 'playing';
+  const size = state.size;
+  const cell = Math.floor(boardPx / size);
+  const spriteScale = Math.max(1, Math.floor((cell - 12) / SPRITE_PIXELS));
 
   const hud = (
     <>
@@ -93,14 +97,14 @@ export function LightsGame({ seed, onFinish }: { seed: number; onFinish: OnFinis
   return (
     <GameFrame game="lights" frame={frame} score={state.score} hud={hud} testID="lights-screen">
       <View style={styles.column}>
-        <View testID="lights-board" style={[styles.board, { width: LIGHTS_SIZE * cell + 4, backgroundColor: colors.surface, borderColor: colors.border }]}>
+        <View testID="lights-board" style={[styles.board, { width: size * cell + 4, backgroundColor: colors.surface, borderColor: colors.border }]}>
           {state.lit.map((on, i) => {
-            const col = i % LIGHTS_SIZE;
-            const row = Math.floor(i / LIGHTS_SIZE);
+            const col = i % size;
+            const row = Math.floor(i / size);
             const hinted = state.hint === i;
             return (
               <Pressable
-                key={i}
+                key={`${state.grid}-${i}`}
                 testID={`lights-cell-${col}-${row}`}
                 accessibilityRole="button"
                 accessibilityState={{ checked: on }}

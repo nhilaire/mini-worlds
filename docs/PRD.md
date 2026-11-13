@@ -624,8 +624,9 @@ a world keep the rule 2 × (k − 1) stars in that world. 69 stars exist in v0.3
   (45 %, n in [2, 4 + 2r]), −n (25 %, n in [1, 2 + r]), × 2 (15 %) or ÷ 2 rounded down (15 %), r = run number; a pair
   holds at most one × 2 or ÷ 2 gate. The count never goes below 0.
 - After the 10th pair, a fort with D defenders: D = floor(f × best), where best is the count reached by always taking
-  the better gate (the operations are monotone, so that greedy choice is optimal) and f = 0.6 / 0.7 / 0.8 / 0.85 then
-  0.9 for runs 1, 2, 3, 4, 5+. A run whose best is below the start count is drawn again (seeded). Army > D: run won,
+  the better gate (the operations are monotone, so that greedy choice is optimal) and f = 0.25 / 0.3 / 0.35 / 0.4
+  then 0.45 for runs 1, 2, 3, 4, 5+ (lowered while building: with 0.6 ... 0.9 one worse pick on a × 2 / ÷ 2 pair lost the
+  fort, and the casual bot scored a median of 0). A run whose best is below the start count is drawn again (seeded). Army > D: run won,
   + 100 + min(200, 5 × (army − D)), next run (army back to the start count). Otherwise the round is over.
 - A round has at most 8 runs (maximum 2 400 points).
 - Input guard: the army walks through the chosen gate in 500 ms; taps are ignored meanwhile.
@@ -1030,7 +1031,7 @@ Telemetry and technical
   5th right answer in a row.
 - AC-81 [unit] Armée de Poche: gates follow the shares and ranges per run (one multiplicative gate per pair at most)
   and apply +n, −n, × 2, ÷ 2 (never below 0); best is reached by the greedy choice and is at least the start count;
-  D = floor(f × best) with f per run; a won run scores 100 + min(200, 5 × (army − D)); a lost fort or the 8th run ends
+  D = floor(f × best) with f = 0.25 / 0.3 / 0.35 / 0.4 / 0.45; a won run scores 100 + min(200, 5 × (army − D)); a lost fort or the 8th run ends
   the round; taps during the 500 ms walk are ignored; « Recrues » adds 5 soldiers per level.
 - AC-82 [unit] Fusion de Guerriers: the start holds an adjacent pair; only adjacent warriors of the same level merge,
   scoring 10 × 2^(level − 1); one warrior spawns after each merge and one more every 3rd merge, never more than the

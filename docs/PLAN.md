@@ -75,7 +75,7 @@ After the first phone test (2026-11-12, RELEASE.md notes)
 v0.2.0: ten more mini-games (concept test, PRD amended 2026-11-13)
 
 - [x] T-44 Catalogue v0.2.0: 13 games in 6 worlds, stars, upgrades, world conditions, game unlocks inside a world, Result « Nouveau jeu », locked game card, score challenges, achievements, /unlocked opens every game, telemetry enums, fr + en copy (AC-55, AC-56, AC-57, AC-58) - proof: unit
-- [ ] T-45 Tour Bancale engine + screen (AC-59, AC-69) - proof: unit
+- [x] T-45 Tour Bancale engine + screen (AC-59, AC-69) - proof: unit
 - [ ] T-46 Saute-Lapin engine + screen (AC-60, AC-69) - proof: unit
 - [ ] T-47 Lucioles engine + screen (AC-61, AC-69) - proof: unit
 - [ ] T-48 Plombier Express engine + screen (AC-62, AC-69) - proof: unit

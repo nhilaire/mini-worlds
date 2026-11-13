@@ -394,8 +394,10 @@ Common rules of the ten games:
 - Side view, ground at y = 0, the bunny at x = 2 (box 0.8 × 0.8). Obstacles (fences, 1 unit wide, 1 unit high,
   25 % of them 1.5 high) spawn at x = 12 and move left at 6 units/s + 0.2 per obstacle passed (capped at 14).
   The next obstacle spawns when the gap between the last obstacle's right edge and x = 12 reaches a seeded
-  distance between max(5, 0.5 × speed) and max(10, 0.8 × speed) units (speed in units/s).
-- Tap while on the ground: jump (vertical speed 12 units/s, gravity 36 units/s²: apex 2 units, 0.67 s in the air).
+  distance between max(5, 0.8 × speed) and max(10, 1.2 × speed) units (speed in units/s: at least 0.8 s between
+  two fences, longer than one jump).
+- Tap while on the ground: jump (vertical speed 13.5 units/s, gravity 36 units/s²: apex 2.53 units, 0.75 s in the
+  air; 12 units/s left only a 33 ms window over a 1.5-high fence at the start, found while building the game).
   A tap in the air is ignored.
 - A hit (boxes overlap) consumes a shield (« Carapace »: 1 / 2 / 3 shields per round) and removes that obstacle (no points, the streak returns to 0);
   without shield the round is over.
@@ -777,7 +779,8 @@ Telemetry and technical
 - AC-59 [unit] Tour Bancale: the block slides and bounces at the speed of the rules; a drop keeps the overlap, a
   perfect drop (offset ≤ 0.15) keeps the width and scores 10 + 5 × streak; no overlap ends the round; « Grand
   plateau » widens the base. AC-59 to AC-68 also check that each engine emits a combo exactly per its rule.
-- AC-60 [unit] Saute-Lapin: a jump follows the speed and gravity of the rules and is ignored in the air; an
+- AC-60 [unit] Saute-Lapin: a jump follows the speed and gravity of the rules and is ignored in the air; a jump in
+  the middle of its window clears a 1.5-high fence at 6 and at 14 units/s and lands before the next fence; an
   obstacle passed scores 10 and speeds up the run; a hit consumes a shield or ends the round; spawns are seeded.
 - AC-61 [unit] Lucioles: a tap toggles the cell and its neighbours; every generated grid is solvable at par; the
   grid score follows max(50, 200 − 20 × extra taps), par + 15 taps fail the grid, the round ends after 5 grids;

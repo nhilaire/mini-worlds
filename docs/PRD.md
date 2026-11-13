@@ -559,7 +559,10 @@ a world keep the rule 2 × (k − 1) stars in that world. 69 stars exist in v0.3
   cells (left-most on a tie); every fruit then falls (gravity), and every fruit that was created or moved is checked
   again, bottom-up then left to right, until nothing merges. Two pastèques that touch vanish.
 - Points: each merge scores 10 × 2^(index of the new fruit) (fraise 20 ... pastèque 1 280); pastèques vanishing 2 000.
-- A tap on a full column is ignored. The round ends when the next fruit fits in no column.
+- A round is 40 fruits (HUD: fruits left). A tap on a full column is ignored. The round ends after the 40th drop and
+  its merges, or earlier when the next fruit fits in no column (amended while building: a player dropping on a matching
+  fruit never lost, so the round never ended). Stars are set from the casual bot (1 star ≈ its p25, 2 stars ≈ its p90,
+  3 stars ≈ twice its median, rounded to 50).
 - Input guard: the drop and its merges play in 300 ms; taps are ignored meanwhile.
 - « Coup de balai »: 1 / 2 / 3 uses per round; a use clears the bottom row (no points), fruits above fall and merge.
 - Combo (challenges): a drop that chains 2 merges or more. HUD: next fruit. Stars 500 / 1 200 / 2 500 (casual bot:
@@ -634,11 +637,11 @@ a world keep the rule 2 × (k − 1) stars in that world. 69 stars exist in v0.3
 - Tutorial bubble: « Touche à gauche ou à droite pour choisir ta porte »
 
 #### Fusion de Guerriers (world Stratégie, 2nd game) - turn based
-- Grid 4 × 4; the round starts with 4 level-1 warriors on seeded cells including at least one adjacent pair. Tap a
+- Grid 4 × 4; the round starts with 6 level-1 warriors on seeded cells including at least one adjacent pair. Tap a
   warrior, then an adjacent (orthogonal) warrior of the same level: they merge into one warrior of the next level in
-  the second cell, scoring 10 × 2^(new level − 1). After each merge one level-1 warrior appears in a seeded empty
-  cell, and one more after every 3rd merge (level 2 with a 10 / 20 / 30 % chance per « Vétéran » level); never more
-  than the free cells.
+  the second cell, scoring 10 × 2^(new level − 1). After each merge two level-1 warriors appear in seeded empty
+  cells (each level 2 with a 10 / 20 / 30 % chance per « Vétéran » level); never more than the free cells (amended
+  while building: with 4 warriors and one recruit per merge the casual bot ended after 2 merges, median 30).
 - End: no two adjacent warriors share a level (whether or not the grid is full).
 - Input guard: a merge animates in 200 ms; taps are ignored meanwhile.
 - Combo: a merge that creates a level 5 warrior or higher. HUD: best level. Stars 200 / 500 / 1 000 (casual bot: the
@@ -1013,8 +1016,8 @@ Telemetry and technical
   + level 8; a v0.2.0 save loads without loss; score challenges exist for every game; Ciel étoilé needs 69 stars.
 - AC-76 [unit] Fruits en Fusion: a fruit falls to the lowest empty cell, merges with every touching fruit of its kind
   into the next index in the lowest merged cell, gravity then re-checks created or moved fruits bottom-up, two
-  pastèques vanish for 2 000, points follow 10 × 2^index, a tap on a full column is ignored and the round ends when
-  no column fits, « Coup de balai » clears the bottom row; a chain of 2+ merges is a combo.
+  pastèques vanish for 2 000, points follow 10 × 2^index, a tap on a full column is ignored and the round ends after
+  40 fruits or when no column fits, « Coup de balai » clears the bottom row; a chain of 2+ merges is a combo.
 - AC-77 [unit] Bloc Glissant: blocks move one cell along their axis into free cells only; every generated puzzle is
   solvable with its par in [3 + 2k, 7 + 2k] or the closest attempt (bounded generator); solved at columns 4-5;
   scoring 300 − 15 per extra move, failure after par + 25 and hints (next move of a shortest solution) follow the
@@ -1033,9 +1036,8 @@ Telemetry and technical
   and apply +n, −n, × 2, ÷ 2 (never below 0); best is reached by the greedy choice and is at least the start count;
   D = floor(f × best) with f = 0.25 / 0.3 / 0.35 / 0.4 / 0.45; a won run scores 100 + min(200, 5 × (army − D)); a lost fort or the 8th run ends
   the round; taps during the 500 ms walk are ignored; « Recrues » adds 5 soldiers per level.
-- AC-82 [unit] Fusion de Guerriers: the start holds an adjacent pair; only adjacent warriors of the same level merge,
-  scoring 10 × 2^(level − 1); one warrior spawns after each merge and one more every 3rd merge, never more than the
-  free cells (level 2 with the « Vétéran » chance); the round ends as soon as no adjacent pair shares a level; a level 5+ merge is a combo.
+- AC-82 [unit] Fusion de Guerriers: the start holds 6 warriors with an adjacent pair; only adjacent warriors of the same
+  level merge, scoring 10 × 2^(level − 1); two warriors spawn after each merge, never more than the free cells (level 2 with the « Vétéran » chance); the round ends as soon as no adjacent pair shares a level; a level 5+ merge is a combo.
 - AC-83 [unit] Labyrinthe Express: every generated maze is perfect (one path between any two cells) and grows with
   n; a swipe runs until a wall ahead, a junction or the exit, and does nothing into a wall; reaching the exit scores
   100 + 2 × shortest path cells (start and exit included); timer 60 s + 5 s

@@ -1,0 +1,72 @@
+appId: io.github.nhilaire.miniworlds
+name: v0.2.0 smoke - each of the ten new games opens from its world through the test link (one capture each), Pause and Quitter reach the Result (AC-70)
+tags:
+  - newgames
+---
+- launchApp:
+    clearState: true
+- extendedWaitUntil:
+    visible:
+      id: "consent-screen"
+    timeout: 30000
+- tapOn:
+    id: "consent-refuse"
+- runFlow: helpers/french.yaml
+# The test link opens every world and every game for the session (nothing is written to the save).
+- openLink: miniworlds://seed/5/unlocked
+- extendedWaitUntil:
+    visible:
+      id: "home-screen"
+    timeout: 30000
+- tapOn:
+    id: "tab-games"
+- runFlow:
+    file: helpers/new-game.yaml
+    env:
+      WORLD: arcade
+      GAME: tower
+- runFlow:
+    file: helpers/new-game.yaml
+    env:
+      WORLD: arcade
+      GAME: hop
+- runFlow:
+    file: helpers/new-game.yaml
+    env:
+      WORLD: puzzle
+      GAME: lights
+- runFlow:
+    file: helpers/new-game.yaml
+    env:
+      WORLD: puzzle
+      GAME: pipes
+- runFlow:
+    file: helpers/new-game.yaml
+    env:
+      WORLD: cards
+      GAME: socks
+- runFlow:
+    file: helpers/new-game.yaml
+    env:
+      WORLD: cards
+      GAME: twentyone
+- runFlow:
+    file: helpers/new-game.yaml
+    env:
+      WORLD: bubbles
+      GAME: flood
+- runFlow:
+    file: helpers/new-game.yaml
+    env:
+      WORLD: skill
+      GAME: candles
+- runFlow:
+    file: helpers/new-game.yaml
+    env:
+      WORLD: memory
+      GAME: parrot
+- runFlow:
+    file: helpers/new-game.yaml
+    env:
+      WORLD: memory
+      GAME: moles

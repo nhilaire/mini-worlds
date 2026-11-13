@@ -1,0 +1,37 @@
+appId: io.github.nhilaire.miniworlds
+name: Helper - from the Games tab, open ${GAME} in ${WORLD}, capture its first screen, then Pause, Quitter and back to the world list
+---
+- scrollUntilVisible:
+    element:
+      id: "world-${WORLD}"
+    direction: DOWN
+    timeout: 30000
+- tapOn:
+    id: "world-${WORLD}"
+- tapOn:
+    id: "game-${GAME}"
+- assertVisible:
+    id: "game-sheet-screen"
+- tapOn:
+    id: "sheet-play"
+- extendedWaitUntil:
+    visible:
+      id: "${GAME}-screen"
+    timeout: 15000
+- assertVisible:
+    id: "tutorial-bubble"
+- takeScreenshot: newgame-${GAME}
+- tapOn:
+    id: "game-pause"
+- tapOn:
+    id: "pause-quit"
+- extendedWaitUntil:
+    visible:
+      id: "result-screen"
+    timeout: 10000
+- tapOn:
+    id: "result-back"
+- tapOn:
+    id: "sheet-back"
+- tapOn:
+    id: "world-back"

@@ -60,7 +60,7 @@ tags:
 - assertVisible:
     id: "game-tower-locked"
 - assertVisible:
-    id: "slot-soon-3"
+    id: "slot-soon-4"
 - takeScreenshot: worlds-04-arcade
 - tapOn:
     id: "game-blocks"

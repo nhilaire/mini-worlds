@@ -1,7 +1,9 @@
 import fs from 'node:fs';
 import path from 'node:path';
 
-import { GAMES, WORLDS } from '../game/core/content';
+import { GAMES, GameId, WORLDS } from '../game/core/content';
+
+const V020_GAMES: GameId[] = ['tower', 'hop', 'lights', 'pipes', 'flood', 'socks', 'twentyone', 'candles', 'parrot', 'moles'];
 
 // AC-70: the Maestro smoke flow of v0.2.0 opens each of the ten new games from its own world, in world display
 // order (the world list only scrolls down between two games), through the /unlocked test link.
@@ -11,7 +13,7 @@ describe('v0.2.0 smoke flow (AC-70)', () => {
 
   it('opens the ten new games from their worlds in display order, through the /unlocked link', () => {
     const pairs = [...flow.matchAll(/WORLD: (\w+)\n\s+GAME: (\w+)/g)].map((m) => [m[1], m[2]]);
-    const expected = WORLDS.flatMap((w) => w.games.filter((g) => !['blocks', 'garden', 'bubbles'].includes(g)).map((g) => [w.id, g]));
+    const expected = WORLDS.flatMap((w) => w.games.filter((g) => V020_GAMES.includes(g)).map((g) => [w.id, g]));
     expect(pairs).toEqual(expected);
     expect(pairs).toHaveLength(10);
     for (const [world, game] of pairs) expect(GAMES.find((g) => g.id === game)?.world).toBe(world);

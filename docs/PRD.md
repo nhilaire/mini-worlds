@@ -4,8 +4,8 @@ Status: approved
 Project slug: mini-worlds
 Final app name: Bric-à-Jeux
 Android package: io.github.nhilaire.miniworlds
-Version target: 0.2.0
-Last updated: 2026-11-13 (v0.2.0 phone test: Tour Bancale stars, Bougies Folles guards, Saute-Lapin smoothness, speed-up and obstacle variety)
+Version target: 0.3.0
+Last updated: 2026-11-13 (v0.3.0: ten more games, worlds Stratégie and Exploration open; Plombier Express solved grid shown)
 
 > Written in English. Player-facing text is quoted in the "Player copy" section, in every language of the game
 > (`factory-app.json` "languages"; French is the reference).
@@ -127,17 +127,17 @@ for the session and suppresses every write to the save (Maestro flows of Potager
 
 ### Worlds and unlocks
 
-| # | World (fr / en) | Content (v0.2.0) | Unlock condition |
+| # | World (fr / en) | Content (v0.3.0) | Unlock condition |
 |---|---|---|---|
-| 1 | Arcade / Arcade | Pluie de Blocs, Tour Bancale, Saute-Lapin | open from the start |
-| 2 | Puzzle / Puzzle | Potager Fou, Lucioles, Plombier Express | 2 stars in world 1 |
-| 3 | Stratégie / Strategy | coming soon | 6 stars in total (indicative) |
-| 4 | Cartes / Cards | Chaussettes Perdues, Vingt-et-Un | 6 stars in total AND level 4 |
-| 5 | Bulles / Bubbles | Bulles en Folie, Raz-de-Couleurs | 4 stars in total AND level 3 |
+| 1 | Arcade / Arcade | Pluie de Blocs, Tour Bancale, Saute-Lapin, Fruits en Fusion | open from the start |
+| 2 | Puzzle / Puzzle | Potager Fou, Lucioles, Plombier Express, Bloc Glissant | 2 stars in world 1 |
+| 3 | Stratégie / Strategy | Armée de Poche, Fusion de Guerriers | 15 stars in total AND level 7 |
+| 4 | Cartes / Cards | Chaussettes Perdues, Vingt-et-Un, Suite de Cartes | 6 stars in total AND level 4 |
+| 5 | Bulles / Bubbles | Bulles en Folie, Raz-de-Couleurs, Tri de Billes | 4 stars in total AND level 3 |
 | 6 | Adresse / Skill | Bougies Folles | 9 stars in total AND level 5 |
 | 7 | Construction / Building | coming soon | level 12 (indicative) |
-| 8 | Exploration / Exploration | coming soon | level 15 (indicative) |
-| 9 | Mémoire / Memory | Perroquet Copieur, Champ de Taupes | 12 stars in total AND level 6 |
+| 8 | Exploration / Exploration | Labyrinthe Express, Fil d'Ariane, Chasse au Trésor | 18 stars in total AND level 8 |
+| 9 | Mémoire / Memory | Perroquet Copieur, Champ de Taupes, Calcul Éclair | 12 stars in total AND level 6 |
 | 10 | Défis / Challenges | coming soon | level 25 (indicative) |
 
 A world is unlocked the moment its conditions are met (checked after every round and level-up); the unlock is
@@ -154,7 +154,7 @@ Arcade ») and cannot be opened. Game unlocks are derived from the stars (nothin
 ### Stars
 
 Each game has three score thresholds. A star is earned when the round score reaches the threshold; stars are kept
-forever (a lower score later never removes one). 39 stars exist in v0.2.0.
+forever (a lower score later never removes one). 69 stars exist in v0.3.0.
 
 | Game | 1 star | 2 stars | 3 stars |
 |---|---|---|---|
@@ -171,6 +171,16 @@ forever (a lower score later never removes one). 39 stars exist in v0.2.0.
 | Bougies Folles | 200 | 450 | 800 |
 | Perroquet Copieur | 150 | 400 | 800 |
 | Champ de Taupes | 400 | 900 | 1 500 |
+| Fruits en Fusion | 500 | 1 200 | 2 500 |
+| Bloc Glissant | 500 | 900 | 1 300 |
+| Suite de Cartes | 500 | 750 | 950 |
+| Tri de Billes | 300 | 700 | 1 000 |
+| Calcul Éclair | 300 | 700 | 1 200 |
+| Armée de Poche | 300 | 800 | 1 500 |
+| Fusion de Guerriers | 200 | 500 | 1 000 |
+| Labyrinthe Express | 300 | 700 | 1 200 |
+| Fil d'Ariane | 600 | 1 000 | 1 400 |
+| Chasse au Trésor | 400 | 700 | 1 000 |
 
 ### XP and global level
 
@@ -214,6 +224,16 @@ upgrade; raised ×2.5 after the first phone test, where one session bought a who
 | Bougies Folles | Gâteau lent | rotation −8 % per level |
 | Perroquet Copieur | Seconde chance | 1 / 2 / 3 second chances per round |
 | Champ de Taupes | Radar | 1 / 2 / 3 radar uses per round |
+| Fruits en Fusion | Coup de balai | 1 / 2 / 3 sweeps of the bottom row per round |
+| Bloc Glissant | Indice | 1 / 2 / 3 hints per round |
+| Suite de Cartes | Indice | 1 / 2 / 3 hints per round |
+| Tri de Billes | Sablier | +10 s per level |
+| Calcul Éclair | Sablier | +5 s per level |
+| Armée de Poche | Recrues | +5 starting soldiers per level |
+| Fusion de Guerriers | Vétéran | 10 / 20 / 30 % of new warriors at level 2 |
+| Labyrinthe Express | Sablier | +5 s per level |
+| Fil d'Ariane | Indice | 1 / 2 / 3 hints per round |
+| Chasse au Trésor | Détecteur | +1 dig per map per level |
 
 The ten v0.2.0 games have two upgrades each: the one above and « Bonus pièces » (coins per round +10 % per level).
 
@@ -249,7 +269,7 @@ The ten v0.2.0 games have two upgrades each: the one above and « Bonus pièces 
 | score_blocks | Marquer 1000 points à Pluie de Blocs | one round ≥ 1000 | 50 coins |
 | score_garden | Marquer 1500 points à Potager Fou | one round ≥ 1500 | 50 coins |
 | score_bubbles | Marquer 800 points à Bulles en Folie | one round ≥ 800 | 50 coins |
-| score_<game> | Marquer <1-star threshold> points à <game>, for each of the 10 v0.2.0 games | one round ≥ the 1-star threshold | 50 coins |
+| score_<game> | Marquer <1-star threshold> points à <game>, for each of the 20 v0.2.0 and v0.3.0 games | one round ≥ the 1-star threshold | 50 coins |
 
 ### Achievements
 
@@ -259,7 +279,7 @@ The ten v0.2.0 games have two upgrades each: the one above and « Bonus pièces 
 | rounds10 | Dix parties | 10 rounds | 50 coins |
 | rounds100 | Cent parties | 100 rounds | 200 coins |
 | first_star | Première étoile | 1 star | 50 coins |
-| all_stars | Ciel étoilé | 39 stars | 500 coins |
+| all_stars | Ciel étoilé | 69 stars | 500 coins |
 | explorer | Explorateur | 3 games played at least once | 100 coins |
 | globetrotter | Globe-trotteur | 10 different games played at least once | 200 coins |
 | first_upgrade | Bricoleur | 1 upgrade bought | 50 coins |
@@ -513,6 +533,163 @@ Common rules of the ten games:
 - Combo (challenges): one dig that reveals 10 or more cells. HUD: board n, moles left to flag. Stars 400 / 900 / 1 500.
 - Tutorial bubble: « Touche une case pour creuser. Les chiffres comptent les taupes voisines » (dismissed by a dig).
 
+### v0.3.0: ten more mini-games, worlds Stratégie and Exploration open
+
+After the v0.2.0 concept test the user said « le principe me va » and asked for about ten more games. Choice: open
+Stratégie (world 3) and Exploration (world 8), and add one game to Arcade, Puzzle, Cartes, Bulles and Mémoire. Same
+finish as v0.2.0 (pure engine with unit tests, screen, one tutorial bubble, 3 stars, two upgrades: one of the game +
+« Bonus pièces », short move animations, one shared Maestro smoke flow).
+
+Lessons of the v0.2.0 phone test, rules for the ten games:
+- Real-time screens move things through animated values; React renders only when something else changes.
+- Every timer reads the injectable clock and survives re-renders (no effect restarted by a new callback identity).
+- A quick double tap never loses a round nor skips a step: each game below states its input guard.
+- Balance: each engine has a seeded « casual bot » test (a simple, documented policy, no lookahead beyond one move):
+  over 50 seeds its median score reaches the 1-star threshold and stays below the 3-star threshold. Generators are
+  bounded (a fixed number of seeded attempts, then a fallback), so a round always starts.
+
+Worlds: Stratégie unlocks at 15 stars in total AND level 7; Exploration at 18 stars in total AND level 8. Games inside
+a world keep the rule 2 × (k − 1) stars in that world. 69 stars exist in v0.3.0.
+
+#### Fruits en Fusion (world Arcade, 4th game) - turn based
+- Grid 6 columns × 8 rows. 8 fruits, index 0 to 7: cerise, fraise, raisin, orange, pomme, poire, ananas, pastèque,
+  each with its own shape. The next fruit is drawn among indexes 0-3 (seeded) and shown.
+- Tap a column: the fruit falls to the lowest empty cell. Merge rule: a fruit that touches (orthogonally) one or more
+  fruits of its kind merges with all of them into one fruit of the next index, placed in the lowest of the merged
+  cells (left-most on a tie); every fruit then falls (gravity), and every fruit that was created or moved is checked
+  again, bottom-up then left to right, until nothing merges. Two pastèques that touch vanish.
+- Points: each merge scores 10 × 2^(index of the new fruit) (fraise 20 ... pastèque 1 280); pastèques vanishing 2 000.
+- A tap on a full column is ignored. The round ends when the next fruit fits in no column.
+- Input guard: the drop and its merges play in 300 ms; taps are ignored meanwhile.
+- « Coup de balai »: 1 / 2 / 3 uses per round; a use clears the bottom row (no points), fruits above fall and merge.
+- Combo (challenges): a drop that chains 2 merges or more. HUD: next fruit. Stars 500 / 1 200 / 2 500 (casual bot:
+  drops on the column whose top fruit matches, else the lowest column).
+- Tutorial bubble: « Touche une colonne pour lâcher le fruit. Deux fruits pareils fusionnent ! »
+
+#### Bloc Glissant (world Puzzle, 4th game) - turn based
+- 6 × 6 board (rows and columns 0-5) with blocks of length 2 or 3, horizontal or vertical, and the red block
+  (horizontal, length 2) on row 2 (3rd from the top). The puzzle is solved when the red block occupies columns 4-5
+  (it touches the exit on the right side).
+- Swipe on a block: it moves one cell in that direction if the cell is free (blocks only move along their axis).
+- Generation: start from a seeded solved layout (red block at columns 4-5, 5 + k other blocks) and apply up to 200
+  seeded random legal moves backwards; par = minimum number of one-cell moves (breadth-first solver). Keep the first
+  layout whose par is in [3 + 2k, 7 + 2k] within 30 attempts, else the attempt with the closest par.
+- Puzzle score: max(50, 300 − 15 × (moves beyond par)); a puzzle still unsolved after par + 25 moves is failed (0).
+  A round is 5 puzzles.
+- « Indice » (upgrade id hint): 1 / 2 / 3 hints per round; a hint highlights the block and direction of the next
+  move of a shortest solution from the current position.
+- Input guard: a block slides in 120 ms; a swipe during the slide is ignored.
+- Combo: a puzzle solved at par. HUD: puzzle k / 5, moves. Stars 500 / 900 / 1 300 (casual bot: the move of a
+  shortest solution with a seeded 30 % chance of a random legal move instead).
+- Tutorial bubble: « Glisse les blocs pour libérer la sortie du bloc rouge »
+
+#### Suite de Cartes (world Cartes, 3rd game) - turn based
+- A row of n cards (values 1 to n, seeded shuffle, never already in order). Tap a card, then another: they swap (tap
+  the selected card again to unselect). Goal: ascending order. Par = minimum number of swaps (n − number of cycles).
+- A round is 5 rows of 5, 6, 7, 8, 9 cards. Row score: max(50, 200 − 20 × (swaps beyond par)); a row still unsorted
+  after par + 10 swaps is failed (0). Maximum 1 000.
+- « Indice »: 1 / 2 / 3 hints per round; a hint highlights a swap that puts one card at its place.
+- Input guard: a swap animates in 200 ms; taps are ignored meanwhile.
+- Combo: a row sorted at par. HUD: row k / 5, swaps. Stars 500 / 750 / 950 (casual bot: puts the smallest misplaced
+  card at its place, with a seeded 25 % chance of a useless swap).
+- Tutorial bubble: « Touche deux cartes pour les échanger. Range-les dans l'ordre ! »
+
+#### Tri de Billes (world Bulles, 3rd game) - real time (timer)
+- Tubes of 4 marbles; puzzle n has 2 + n colours (maximum 6) with 4 marbles each and 2 empty tubes. Generation:
+  seeded shuffles checked solvable by a depth-first solver bounded to 20 000 states, at most 50 attempts, else a
+  fallback layout built by seeded legal moves backwards from the sorted state. Tap a tube, then another: the top
+  marbles of the same colour move onto an empty tube or a tube whose top marble has that colour, as many as fit.
+- « Recommencer » button: the current puzzle goes back to its start (the timer keeps running), so a dead end never
+  wastes the rest of the round.
+- A round lasts 90 s (+10 s per « Sablier » level). A sorted puzzle (each tube empty or 4 marbles of one colour)
+  scores 100 + 20 × colours and the next puzzle starts.
+- Input guard: a move animates in 200 ms; taps are ignored meanwhile.
+- Combo: a puzzle sorted in under 20 s. HUD: time left, puzzle n. Stars 300 / 700 / 1 000 (casual bot: any legal move
+  that completes or extends a same-colour run, else a seeded legal move, 1 move per 1.5 s of the timer).
+- Tutorial bubble: « Touche un tube puis un autre pour déplacer les billes du dessus »
+
+#### Calcul Éclair (world Mémoire, 3rd game) - real time (timer)
+- A question is shown with 4 answer buttons: one right, three distinct wrong answers ≥ 0 within ±1..±10 of it
+  (seeded). Level by right answers so far: 0-9: a + b with a, b ≥ 1 and a + b ≤ 20; 10-19: a + b with result ≤ 50, or
+  a − b with 0 ≤ b ≤ a ≤ 50; 20+: also a × b with a, b in 2..10.
+- Right answer: 10 + 5 × min(streak, 8) points, streak counted before this answer (the first right answer gives 10),
+  then the streak grows. Wrong answer: −5 s, the streak returns to 0, the same question stays.
+- A round lasts 60 s (+5 s per « Sablier » level). Input guard: a new question ignores taps for its first 250 ms.
+- Combo: every 5th right answer in a row. HUD: time left, streak. Stars 300 / 700 / 1 200 (casual bot: right
+  answer every 2.5 s, a wrong one 1 time in 5).
+- Tutorial bubble: « Touche la bonne réponse, le plus vite possible ! »
+
+#### Armée de Poche (world Stratégie, 1st game) - turn based
+- The army starts with 10 soldiers (+5 per « Recrues » level). A run is 10 pairs of gates. Each gate (seeded) is +n
+  (45 %, n in [2, 4 + 2r]), −n (25 %, n in [1, 2 + r]), × 2 (15 %) or ÷ 2 rounded down (15 %), r = run number; a pair
+  holds at most one × 2 or ÷ 2 gate. The count never goes below 0.
+- After the 10th pair, a fort with D defenders: D = floor(f × best), where best is the count reached by always taking
+  the better gate (the operations are monotone, so that greedy choice is optimal) and f = 0.6 / 0.7 / 0.8 / 0.85 then
+  0.9 for runs 1, 2, 3, 4, 5+. A run whose best is below the start count is drawn again (seeded). Army > D: run won,
+  + 100 + min(200, 5 × (army − D)), next run (army back to the start count). Otherwise the round is over.
+- A round has at most 8 runs (maximum 2 400 points).
+- Input guard: the army walks through the chosen gate in 500 ms; taps are ignored meanwhile.
+- Combo: a run won. HUD: soldiers, run n / 8. Stars 300 / 800 / 1 500 (casual bot: the better gate 3 times in 4).
+- Tutorial bubble: « Touche à gauche ou à droite pour choisir ta porte »
+
+#### Fusion de Guerriers (world Stratégie, 2nd game) - turn based
+- Grid 4 × 4; the round starts with 4 level-1 warriors on seeded cells including at least one adjacent pair. Tap a
+  warrior, then an adjacent (orthogonal) warrior of the same level: they merge into one warrior of the next level in
+  the second cell, scoring 10 × 2^(new level − 1). After each merge one level-1 warrior appears in a seeded empty
+  cell, and one more after every 3rd merge (level 2 with a 10 / 20 / 30 % chance per « Vétéran » level); never more
+  than the free cells.
+- End: no two adjacent warriors share a level (whether or not the grid is full).
+- Input guard: a merge animates in 200 ms; taps are ignored meanwhile.
+- Combo: a merge that creates a level 5 warrior or higher. HUD: best level. Stars 200 / 500 / 1 000 (casual bot: the
+  adjacent pair with the lowest level, top-left first).
+- Tutorial bubble: « Touche deux guerriers pareils côte à côte pour les fusionner »
+
+#### Labyrinthe Express (world Exploration, 1st game) - real time (timer)
+- Seeded perfect mazes (one path between any two cells): 7 × 7, then 9 × 9, then 11 × 11 and so on. The explorer
+  starts top-left, the exit is bottom-right. Swipe: the explorer runs in that direction cell by cell and stops when
+  the next cell ahead is walled, or the current cell has an open side other than forward and back (a junction), or it
+  is the exit. A swipe into a wall does nothing.
+- A round lasts 60 s (+5 s per « Sablier » level). A maze reached: + 100 + 2 × cells of its shortest path (start and
+  exit included), next maze.
+- Input guard: a run animates at 12 cells/s; a swipe during it is ignored.
+- Combo: a maze solved in under 15 s. HUD: time left, maze n. Stars 300 / 700 / 1 200 (casual bot: follows the
+  left wall, one swipe per 0.6 s).
+- Tutorial bubble: « Glisse pour courir jusqu'au prochain croisement. Trouve la sortie ! »
+
+#### Fil d'Ariane (world Exploration, 2nd game) - turn based
+- Grid 6 × 6. Grid k: the start is a seeded cell of the left column, the exit a seeded cell of the right column; a
+  seeded self-avoiding path of at least 12 cells joins them; 3 + k gems sit on seeded path cells other than start and
+  exit; 6 + k rocks sit on seeded cells off the path. Tap the cell next to the head of the trail to extend it (no
+  cell twice, no rock); tap the head to step back one cell. Reaching the exit ends the grid.
+- Grid score: 50 per gem collected, + 100 if all gems were collected. A round is 5 grids.
+- « Indice »: 1 / 2 / 3 hints per round; while the trail follows the seeded path, a hint highlights its next cell;
+  otherwise it highlights the head of the trail (step back).
+- Input guard: taps on the head and on a new cell are 150 ms apart at least (a double tap does not extend then undo).
+- Combo: a grid with every gem. HUD: grid k / 5, gems. Stars 600 / 1 000 / 1 400 (casual bot: follows the seeded path
+  with a seeded 1-in-3 chance per grid of skipping one gem).
+- Tutorial bubble: « Touche les cases voisines pour tracer ton chemin jusqu'à la sortie »
+
+#### Chasse au Trésor (world Exploration, 3rd game) - turn based
+- An 8 × 8 beach hides one chest (seeded). Tap to dig: the hole shows how close the chest is by Manhattan distance:
+  0 trésor, 1-2 brûlant (red), 3-4 chaud (orange), 5-7 tiède (yellow), 8+ froid (blue), each with its own symbol. A tap
+  on a dug cell is ignored (no dig spent).
+- 8 digs per map (+1 per « Détecteur » level). Chest found: 100 + 20 × digs left after the finding dig, next map.
+  Out of digs: the map scores 0 and the next one starts. A round is 5 maps.
+- Input guard: a dig animates in 200 ms; taps are ignored meanwhile.
+- Combo: a chest found in 3 digs or fewer. HUD: map k / 5, digs left. Stars 400 / 700 / 1 000 (casual bot: digs the
+  cell that best matches all clues so far, ties seeded).
+- Tutorial bubble: « Touche le sable pour creuser. Les couleurs disent si tu chauffes ! »
+
+Upgrades of v0.3.0: Coup de balai (sweep), Indice (hint, shared), Sablier (extra_time: +10 s for Tri de Billes,
++5 s for Calcul Éclair and Labyrinthe Express), Recrues (recruits), Vétéran (veteran), Détecteur (detector).
+Game ids: fruit, slide, cardline, marbles, quicksum, army, merge, maze, trail, treasure.
+
+#### Plombier Express: solved grid shown (v0.3.0)
+
+- Phone test of v0.2.0: when a grid was solved, the next one appeared at once and the filled pipe was never seen.
+  Now the solved grid stays on screen for 1 s: the water runs from the entry to the exit through the connected
+  pieces (cells fill in path order), the grid points pop above it, and taps are ignored; then the next grid comes.
+
 ### Tutorial (guided first round)
 
 The first round of each game shows its help bubbles in order; each disappears when its action is performed. The
@@ -553,7 +730,7 @@ clears it. Real-time games pause their timers while a bubble is shown.
 ## Telemetry events
 
 Only events listed here may be sent (after consent). Params: numbers, booleans or short enums. No identifiers.
-`game` ∈ {blocks, garden, bubbles, tower, hop, lights, pipes, flood, socks, twentyone, candles, parrot, moles}; `world` ∈ {arcade, puzzle, cards, bubbles, skill, memory}; `outcome` ∈ {ended, quit, short}.
+`game` ∈ {blocks, garden, bubbles, tower, hop, lights, pipes, flood, socks, twentyone, candles, parrot, moles, fruit, slide, cardline, marbles, quicksum, army, merge, maze, trail, treasure}; `world` ∈ {arcade, puzzle, strategy, cards, bubbles, skill, exploration, memory}; `outcome` ∈ {ended, quit, short}.
 
 | Event | When | Params | Feeds KPI |
 |---|---|---|---|
@@ -828,6 +1005,59 @@ Telemetry and technical
 - AC-74 [unit] Given a round screen, then its round clock is one stable object across renders, and the Perroquet
   show ends and gives the turn to the player with the clock moving frame by frame (phone test: a lit pad
   re-rendered the screen, which restarted the show for ever, so no pad could be tapped).
+- AC-75 [unit] Given the v0.3.0 catalogue, then 23 games sit in their worlds and unlock order (Arcade +Fruits en
+  Fusion; Puzzle +Bloc Glissant; Stratégie: Armée de Poche, Fusion de Guerriers; Cartes +Suite de Cartes; Bulles +Tri
+  de Billes; Exploration: Labyrinthe Express, Fil d'Ariane, Chasse au Trésor; Mémoire +Calcul Éclair) with the star
+  thresholds of the table and their two upgrades; Stratégie unlocks at 15 stars + level 7 and Exploration at 18 stars
+  + level 8; a v0.2.0 save loads without loss; score challenges exist for every game; Ciel étoilé needs 69 stars.
+- AC-76 [unit] Fruits en Fusion: a fruit falls to the lowest empty cell, merges with every touching fruit of its kind
+  into the next index in the lowest merged cell, gravity then re-checks created or moved fruits bottom-up, two
+  pastèques vanish for 2 000, points follow 10 × 2^index, a tap on a full column is ignored and the round ends when
+  no column fits, « Coup de balai » clears the bottom row; a chain of 2+ merges is a combo.
+- AC-77 [unit] Bloc Glissant: blocks move one cell along their axis into free cells only; every generated puzzle is
+  solvable with its par in [3 + 2k, 7 + 2k] or the closest attempt (bounded generator); solved at columns 4-5;
+  scoring 300 − 15 per extra move, failure after par + 25 and hints (next move of a shortest solution) follow the
+  rules; a puzzle at par is a combo.
+- AC-78 [unit] Suite de Cartes: rows of 5 to 9 cards never start sorted; par = n − cycles; a swap exchanges two
+  cards; scoring, failure after par + 10, hints that place a card, combo at par.
+- AC-79 [unit] Tri de Billes: moves take the top run of one colour onto an empty tube or the same colour, as many
+  as fit; every generated puzzle is solvable (bounded solver + fallback); « Recommencer » restores the puzzle
+  without stopping the timer; a sorted puzzle scores 100 + 20 × colours and deals the next;
+  the timer follows 90 s + 10 s per « Sablier » level; a puzzle under 20 s is a combo.
+- AC-80 [unit] Calcul Éclair: questions follow the operand ranges of each level with exactly one right answer among
+  4 distinct answers ≥ 0; points 10 + 5 × min(streak before the answer, 8); a wrong answer costs 5 s and the streak
+  and keeps the question; taps in the first 250 ms of a question are ignored; timer 60 s + 5 s per level; combo every
+  5th right answer in a row.
+- AC-81 [unit] Armée de Poche: gates follow the shares and ranges per run (one multiplicative gate per pair at most)
+  and apply +n, −n, × 2, ÷ 2 (never below 0); best is reached by the greedy choice and is at least the start count;
+  D = floor(f × best) with f per run; a won run scores 100 + min(200, 5 × (army − D)); a lost fort or the 8th run ends
+  the round; taps during the 500 ms walk are ignored; « Recrues » adds 5 soldiers per level.
+- AC-82 [unit] Fusion de Guerriers: the start holds an adjacent pair; only adjacent warriors of the same level merge,
+  scoring 10 × 2^(level − 1); one warrior spawns after each merge and one more every 3rd merge, never more than the
+  free cells (level 2 with the « Vétéran » chance); the round ends as soon as no adjacent pair shares a level; a level 5+ merge is a combo.
+- AC-83 [unit] Labyrinthe Express: every generated maze is perfect (one path between any two cells) and grows with
+  n; a swipe runs until a wall ahead, a junction or the exit, and does nothing into a wall; reaching the exit scores
+  100 + 2 × shortest path cells (start and exit included); timer 60 s + 5 s
+  per level; combo under 15 s.
+- AC-84 [unit] Fil d'Ariane: every grid has its start in the left column, its exit in the right column, a seeded path
+  of 12+ cells holding its 3 + k gems and 6 + k rocks off it; the trail extends to free neighbours only, steps back
+  from its head, ends at the exit; scoring 50 per gem + 100 when all; a hint gives the next path cell, or the head
+  when the trail left the path; combo with every gem.
+- AC-85 [unit] Chasse au Trésor: each dig shows the band of its Manhattan distance to the chest (0, 1-2, 3-4, 5-7,
+  8+); a dug cell cannot be dug again; a found chest scores 100 + 20 × digs left after the finding dig; 8 digs per map + 1 per « Détecteur » level; out of digs the map
+  scores 0; 5 maps per round; combo in 3 digs or fewer.
+- AC-86 [unit] Given each of the 10 v0.3.0 engines, then its casual bot (policy of its rules) reaches over 50 seeds a
+  median score at or above the 1-star threshold and below the 3-star threshold, every generator starts a round for
+  every seed tried, and a double tap during the input guard changes nothing. Given each of the 10 new v0.3.0 game
+  screens on a first round, then its tutorial bubble is shown, a
+  scripted input updates the score or HUD as its engine predicts (timers driven frame by frame through the injectable
+  clock), and Pause → Quitter ends the round.
+- AC-87 [e2e] Given the seed deep link /unlocked, when each of the 10 new v0.3.0 games is opened from its world, then
+  its screen shows (one capture per game) and Pause → Quitter reaches the Result.
+- AC-88 [unit] Given Plombier Express, when a grid is solved, then the solved grid stays shown 1 s with the water
+  filling its connected pieces in path order and its points, taps are ignored meanwhile, then the next grid comes.
+- AC-89 [manual] Given the release APK on the user's phone, when the ten v0.3.0 games are played, then each is
+  understandable from its bubble, smooth and fair, and the solved Plombier grid shows its water.
 - AC-72 [unit] Given Bougies Folles, when a throw comes less than 250 ms after the previous one, then it is ignored
   (no candle, no loss: two candles of a double tap are at least 22.5° apart at 90°/s); when a cake is completed, the
   next cake does not turn for 1 s and throws are ignored, then it turns and throws are accepted again.
@@ -1042,11 +1272,35 @@ no spoken audio). French tone: tu.
 | tutorial.candles | Touche pour lancer une bougie. Ne touche pas les autres ! | Tap to throw a candle. Don't hit the others! |
 | tutorial.parrot | Regarde le perroquet, puis répète la même suite | Watch the parrot, then repeat the same sequence |
 | tutorial.moles | Touche une case pour creuser. Les chiffres comptent les taupes voisines | Tap a square to dig. Numbers count the moles next to it |
+| game.<id>.name (v0.3.0) | Fruits en Fusion, Bloc Glissant, Suite de Cartes, Tri de Billes, Calcul Éclair, Armée de Poche, Fusion de Guerriers, Labyrinthe Express, Fil d'Ariane, Chasse au Trésor | Fruit Fusion, Slide Out, Card Line, Marble Sort, Quick Sums, Pocket Army, Warrior Merge, Maze Dash, Gem Trail, Treasure Dig |
+| game.fruit.desc | Lâche les fruits : deux pareils fusionnent en un plus gros. | Drop the fruits: two of a kind merge into a bigger one. |
+| game.slide.desc | Fais glisser les blocs pour libérer le bloc rouge. | Slide the blocks to free the red one. |
+| game.cardline.desc | Range les cartes dans l'ordre en un minimum d'échanges. | Put the cards in order with as few swaps as possible. |
+| game.marbles.desc | Trie les billes par couleur avant la fin du temps. | Sort the marbles by colour before time runs out. |
+| game.quicksum.desc | Trouve la bonne réponse, le plus vite possible. | Find the right answer, as fast as you can. |
+| game.army.desc | Choisis les bonnes portes pour grossir ton armée et prendre le fort. | Pick the right gates to grow your army and take the fort. |
+| game.merge.desc | Fusionne les guerriers pareils pour former les plus forts. | Merge matching warriors into stronger ones. |
+| game.maze.desc | Cours jusqu'à la sortie des labyrinthes avant la fin du temps. | Run to the exit of the mazes before time runs out. |
+| game.trail.desc | Trace ton chemin jusqu'à la sortie en ramassant les gemmes. | Draw your way to the exit and pick up the gems. |
+| game.treasure.desc | Creuse le sable : les couleurs disent si tu chauffes. | Dig the sand: the colours tell you if you are getting warmer. |
+| tutorial.fruit | Touche une colonne pour lâcher le fruit. Deux fruits pareils fusionnent ! | Tap a column to drop the fruit. Two of a kind merge! |
+| tutorial.slide | Glisse les blocs pour libérer la sortie du bloc rouge | Swipe the blocks to clear the way for the red one |
+| tutorial.cardline | Touche deux cartes pour les échanger. Range-les dans l'ordre ! | Tap two cards to swap them. Put them in order! |
+| tutorial.marbles | Touche un tube puis un autre pour déplacer les billes du dessus | Tap a tube, then another, to move the top marbles |
+| tutorial.quicksum | Touche la bonne réponse, le plus vite possible ! | Tap the right answer, as fast as you can! |
+| tutorial.army | Touche à gauche ou à droite pour choisir ta porte | Tap left or right to pick your gate |
+| tutorial.merge | Touche deux guerriers pareils côte à côte pour les fusionner | Tap two matching warriors side by side to merge them |
+| tutorial.maze | Glisse pour courir jusqu'au prochain croisement. Trouve la sortie ! | Swipe to run to the next crossing. Find the exit! |
+| tutorial.trail | Touche les cases voisines pour tracer ton chemin jusqu'à la sortie | Tap the next squares to draw your way to the exit |
+| tutorial.treasure | Touche le sable pour creuser. Les couleurs disent si tu chauffes ! | Tap the sand to dig. The colours tell you if you are getting warmer! |
+| upgrade.sweep / extra_time / recruits / veteran / detector (name / desc) | Coup de balai / {n} rangée(s) balayée(s) par partie · Sablier / +{s} s par partie · Recrues / +{n} soldats au départ · Vétéran / {pct} % de guerriers niveau 2 · Détecteur / +{n} coup(s) de pelle par carte | Sweep / {n} row(s) swept per round · Hourglass / +{s} s per round · Recruits / +{n} soldiers at the start · Veteran / {pct}% level-2 warriors · Detector / +{n} dig(s) per map |
+| hud.next / puzzle / row / time / streak / soldiers / run / best / maze / gems / map / digs | Suivant / Puzzle / Rangée / Temps / Série / Soldats / Course / Meilleur / Labyrinthe / Gemmes / Carte / Pelles | Next / Puzzle / Row / Time / Streak / Soldiers / Run / Best / Maze / Gems / Map / Digs |
+| play.sweep / left / right / fort / burning / hot / warm / cold / found / restart | Balai ({n}) / Gauche / Droite / Fort : {n} / Brûlant / Chaud / Tiède / Froid / Trésor ! / Recommencer | Sweep ({n}) / Left / Right / Fort: {n} / Burning / Hot / Warm / Cold / Treasure! / Restart |
 
 ## Out of scope
 
-- The 37 other mini-games of the brief (including Army Rush and Coin Miner), worlds 3, 7, 8 and 10 content;
-  replays as detailed as the first three games and three upgrades for the ten v0.2.0 games (concept test first).
+- The 27 other mini-games of the brief (including Coin Miner and the other idle games of world 7), worlds 7 and 10
+  content; replays as detailed as the first three games and three upgrades for the v0.2.0 and v0.3.0 games.
 - Shop, cosmetics, themes to buy, avatars, boosters; crystals; weekly challenges; passive / idle production;
   events, seasonal content, limited-time games; leaderboards (local or online) and multi-profile.
 - Selectable difficulty tiers (Débutant / Normal / Avancé / Expert).

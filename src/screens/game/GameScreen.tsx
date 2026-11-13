@@ -14,6 +14,16 @@ import { ParrotGame } from './ParrotGame';
 import { MolesGame } from './MolesGame';
 import type { OnFinish } from './GameFrame';
 import { GardenGame } from './GardenGame';
+import { FruitGame } from './FruitGame';
+import { SlideGame } from './SlideGame';
+import { CardLineGame } from './CardLineGame';
+import { MarblesGame } from './MarblesGame';
+import { QuickSumGame } from './QuickSumGame';
+import { ArmyGame } from './ArmyGame';
+import { MergeGame } from './MergeGame';
+import { MazeGame } from './MazeGame';
+import { TrailGame } from './TrailGame';
+import { TreasureGame } from './TreasureGame';
 
 export function GameScreen({ game, seed, onFinish }: { game: GameId; seed: number; onFinish: OnFinish }) {
   switch (game) {
@@ -43,5 +53,25 @@ export function GameScreen({ game, seed, onFinish }: { game: GameId; seed: numbe
       return <ParrotGame key={seed} seed={seed} onFinish={onFinish} />;
     case 'moles':
       return <MolesGame key={seed} seed={seed} onFinish={onFinish} />;
+    case 'fruit':
+      return <FruitGame key={seed} seed={seed} onFinish={onFinish} />;
+    case 'slide':
+      return <SlideGame key={seed} seed={seed} onFinish={onFinish} />;
+    case 'cardline':
+      return <CardLineGame key={seed} seed={seed} onFinish={onFinish} />;
+    case 'marbles':
+      return <MarblesGame key={seed} seed={seed} onFinish={onFinish} />;
+    case 'quicksum':
+      return <QuickSumGame key={seed} seed={seed} onFinish={onFinish} />;
+    case 'army':
+      return <ArmyGame key={seed} seed={seed} onFinish={onFinish} />;
+    case 'merge':
+      return <MergeGame key={seed} seed={seed} onFinish={onFinish} />;
+    case 'maze':
+      return <MazeGame key={seed} seed={seed} onFinish={onFinish} />;
+    case 'trail':
+      return <TrailGame key={seed} seed={seed} onFinish={onFinish} />;
+    case 'treasure':
+      return <TreasureGame key={seed} seed={seed} onFinish={onFinish} />;
   }
 }

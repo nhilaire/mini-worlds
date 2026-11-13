@@ -46,7 +46,8 @@ describe('meta-game screens', () => {
     expect(screen.getByTestId('world-arcade-state')).toHaveTextContent(/Ouvert/);
     expect(screen.getByTestId('world-puzzle-state')).toHaveTextContent(/Verrouillé/);
     expect(screen.getByTestId('world-bubbles-state')).toHaveTextContent(/Verrouillé/);
-    expect(screen.getByTestId('world-strategy-state')).toHaveTextContent(/Bientôt/);
+    expect(screen.getByTestId('world-strategy-state')).toHaveTextContent(/Verrouillé/);
+    expect(screen.getByTestId('world-building-state')).toHaveTextContent(/Bientôt/);
     expect(screen.getByText('2 étoiles dans Arcade')).toBeTruthy();
     expect(screen.getByText('4 étoiles au total')).toBeTruthy();
     expect(screen.getByText('Niveau 3')).toBeTruthy();
@@ -62,7 +63,8 @@ describe('meta-game screens', () => {
     // v0.2.0: Tour Bancale and Saute-Lapin are shown locked with their condition, then two coming-soon slots.
     expect(screen.getByTestId('game-tower-condition')).toHaveTextContent('2 étoiles dans Arcade');
     expect(screen.getByTestId('game-hop-condition')).toHaveTextContent('4 étoiles dans Arcade');
-    for (let i = 3; i < 5; i++) expect(screen.getByTestId(`slot-soon-${i}`)).toBeTruthy();
+    expect(screen.getByTestId('game-fruit-condition')).toHaveTextContent('6 étoiles dans Arcade');
+    expect(screen.getByTestId('slot-soon-4')).toBeTruthy();
 
     await fireEvent.press(screen.getByTestId('game-blocks'));
     expect(await screen.findByTestId('game-sheet-screen')).toBeTruthy();
@@ -137,8 +139,8 @@ describe('meta-game screens', () => {
     await render(<App />);
     await fireEvent.press(await screen.findByTestId('tab-profile'));
     expect(await screen.findByTestId('profile-rounds')).toHaveTextContent(/1/);
-    expect(screen.getByTestId('profile-games')).toHaveTextContent(/1 \/ 13/);
-    expect(screen.getByTestId('profile-stars')).toHaveTextContent(/1 \/ 39/);
+    expect(screen.getByTestId('profile-games')).toHaveTextContent(/1 \/ 23/);
+    expect(screen.getByTestId('profile-stars')).toHaveTextContent(/1 \/ 69/);
     expect(screen.getByTestId('achievement-first_round-unlocked')).toBeTruthy();
     expect(screen.getByTestId('achievement-first_star-unlocked')).toBeTruthy();
     expect(screen.getByTestId('achievement-rounds10')).toBeTruthy();

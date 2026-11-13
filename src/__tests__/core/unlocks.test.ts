@@ -21,7 +21,7 @@ describe('world unlocks (AC-09)', () => {
     const { save, unlocked } = checkUnlocks(withStars(defaultSave(), { blocks: 2 }));
     expect(unlocked).toEqual(['puzzle']);
     expect(isWorldUnlocked(save, 'puzzle')).toBe(true);
-    expect(nextUnlock(save)?.id).toBe('cards'); // v0.2.0: Cartes (world 4) comes before Bulles in display order
+    expect(nextUnlock(save)?.id).toBe('strategy'); // v0.3.0: Stratégie (world 3) is the next world in display order
   });
 
   it('Bubbles needs 4 stars in total AND level 3', () => {
@@ -33,7 +33,7 @@ describe('world unlocks (AC-09)', () => {
     const { save, unlocked } = checkUnlocks(withStars(defaultSave(), { blocks: 3, garden: 1 }, 3));
     expect(unlocked).toEqual(['puzzle', 'bubbles']);
     expect(save.unlockedWorlds).toEqual(['arcade', 'puzzle', 'bubbles']);
-    expect(nextUnlock(save)?.id).toBe('cards');
+    expect(nextUnlock(save)?.id).toBe('strategy');
   });
 
   it('coming-soon worlds never unlock even when their indicative condition is met', () => {

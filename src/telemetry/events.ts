@@ -14,8 +14,18 @@ export type GameId =
   | 'twentyone'
   | 'candles'
   | 'parrot'
-  | 'moles';
-export type WorldId = 'arcade' | 'puzzle' | 'cards' | 'bubbles' | 'skill' | 'memory';
+  | 'moles'
+  | 'fruit'
+  | 'slide'
+  | 'cardline'
+  | 'marbles'
+  | 'quicksum'
+  | 'army'
+  | 'merge'
+  | 'maze'
+  | 'trail'
+  | 'treasure';
+export type WorldId = 'arcade' | 'puzzle' | 'strategy' | 'cards' | 'bubbles' | 'skill' | 'exploration' | 'memory';
 export type RoundOutcome = 'ended' | 'quit' | 'short';
 export type UpgradeId =
   | 'preview'
@@ -33,7 +43,12 @@ export type UpgradeId =
   | 'extra_hand'
   | 'slow_spin'
   | 'second_chance'
-  | 'radar';
+  | 'radar'
+  | 'sweep'
+  | 'extra_time'
+  | 'recruits'
+  | 'veteran'
+  | 'detector';
 export type ChallengeId = 'rounds3' | 'games2' | 'star1' | 'combos5' | 'coins200' | `score_${GameId}`;
 export type AchievementId =
   | 'first_round'

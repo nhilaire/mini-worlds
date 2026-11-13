@@ -14,16 +14,16 @@ import {
 } from '../../game/core/content';
 
 describe('content catalogue', () => {
-  it('has 10 worlds in display order, six of them holding the v0.2.0 games', () => {
+  it('has 10 worlds in display order, eight of them holding the v0.3.0 games', () => {
     expect(WORLDS.map((w) => w.index)).toEqual([1, 2, 3, 4, 5, 6, 7, 8, 9, 10]);
-    expect(WORLDS.filter((w) => w.games.length > 0).map((w) => w.id)).toEqual(['arcade', 'puzzle', 'cards', 'bubbles', 'skill', 'memory']);
-    expect(WORLDS.filter((w) => w.comingSoon).length).toBe(4);
+    expect(WORLDS.filter((w) => w.games.length > 0).map((w) => w.id)).toEqual(['arcade', 'puzzle', 'strategy', 'cards', 'bubbles', 'skill', 'exploration', 'memory']);
+    expect(WORLDS.filter((w) => w.comingSoon).length).toBe(2);
     for (const w of WORLDS) expect(w.games.length).toBeLessThanOrEqual(SLOTS_PER_WORLD);
     expect(WORLDS.find((w) => w.id === 'arcade')?.conditions).toEqual([]);
   });
 
   it('places every game in its world', () => {
-    expect(GAME_IDS).toEqual(['blocks', 'garden', 'bubbles', 'tower', 'hop', 'lights', 'pipes', 'flood', 'socks', 'twentyone', 'candles', 'parrot', 'moles']);
+    expect(GAME_IDS).toEqual(['blocks', 'garden', 'bubbles', 'tower', 'hop', 'lights', 'pipes', 'flood', 'socks', 'twentyone', 'candles', 'parrot', 'moles', 'fruit', 'slide', 'cardline', 'marbles', 'quicksum', 'army', 'merge', 'maze', 'trail', 'treasure']);
     expect(worldOfGame('blocks').id).toBe('arcade');
     expect(worldOfGame('garden').id).toBe('puzzle');
     expect(worldOfGame('bubbles').id).toBe('bubbles');
@@ -47,8 +47,8 @@ describe('content catalogue', () => {
     expect(UPGRADE_COSTS).toEqual([250, 600, 1200]);
   });
 
-  it('challenge pool has 18 entries, Jouer 3 parties fixed first, games2 needs 2 games', () => {
-    expect(CHALLENGES).toHaveLength(18);
+  it('challenge pool has 28 entries, Jouer 3 parties fixed first, games2 needs 2 games', () => {
+    expect(CHALLENGES).toHaveLength(28);
     expect(CHALLENGES.filter((c) => c.fixedFirst).map((c) => c.id)).toEqual(['rounds3']);
     expect(CHALLENGES.find((c) => c.id === 'games2')?.minGames).toBe(2);
     expect(CHALLENGES.find((c) => c.id === 'score_blocks')?.target).toBe(gameById('blocks').stars[0]);

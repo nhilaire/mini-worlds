@@ -96,6 +96,22 @@ After the first phone test of v0.2.0 (2026-11-13, RELEASE.md notes)
 - [x] T-61 Lucioles easier: par 1 + k, grids 1-2 in 4 × 4 (AC-61) - proof: unit
 - [x] T-58 Saute-Lapin smoothness: bunny and fences on Animated values, React renders only on changes (AC-73) - proof: unit + device
 
+v0.3.0: ten more games, worlds Stratégie and Exploration (PRD amended 2026-11-13)
+
+- [x] T-62 Catalogue v0.3.0: 23 games in 8 worlds, stars, upgrades, world conditions, score challenges, Ciel étoilé 69, telemetry enums, fr + en copy, placeholder screens and icons (AC-75) - proof: unit
+- [ ] T-63 Fruits en Fusion engine + screen + casual bot (AC-76, AC-86) - proof: unit
+- [ ] T-64 Bloc Glissant engine + screen + casual bot (AC-77, AC-86) - proof: unit
+- [ ] T-65 Suite de Cartes engine + screen + casual bot (AC-78, AC-86) - proof: unit
+- [ ] T-66 Tri de Billes engine + screen + casual bot (AC-79, AC-86) - proof: unit
+- [ ] T-67 Calcul Éclair engine + screen + casual bot (AC-80, AC-86) - proof: unit
+- [ ] T-68 Armée de Poche engine + screen + casual bot (AC-81, AC-86) - proof: unit
+- [ ] T-69 Fusion de Guerriers engine + screen + casual bot (AC-82, AC-86) - proof: unit
+- [ ] T-70 Labyrinthe Express engine + screen + casual bot (AC-83, AC-86) - proof: unit
+- [ ] T-71 Fil d'Ariane engine + screen + casual bot (AC-84, AC-86) - proof: unit
+- [ ] T-72 Chasse au Trésor engine + screen + casual bot (AC-85, AC-86) - proof: unit
+- [ ] T-73 Plombier Express: solved grid shown 1 s with the water running, inputs locked (AC-88) - proof: unit
+- [ ] T-74 Maestro smoke flow of the ten v0.3.0 games through /unlocked (AC-87, AC-89) - proof: e2e
+
 ## Notes
 
 - Order: foundations and engines first (pure TypeScript, Jest), then screens on top of the engines, then wiring.

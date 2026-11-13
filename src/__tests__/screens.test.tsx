@@ -1,5 +1,5 @@
 import AsyncStorage from '@react-native-async-storage/async-storage';
-import { fireEvent, render, screen } from '@testing-library/react-native';
+import { fireEvent, render, screen, waitFor } from '@testing-library/react-native';
 
 import App from '../App';
 import { setClock } from '../game/clock';
@@ -7,6 +7,7 @@ import { settleRound } from '../game/core/engine';
 import { defaultSave, Save, serializeSave } from '../game/core/save';
 import { deviceLanguageTags } from '../i18n/deviceLocale';
 import { I18nProvider } from '../i18n/I18nProvider';
+import { GameSheetScreen } from '../screens/GameSheetScreen';
 import { ResultScreen } from '../screens/ResultScreen';
 import { GameStoreProvider } from '../state/GameStore';
 import { ThemeProvider } from '../ui/ThemeProvider';
@@ -199,5 +200,36 @@ describe('result screen (AC-33)', () => {
     await render(wrap(<ResultScreen game="blocks" result={short.result} onReplay={() => {}} onUpgrade={() => {}} onBack={() => {}} />));
     expect(screen.getByTestId('result-short')).toHaveTextContent(/Partie trop courte/);
     expect(screen.queryByTestId('result-coins')).toBeNull();
+  });
+});
+
+describe('game sheet of a locked game (AC-56)', () => {
+  const wrap = (ui: React.ReactElement) => (
+    <GameStoreProvider sessionSeed={null}>
+      <ThemeProvider setting="dark">
+        <I18nProvider setting="fr" onChange={() => {}}>
+          {ui}
+        </I18nProvider>
+      </ThemeProvider>
+    </GameStoreProvider>
+  );
+
+  it('refuses « Jouer » while the game needs more stars in its world, and allows it once they are earned', async () => {
+    await AsyncStorage.clear();
+    const onPlay = jest.fn();
+    await render(wrap(<GameSheetScreen game="tower" onPlay={onPlay} onUpgrades={() => {}} onBack={() => {}} />));
+    const play = await screen.findByTestId('sheet-play');
+    expect(play).toBeDisabled();
+    await fireEvent.press(play);
+    expect(onPlay).not.toHaveBeenCalled();
+    screen.unmount();
+
+    const save = defaultSave();
+    save.games.blocks = { ...save.games.blocks, stars: 2 };
+    await AsyncStorage.setItem('save', serializeSave(save));
+    await render(wrap(<GameSheetScreen game="tower" onPlay={onPlay} onUpgrades={() => {}} onBack={() => {}} />));
+    await waitFor(() => expect(screen.getByTestId('sheet-play')).toBeEnabled());
+    await fireEvent.press(screen.getByTestId('sheet-play'));
+    expect(onPlay).toHaveBeenCalledTimes(1);
   });
 });

@@ -694,9 +694,9 @@ Bulles en Folie
 
 Screens and flow
 
-- AC-31 [e2e] Given Home, when « Jeux » is tapped, then the 10 world cards are listed, Arcade open, Puzzle and
-  Bulles locked with their conditions, the others « Bientôt »; tapping Arcade shows Pluie de Blocs and four
-  « Bientôt » slots; tapping the game shows its sheet with « Jouer ».
+- AC-31 [e2e] Given Home, when « Jeux » is tapped, then the 10 world cards are listed, Arcade open, Puzzle,
+  Cartes, Bulles, Adresse and Mémoire locked with their conditions, the four others « Bientôt »; tapping Arcade shows
+  Pluie de Blocs, Tour Bancale and Saute-Lapin locked with their condition, and two « Bientôt » slots (v0.2.0); tapping the game shows its sheet with « Jouer ».
 - AC-32 [e2e] Given the Game sheet, when « Améliorations » is opened with 0 coins, then the three upgrades are
   listed with « 0 / 3 » and « Acheter » disabled.
 - AC-33 [unit] Given the Result screen data, when a round earns a new star, a level-up or unlocks a world, then
@@ -711,7 +711,7 @@ Screens and flow
 - AC-37 [e2e] Given Settings, when « Réinitialiser la progression » is confirmed, then coins, XP, stars and
   unlocks are back to the initial state and the language and consent are kept.
 - AC-38 [e2e] Given Profile, when « À propos » is tapped, then the About screen shows the story
-  (`about.story`), « Un mot de l'auteur », « Tes données » and « Version 0.1.0 ».
+  (`about.story`), « Un mot de l'auteur », « Tes données » and « Version <version of the build> » (0.2.0 here).
 - AC-39 [unit] Given a running round, when the app goes to background, then the round is paused and the same
   state is shown with the Pause overlay on return.
 

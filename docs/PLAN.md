@@ -81,7 +81,7 @@ v0.2.0: ten more mini-games (concept test, PRD amended 2026-11-13)
 - [ ] T-48 Plombier Express engine + screen (AC-62, AC-69) - proof: unit
 - [ ] T-49 Raz-de-Couleurs engine + screen (AC-63, AC-69) - proof: unit
 - [x] T-50 Chaussettes Perdues engine + screen (AC-64, AC-69) - proof: unit
-- [ ] T-51 Vingt-et-Un engine + screen (AC-65, AC-69) - proof: unit
+- [x] T-51 Vingt-et-Un engine + screen (AC-65, AC-69) - proof: unit
 - [x] T-52 Bougies Folles engine + screen (AC-66, AC-69) - proof: unit
 - [ ] T-53 Perroquet Copieur engine + screen (AC-67, AC-69) - proof: unit
 - [ ] T-54 Champ de Taupes engine + screen (AC-68, AC-69) - proof: unit

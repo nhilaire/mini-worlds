@@ -58,7 +58,10 @@ describe('meta-game screens', () => {
     await fireEvent.press(screen.getByTestId('world-arcade'));
     expect(await screen.findByTestId('world-detail-screen')).toBeTruthy();
     expect(screen.getByTestId('game-blocks')).toBeTruthy();
-    for (let i = 1; i < 5; i++) expect(screen.getByTestId(`slot-soon-${i}`)).toBeTruthy();
+    // v0.2.0: Tour Bancale and Saute-Lapin are shown locked with their condition, then two coming-soon slots.
+    expect(screen.getByTestId('game-tower-condition')).toHaveTextContent('2 étoiles dans Arcade');
+    expect(screen.getByTestId('game-hop-condition')).toHaveTextContent('4 étoiles dans Arcade');
+    for (let i = 3; i < 5; i++) expect(screen.getByTestId(`slot-soon-${i}`)).toBeTruthy();
 
     await fireEvent.press(screen.getByTestId('game-blocks'));
     expect(await screen.findByTestId('game-sheet-screen')).toBeTruthy();
@@ -133,8 +136,8 @@ describe('meta-game screens', () => {
     await render(<App />);
     await fireEvent.press(await screen.findByTestId('tab-profile'));
     expect(await screen.findByTestId('profile-rounds')).toHaveTextContent(/1/);
-    expect(screen.getByTestId('profile-games')).toHaveTextContent(/1 \/ 3/);
-    expect(screen.getByTestId('profile-stars')).toHaveTextContent(/1 \/ 9/);
+    expect(screen.getByTestId('profile-games')).toHaveTextContent(/1 \/ 13/);
+    expect(screen.getByTestId('profile-stars')).toHaveTextContent(/1 \/ 39/);
     expect(screen.getByTestId('achievement-first_round-unlocked')).toBeTruthy();
     expect(screen.getByTestId('achievement-first_star-unlocked')).toBeTruthy();
     expect(screen.getByTestId('achievement-rounds10')).toBeTruthy();

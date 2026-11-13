@@ -26,7 +26,7 @@ tags:
 - takeScreenshot: worlds-01-map
 - scrollUntilVisible:
     element:
-      id: "world-challenges"
+      id: "world-challenges-state"
     direction: DOWN
     timeout: 30000
 - assertVisible:

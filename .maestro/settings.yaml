@@ -24,6 +24,12 @@ tags:
     text: "100"
 - tapOn:
     id: "tab-profile"
+# v0.2.0: 13 achievements push the settings button below the fold.
+- scrollUntilVisible:
+    element:
+      id: "profile-settings"
+    direction: DOWN
+    timeout: 30000
 - tapOn:
     id: "profile-settings"
 - assertVisible:
@@ -52,6 +58,12 @@ tags:
     timeout: 30000
 - tapOn:
     id: "tab-profile"
+# v0.2.0: 13 achievements push the settings button below the fold.
+- scrollUntilVisible:
+    element:
+      id: "profile-settings"
+    direction: DOWN
+    timeout: 30000
 - tapOn:
     id: "profile-settings"
 - assertVisible:

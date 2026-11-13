@@ -3,6 +3,11 @@ name: Helper - set the app language to French from the settings (flows assert Fr
 ---
 - tapOn:
     id: "tab-profile"
+- scrollUntilVisible:
+    element:
+      id: "profile-settings"
+    direction: DOWN
+    timeout: 30000
 - tapOn:
     id: "profile-settings"
 - tapOn:

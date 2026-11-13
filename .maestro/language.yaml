@@ -13,6 +13,11 @@ tags:
     id: "consent-refuse"
 - tapOn:
     id: "tab-profile"
+- scrollUntilVisible:
+    element:
+      id: "profile-settings"
+    direction: DOWN
+    timeout: 30000
 - tapOn:
     id: "profile-settings"
 - tapOn:
@@ -40,6 +45,11 @@ tags:
 - assertVisible: "Play"
 - tapOn:
     id: "tab-profile"
+- scrollUntilVisible:
+    element:
+      id: "profile-settings"
+    direction: DOWN
+    timeout: 30000
 - tapOn:
     id: "profile-settings"
 - tapOn:

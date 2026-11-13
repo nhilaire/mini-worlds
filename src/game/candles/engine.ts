@@ -19,6 +19,10 @@ export const BASE_CANDLES = 5;
 export const MAX_CANDLES = 12;
 export const CANDLE_POINTS = 10;
 export const CAKE_POINTS = 100;
+/** After a throw, taps are ignored this long (phone test: two quick taps lost the round on a double tap). */
+export const THROW_COOLDOWN_MS = 250;
+/** Between two cakes, the new cake waits this long, still, and taps are ignored (phone test). */
+export const CAKE_PAUSE_MS = 1000;
 
 export type Candle = { angle: number; preset: boolean };
 
@@ -29,7 +33,9 @@ export type CandlesEvent =
   /** The thrown candle hit another one at `angle`: the round is over. */
   | { kind: 'hit'; angle: number }
   /** The cake was completed; the next one is `cake`. */
-  | { kind: 'cake'; cake: number };
+  | { kind: 'cake'; cake: number }
+  /** A throw during the cooldown or the pause between cakes: ignored. */
+  | { kind: 'ignored' };
 
 export type CandlesState = RoundState<CandlesEvent> & {
   /** Current cake, from 1. */
@@ -43,6 +49,10 @@ export type CandlesState = RoundState<CandlesEvent> & {
   thrown: number;
   slowLevel: number;
   rngState: number;
+  /** Time left before the next throw is accepted (ms). */
+  cooldownMs: number;
+  /** Time left of the pause before the new cake starts turning (ms); throws are ignored meanwhile. */
+  pauseMs: number;
 };
 
 export type CandlesAction = { type: 'throw' } | { type: 'tick'; dt: number };
@@ -104,10 +114,11 @@ function startCake(cake: number, rngState: number): Pick<CandlesState, 'cake' | 
 }
 
 export function createCandles(seed: number, upgrades: UpgradeLevels = {}): CandlesState {
-  return { score: 0, combos: 0, status: 'playing', events: [], slowLevel: upgrades.slow_spin ?? 0, ...startCake(1, seed >>> 0) };
+  return { score: 0, combos: 0, status: 'playing', events: [], slowLevel: upgrades.slow_spin ?? 0, cooldownMs: 0, pauseMs: 0, ...startCake(1, seed >>> 0) };
 }
 
 function throwCandle(state: CandlesState): CandlesState {
+  if (state.cooldownMs > 0 || state.pauseMs > 0) return { ...state, events: [{ kind: 'ignored' }] };
   const angle = normalize(-state.rotation);
   const hit = state.candles.find((c) => angularDistance(c.angle, angle) < MIN_GAP);
   if (hit) {
@@ -116,13 +127,15 @@ function throwCandle(state: CandlesState): CandlesState {
   const thrown = state.thrown + 1;
   const candles = [...state.candles, { angle, preset: false }];
   if (thrown < candlesNeeded(state.cake)) {
-    return { ...state, candles, thrown, score: state.score + CANDLE_POINTS, events: [{ kind: 'plant', angle }, { kind: 'score', points: CANDLE_POINTS }] };
+    return { ...state, candles, thrown, cooldownMs: THROW_COOLDOWN_MS, score: state.score + CANDLE_POINTS, events: [{ kind: 'plant', angle }, { kind: 'score', points: CANDLE_POINTS }] };
   }
   const points = CANDLE_POINTS + CAKE_POINTS;
   const next = state.cake + 1;
   return {
     ...state,
     ...startCake(next, state.rngState),
+    cooldownMs: 0,
+    pauseMs: CAKE_PAUSE_MS,
     score: state.score + points,
     combos: state.combos + 1,
     events: [{ kind: 'plant', angle }, { kind: 'cake', cake: next }, { kind: 'score', points }, { kind: 'combo' }],
@@ -134,8 +147,10 @@ export function reduceCandles(state: CandlesState, action: CandlesAction): Candl
   switch (action.type) {
     case 'tick': {
       if (action.dt <= 0) return state.events.length === 0 ? state : { ...state, events: [] };
+      const cooldownMs = Math.max(0, state.cooldownMs - action.dt);
+      if (state.pauseMs > 0) return { ...state, cooldownMs, pauseMs: Math.max(0, state.pauseMs - action.dt), events: [] }; // the new cake waits, still
       const rotation = normalize(state.rotation + (state.dir * spinSpeed(state.cake, state.slowLevel) * action.dt) / 1000);
-      return { ...state, rotation, events: [] };
+      return { ...state, rotation, cooldownMs, events: [] };
     }
     case 'throw':
       return throwCandle(state);

@@ -97,7 +97,9 @@ describe('Bougies Folles screen (AC-69)', () => {
   it('AC-69: a throw too close to a candle ends the round as the engine predicts', async () => {
     const onFinish = await renderCandles();
     await fireEvent.press(screen.getByTestId('candles-btn-throw'));
-    await runFrames(2, 50); // 9°: closer than 14°
+    // The throw cooldown (250 ms) keeps the next candle at least 22.5° away; a full turn (4 s at 90°/s) brings the
+    // first candle back under the throw point.
+    await runFrames(80, 50);
     await fireEvent.press(screen.getByTestId('candles-btn-throw'));
     expect(onFinish).toHaveBeenCalledWith(expect.objectContaining({ game: 'candles', score: 10, outcome: 'ended' }), 'result');
   });

@@ -12,7 +12,7 @@ import { useI18n } from '../../i18n/I18nProvider';
 import { useGameStore } from '../../state/GameStore';
 import { useTheme } from '../../ui/ThemeProvider';
 import { PixelText } from '../../ui/Typography';
-import { spacing } from '../../ui/theme';
+import { font, spacing } from '../../ui/theme';
 import { GameFrame, OnFinish, useRoundFrame } from './GameFrame';
 import { useGameFeedback } from './useGameFeedback';
 
@@ -89,7 +89,8 @@ export function CandlesGame({ seed, onFinish }: { seed: number; onFinish: OnFini
       stateRef.current = next;
       if (next.rotation !== previous.rotation) rotation.setValue(next.rotation);
       // Ticks only turn the cake (Animated value above): re-render when a candle lands or the round ends.
-      if (next.candles !== previous.candles || next.status !== previous.status) setState(next);
+      // Also when the pause between two cakes starts or ends (the « Gâteau n » banner).
+      if (next.candles !== previous.candles || next.status !== previous.status || next.pauseMs > 0 !== previous.pauseMs > 0) setState(next);
       if (next.status === 'over') finish(next.score, next.combos);
       else setCombos(next.combos);
     },
@@ -113,8 +114,11 @@ export function CandlesGame({ seed, onFinish }: { seed: number; onFinish: OnFini
   }, [active, dispatch]);
 
   const onThrow = useCallback(() => {
-    if (paused || stateRef.current.status !== 'playing') return;
-    setThrows((n) => n + 1);
+    const current = stateRef.current;
+    if (paused || current.status !== 'playing') return;
+    // The engine ignores a throw during the cooldown or the pause between cakes: no flight is drawn then.
+    const accepted = current.cooldownMs <= 0 && current.pauseMs <= 0;
+    if (accepted) setThrows((n) => n + 1);
     dispatch({ type: 'throw' });
     advanceTutorial('throw');
   }, [advanceTutorial, dispatch, paused]);
@@ -161,6 +165,15 @@ export function CandlesGame({ seed, onFinish }: { seed: number; onFinish: OnFini
           </Animated.View>
           {state.status === 'playing' && <View style={[styles.square, { top: g.stage + LAUNCH_GAP - (length + diameter) + 2, width: g.stage, height: g.stage }]}>{left > 0 && <CandleStick g={g} color={PALETTE.pink} />}</View>}
           {throws > 0 && <Flight key={throws} g={g} />}
+          {state.pauseMs > 0 && state.status === 'playing' && (
+            <View style={[styles.square, styles.banner, { width: g.stage, height: g.stage }]}>
+              <View style={styles.chip}>
+                <PixelText size={font.heading} testID="candles-next-cake" style={{ color: PALETTE.light }}>
+                  {`${t.hud.cake} ${state.cake}`}
+                </PixelText>
+              </View>
+            </View>
+          )}
         </View>
       </Pressable>
     </GameFrame>
@@ -171,6 +184,8 @@ const styles = StyleSheet.create({
   board: { borderWidth: 2, borderRadius: 4, alignItems: 'center', justifyContent: 'center', overflow: 'hidden' },
   stage: {},
   square: { position: 'absolute', left: 0, top: 0 },
+  banner: { alignItems: 'center', justifyContent: 'center' },
+  chip: { backgroundColor: PALETTE.outline, paddingHorizontal: spacing.md, paddingVertical: spacing.sm, borderRadius: 4 },
   cake: { position: 'absolute', backgroundColor: PALETTE.brown, borderWidth: 3, borderColor: PALETTE.outline, alignItems: 'center', justifyContent: 'center' },
   icing: { backgroundColor: PALETTE.light, borderWidth: 2, borderColor: PALETTE.darkBrown },
   stick: { position: 'absolute', borderWidth: 1, borderColor: PALETTE.outline },

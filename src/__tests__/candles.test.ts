@@ -1,5 +1,6 @@
 import {
   angularDistance,
+  CAKE_PAUSE_MS,
   CandlesState,
   candlesLeft,
   candlesNeeded,
@@ -8,11 +9,12 @@ import {
   presetCount,
   reduceCandles,
   spinSpeed,
+  THROW_COOLDOWN_MS,
 } from '../game/candles/engine';
 
 /** Turns the cake to `rotation` directly (the turning itself is tested on its own). */
 function at(state: CandlesState, rotation: number): CandlesState {
-  return { ...state, rotation: normalize(rotation) };
+  return { ...state, rotation: normalize(rotation), cooldownMs: 0, pauseMs: 0 };
 }
 
 /** Throws into the current cake at angles spread evenly away from the existing candles, until it is complete. */
@@ -62,7 +64,7 @@ describe('Bougies Folles engine (AC-66)', () => {
     s = completeCake(createCandles(42, {}));
     expect(s.cake).toBe(2);
     expect(s.dir).toBe(-1);
-    expect(reduceCandles(s, { type: 'tick', dt: 1000 }).rotation).toBeCloseTo(360 - 103.5);
+    expect(reduceCandles({ ...s, pauseMs: 0 }, { type: 'tick', dt: 1000 }).rotation).toBeCloseTo(360 - 103.5);
     s = completeCake(s);
     expect(s.cake).toBe(3);
     expect(s.dir).toBe(1);
@@ -131,5 +133,39 @@ describe('Bougies Folles engine (AC-66)', () => {
     }
     const other = play(99).presets;
     expect(other).not.toEqual(a.presets);
+  });
+});
+
+describe('Bougies Folles timing guards (AC-72)', () => {
+  it('ignores a throw during the 250 ms after the previous one, then accepts it', () => {
+    let s = reduceCandles(createCandles(5), { type: 'throw' });
+    expect(s.cooldownMs).toBe(THROW_COOLDOWN_MS);
+    const early = reduceCandles(reduceCandles(s, { type: 'tick', dt: 200 }), { type: 'throw' });
+    expect(early.events).toEqual([{ kind: 'ignored' }]);
+    expect(early.thrown).toBe(1);
+    expect(early.status).toBe('playing');
+    s = reduceCandles(reduceCandles(s, { type: 'tick', dt: 250 }), { type: 'throw' });
+    expect(s.thrown).toBe(2);
+  });
+
+  it('a double tap can no longer end the round: the candle 250 ms later is at least 22.5 degrees away', () => {
+    let s = reduceCandles(createCandles(5), { type: 'throw' });
+    for (let i = 0; i < 20; i++) s = reduceCandles(reduceCandles(s, { type: 'tick', dt: 16 }), { type: 'throw' });
+    expect(s.status).toBe('playing');
+    const [a, b] = s.candles.filter((c) => !c.preset).map((c) => c.angle);
+    expect(angularDistance(a, b)).toBeGreaterThanOrEqual(22.5 - 1e-9);
+  });
+
+  it('pauses 1 s between two cakes: the new cake stands still and throws are ignored', () => {
+    const done = completeCake(createCandles(5));
+    expect(done.cake).toBe(2);
+    expect(done.pauseMs).toBe(CAKE_PAUSE_MS);
+    const still = reduceCandles(done, { type: 'tick', dt: 500 });
+    expect(still.rotation).toBe(done.rotation);
+    expect(reduceCandles(still, { type: 'throw' }).events).toEqual([{ kind: 'ignored' }]);
+    const after = reduceCandles(reduceCandles(still, { type: 'tick', dt: 500 }), { type: 'tick', dt: 100 });
+    expect(after.pauseMs).toBe(0);
+    expect(after.rotation).not.toBe(done.rotation);
+    expect(reduceCandles(after, { type: 'throw' }).thrown).toBe(1);
   });
 });

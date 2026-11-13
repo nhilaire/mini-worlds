@@ -233,7 +233,7 @@ export const en: Strings = {
     score_candles: `Score 200 at Candle Toss`,
     score_parrot: `Score 150 at Copycat Parrot`,
     score_moles: `Score 400 at Mole Patch`,
-    score_fruit: `Score 500 at Fruit Fusion`,
+    score_fruit: `Score 3550 at Fruit Fusion`,
     score_slide: `Score 500 at Slide Out`,
     score_cardline: `Score 500 at Card Line`,
     score_marbles: `Score 300 at Marble Sort`,

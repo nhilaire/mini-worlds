@@ -251,7 +251,7 @@ export const GAMES: readonly Game[] = [
   {
     id: 'fruit',
     world: 'arcade',
-    stars: [500, 1200, 2500],
+    stars: [3550, 4400, 7850],
     upgrades: [{ id: 'sweep', maxLevel: UPGRADE_MAX_LEVEL }, coinsUpgrade],
     realTime: false,
   },
@@ -384,7 +384,7 @@ export const CHALLENGES: readonly ChallengeDef[] = [
   { id: 'score_candles', kind: 'score', target: 200, game: 'candles', reward: { coins: 50 }, minGames: 1 },
   { id: 'score_parrot', kind: 'score', target: 150, game: 'parrot', reward: { coins: 50 }, minGames: 1 },
   { id: 'score_moles', kind: 'score', target: 400, game: 'moles', reward: { coins: 50 }, minGames: 1 },
-  { id: 'score_fruit', kind: 'score', target: 500, game: 'fruit', reward: { coins: 50 }, minGames: 1 },
+  { id: 'score_fruit', kind: 'score', target: 3550, game: 'fruit', reward: { coins: 50 }, minGames: 1 },
   { id: 'score_slide', kind: 'score', target: 500, game: 'slide', reward: { coins: 50 }, minGames: 1 },
   { id: 'score_cardline', kind: 'score', target: 500, game: 'cardline', reward: { coins: 50 }, minGames: 1 },
   { id: 'score_marbles', kind: 'score', target: 300, game: 'marbles', reward: { coins: 50 }, minGames: 1 },

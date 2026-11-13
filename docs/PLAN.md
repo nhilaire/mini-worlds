@@ -99,7 +99,7 @@ After the first phone test of v0.2.0 (2026-11-13, RELEASE.md notes)
 v0.3.0: ten more games, worlds Stratégie and Exploration (PRD amended 2026-11-13)
 
 - [x] T-62 Catalogue v0.3.0: 23 games in 8 worlds, stars, upgrades, world conditions, score challenges, Ciel étoilé 69, telemetry enums, fr + en copy, placeholder screens and icons (AC-75) - proof: unit
-- [ ] T-63 Fruits en Fusion engine + screen + casual bot (AC-76, AC-86) - proof: unit
+- [x] T-63 Fruits en Fusion engine + screen + casual bot (AC-76, AC-86) - proof: unit
 - [ ] T-64 Bloc Glissant engine + screen + casual bot (AC-77, AC-86) - proof: unit
 - [x] T-65 Suite de Cartes engine + screen + casual bot (AC-78, AC-86) - proof: unit
 - [x] T-66 Tri de Billes engine + screen + casual bot (AC-79, AC-86) - proof: unit

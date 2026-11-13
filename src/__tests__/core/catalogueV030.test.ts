@@ -18,7 +18,7 @@ function withStars(stars: number, level: number): Save {
 
 describe('v0.3.0 catalogue (AC-75)', () => {
   it.each([
-    ['fruit', 'arcade', [500, 1200, 2500], 'sweep', false],
+    ['fruit', 'arcade', [3550, 4400, 7850], 'sweep', false],
     ['slide', 'puzzle', [500, 900, 1300], 'hint', false],
     ['cardline', 'cards', [500, 750, 950], 'hint', false],
     ['marbles', 'bubbles', [300, 700, 1000], 'extra_time', true],

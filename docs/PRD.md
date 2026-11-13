@@ -171,7 +171,7 @@ forever (a lower score later never removes one). 69 stars exist in v0.3.0.
 | Bougies Folles | 200 | 450 | 800 |
 | Perroquet Copieur | 150 | 400 | 800 |
 | Champ de Taupes | 400 | 900 | 1 500 |
-| Fruits en Fusion | 500 | 1 200 | 2 500 |
+| Fruits en Fusion | 3 550 | 4 400 | 7 850 |
 | Bloc Glissant | 500 | 900 | 1 300 |
 | Suite de Cartes | 500 | 750 | 950 |
 | Tri de Billes | 300 | 700 | 1 000 |
@@ -565,7 +565,7 @@ a world keep the rule 2 × (k − 1) stars in that world. 69 stars exist in v0.3
   3 stars ≈ twice its median, rounded to 50).
 - Input guard: the drop and its merges play in 300 ms; taps are ignored meanwhile.
 - « Coup de balai »: 1 / 2 / 3 uses per round; a use clears the bottom row (no points), fruits above fall and merge.
-- Combo (challenges): a drop that chains 2 merges or more. HUD: next fruit. Stars 500 / 1 200 / 2 500 (casual bot:
+- Combo (challenges): a drop that chains 2 merges or more. HUD: next fruit, fruits left. Stars 3 550 / 4 400 / 7 850 (casual bot:
   drops on the column whose top fruit matches, else the lowest column).
 - Tutorial bubble: « Touche une colonne pour lâcher le fruit. Deux fruits pareils fusionnent ! »
 

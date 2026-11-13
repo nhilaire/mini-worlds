@@ -4,6 +4,7 @@ import { PALETTE, WORLD_COLORS } from '../art/palette';
 import { UI_SPRITES, WORLD_ICONS } from '../art/sprites';
 import { GameId, SLOTS_PER_WORLD, WorldId, worldById } from '../game/core/content';
 import { gameSave } from '../game/core/save';
+import { gameUnlockStars, isGameUnlocked } from '../game/core/unlocks';
 import { affordableUpgrades } from '../game/core/upgrades';
 import { useI18n } from '../i18n/I18nProvider';
 import { useGameStore } from '../state/GameStore';
@@ -45,6 +46,21 @@ export function WorldDetailScreen({ world, onGame, onBack }: { world: WorldId; o
                   <PixelText size={8} color="muted">
                     {t.worlds.soon}
                   </PixelText>
+                </Row>
+              </Card>
+            );
+          }
+          if (!isGameUnlocked(save, game)) {
+            return (
+              <Card key={game} testID={`game-${game}-locked`} style={styles.soon} accessibilityLabel={names[game]}>
+                <Row>
+                  <PixelSprite sprite={UI_SPRITES.lock} scale={2} />
+                  <View style={styles.flex}>
+                    <PixelText>{names[game]}</PixelText>
+                    <PixelText size={8} color="muted" testID={`game-${game}-condition`}>
+                      {t.worlds.gameLocked(gameUnlockStars(game), t.world[world])}
+                    </PixelText>
+                  </View>
                 </Row>
               </Card>
             );

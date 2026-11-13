@@ -1,6 +1,7 @@
 // Pixel sprites drawn in code: each sprite is a grid of characters mapped to palette colours by its legend.
 // '.' is always transparent. Sprites are rasterised once by the renderer (src/ui/pixel) and scaled with nearest
 // sampling. Every game piece has its own shape, not only its own colour (colour-blind safe).
+import { GAME_ICONS } from './gameIcons';
 import { PaletteColor } from './palette';
 
 export type Sprite = {
@@ -207,4 +208,5 @@ export const ALL_SPRITES: Record<string, Sprite> = {
   ...Object.fromEntries(Object.entries(BUBBLES).map(([k, v]) => [`bubble.${k}`, v])),
   ...Object.fromEntries(Object.entries(WORLD_ICONS).map(([k, v]) => [`world.${k}`, v])),
   ...Object.fromEntries(Object.entries(UI_SPRITES).map(([k, v]) => [`ui.${k}`, v])),
+  ...Object.fromEntries(Object.entries(GAME_ICONS).map(([k, v]) => [`game.${k}`, v])),
 };

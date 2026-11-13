@@ -25,7 +25,7 @@ describe('achievements (AC-14)', () => {
 
   it('all stars and level achievements', () => {
     let save = defaultSave();
-    save = { ...save, games: { blocks: { ...save.games.blocks, stars: 3 }, garden: { ...save.games.garden, stars: 3 }, bubbles: { ...save.games.bubbles, stars: 3 } }, profile: { ...save.profile, level: 10 } };
+    save = { ...save, games: Object.fromEntries(Object.entries(save.games).map(([id, g]) => [id, { ...g, stars: 3 }])), profile: { ...save.profile, level: 10 } };
     const { unlocked } = checkAchievements(save);
     expect(unlocked).toEqual(expect.arrayContaining(['all_stars', 'level5', 'level10']));
   });

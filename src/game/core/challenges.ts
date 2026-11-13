@@ -1,8 +1,9 @@
 // Daily challenges (docs/PRD.md "Daily challenges"): a deterministic draw per local date and progress counted from
 // settled rounds. Pure functions; rewards are granted by the engine.
-import { ALL_CHALLENGES_BONUS_COINS, ChallengeDef, ChallengeId, CHALLENGES, CHALLENGES_PER_DAY, GameId, WORLDS } from './content';
+import { ALL_CHALLENGES_BONUS_COINS, ChallengeDef, ChallengeId, CHALLENGES, CHALLENGES_PER_DAY, GameId } from './content';
 import { createRng, hashString } from '../rng';
 import type { ChallengesSave, Save } from './save';
+import { playableGames } from './unlocks';
 
 export function challengeById(id: ChallengeId): ChallengeDef {
   const def = CHALLENGES.find((c) => c.id === id);
@@ -10,9 +11,9 @@ export function challengeById(id: ChallengeId): ChallengeDef {
   return def;
 }
 
-/** Games the player can play now (their world is unlocked). */
+/** Games the player can play now (world and game unlocked). */
 export function unlockedGames(save: Save): GameId[] {
-  return WORLDS.filter((w) => save.unlockedWorlds.includes(w.id)).flatMap((w) => w.games);
+  return playableGames(save);
 }
 
 /**

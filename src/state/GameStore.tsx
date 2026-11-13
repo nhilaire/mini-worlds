@@ -50,7 +50,7 @@ const GameStoreContext = createContext<GameStore | null>(null);
 
 type ProviderProps = {
   sessionSeed: number | null;
-  /** Test link `/unlocked`: every world of this version is open in memory and the session never writes the save. */
+  /** Test link `/unlocked`: every world and game of this version is open in memory and the session never writes the save. */
   testUnlocked?: boolean;
   children: ReactNode;
 };
@@ -80,7 +80,7 @@ export function GameStoreProvider({ sessionSeed, testUnlocked = false, children 
     (async () => {
       const result = await loadSave();
       if (!alive) return;
-      const opened = testUnlocked ? { ...result.save, unlockedWorlds: WORLDS.filter((w) => !w.comingSoon).map((w) => w.id) } : result.save;
+      const opened = testUnlocked ? { ...result.save, unlockedWorlds: WORLDS.filter((w) => !w.comingSoon).map((w) => w.id), sessionAllGames: true } : result.save;
       const withDay = ensureChallenges(opened, today(), sessionSeed ?? undefined);
       saveRef.current = withDay;
       setSave(withDay);

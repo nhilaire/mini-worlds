@@ -4,8 +4,8 @@ Status: approved
 Project slug: mini-worlds
 Final app name: Bric-à-Jeux
 Android package: io.github.nhilaire.miniworlds
-Version target: 0.1.0
-Last updated: 2026-11-12 (amended after the first phone test of v0.1.0: blocks scoring and stars, tutorial fall, ghost piece, pixel font)
+Version target: 0.2.0
+Last updated: 2026-11-13 (v0.2.0: ten more mini-games in six worlds to test the concept, games unlocked one by one inside a world)
 
 > Written in English. Player-facing text is quoted in the "Player copy" section, in every language of the game
 > (`factory-app.json` "languages"; French is the reference).
@@ -122,39 +122,55 @@ flowchart LR
 All randomness (piece bags, board generation, bubble colours, challenge draw) goes through one seeded
 pseudo-random generator. The seed is random in normal play. Opening the app through the deep link
 `miniworlds://seed/<integer>` fixes the seed for the session (used by Maestro flows; it has no effect on the
-save file). The variant `miniworlds://seed/<integer>/unlocked` also opens every world of this version in memory
-for the session and suppresses every write to the save (Maestro flows of Potager Fou and Bulles en Folie).
+save file). The variant `miniworlds://seed/<integer>/unlocked` also opens every world of this version and every game in memory
+for the session and suppresses every write to the save (Maestro flows of Potager Fou, Bulles en Folie and the v0.2.0 smoke flow of the ten new games).
 
 ### Worlds and unlocks
 
-| # | World (fr / en) | v0.1.0 content | Unlock condition |
+| # | World (fr / en) | Content (v0.2.0) | Unlock condition |
 |---|---|---|---|
-| 1 | Arcade / Arcade | Pluie de Blocs | open from the start |
-| 2 | Puzzle / Puzzle | Potager Fou | 2 stars in world 1 |
+| 1 | Arcade / Arcade | Pluie de Blocs, Tour Bancale, Saute-Lapin | open from the start |
+| 2 | Puzzle / Puzzle | Potager Fou, Lucioles, Plombier Express | 2 stars in world 1 |
 | 3 | Stratégie / Strategy | coming soon | 6 stars in total (indicative) |
-| 4 | Cartes / Cards | coming soon | level 8 (indicative) |
-| 5 | Bulles / Bubbles | Bulles en Folie | 4 stars in total AND level 3 |
-| 6 | Adresse / Skill | coming soon | 9 stars in total (indicative) |
+| 4 | Cartes / Cards | Chaussettes Perdues, Vingt-et-Un | 6 stars in total AND level 4 |
+| 5 | Bulles / Bubbles | Bulles en Folie, Raz-de-Couleurs | 4 stars in total AND level 3 |
+| 6 | Adresse / Skill | Bougies Folles | 9 stars in total AND level 5 |
 | 7 | Construction / Building | coming soon | level 12 (indicative) |
 | 8 | Exploration / Exploration | coming soon | level 15 (indicative) |
-| 9 | Mémoire / Memory | coming soon | level 18 (indicative) |
+| 9 | Mémoire / Memory | Perroquet Copieur, Champ de Taupes | 12 stars in total AND level 6 |
 | 10 | Défis / Challenges | coming soon | level 25 (indicative) |
 
 A world is unlocked the moment its conditions are met (checked after every round and level-up); the unlock is
 announced on the Result screen (« Monde débloqué : Puzzle ! ») and the world card changes state. Coming-soon
-worlds never unlock in v0.1.0 even when their indicative condition is met: their card keeps « Bientôt » and the
+worlds never unlock in this version even when their indicative condition is met: their card keeps « Bientôt » and the
 condition is shown as « à venir ». Unlocks are permanent.
+
+Games inside a world (v0.2.0): the first game of a world is playable as soon as the world is unlocked; its k-th
+game (k ≥ 2) needs 2 × (k − 1) stars earned in that world (Tour Bancale and Lucioles: 2 stars, Saute-Lapin and
+Plombier Express: 4 stars). A game unlocked this way in a world that was already open is announced on the Result
+screen (« Nouveau jeu : Tour Bancale ! »); its card shows its condition while it is locked (« 2 étoiles dans
+Arcade ») and cannot be opened. Game unlocks are derived from the stars (nothing new is saved).
 
 ### Stars
 
 Each game has three score thresholds. A star is earned when the round score reaches the threshold; stars are kept
-forever (a lower score later never removes one). 9 stars exist in v0.1.0.
+forever (a lower score later never removes one). 39 stars exist in v0.2.0.
 
 | Game | 1 star | 2 stars | 3 stars |
 |---|---|---|---|
 | Pluie de Blocs | 1 000 | 2 500 | 5 000 |
 | Potager Fou | 1 500 | 3 000 | 5 000 |
 | Bulles en Folie | 800 | 2 000 | 4 000 |
+| Tour Bancale | 200 | 450 | 800 |
+| Saute-Lapin | 150 | 350 | 600 |
+| Lucioles | 500 | 750 | 950 |
+| Plombier Express | 700 | 1 100 | 1 400 |
+| Raz-de-Couleurs | 800 | 2 000 | 3 500 |
+| Chaussettes Perdues | 800 | 1 600 | 2 800 |
+| Vingt-et-Un | 400 | 600 | 750 |
+| Bougies Folles | 200 | 450 | 800 |
+| Perroquet Copieur | 150 | 400 | 800 |
+| Champ de Taupes | 400 | 900 | 1 500 |
 
 ### XP and global level
 
@@ -174,7 +190,7 @@ forever (a lower score later never removes one). 9 stars exist in v0.1.0.
 
 ### Upgrades
 
-Each game has three upgrades with three levels each. Cost of level 1 / 2 / 3: 250 / 600 / 1 200 coins (same for every
+Each of the first three games has three upgrades; each v0.2.0 game has two (see below). Every upgrade has three levels. Cost of level 1 / 2 / 3: 250 / 600 / 1 200 coins (same for every
 upgrade; raised ×2.5 after the first phone test, where one session bought a whole upgrade line). Buying is immediate; the effect applies from the next round.
 
 | Game | Upgrade (fr) | Effect per level |
@@ -188,6 +204,18 @@ upgrade; raised ×2.5 after the first phone test, where one session bought a who
 | Bulles en Folie | Visée | aim guide shows 0 / 1 / 2 / 3 wall bounces |
 | Bulles en Folie | Prochaine bulle | shows the next 1 / 2 / 3 bubbles (0 without the upgrade) |
 | Bulles en Folie | Bonus pièces | coins per round +10 % per level |
+| Tour Bancale | Grand plateau | base floor +0.5 unit per level (4 → 5.5) |
+| Saute-Lapin | Carapace | 1 / 2 / 3 shields per round |
+| Lucioles | Indice | 1 / 2 / 3 hints per round |
+| Plombier Express | Indice | 1 / 2 / 3 hints per round |
+| Raz-de-Couleurs | Coup en plus (id more_moves) | +1 move per board per level |
+| Chaussettes Perdues | Coup d'œil | cards shown 1 / 2 / 3 s at the start of each board |
+| Vingt-et-Un | Main en plus | +1 hand per level (10 → 13) |
+| Bougies Folles | Gâteau lent | rotation −8 % per level |
+| Perroquet Copieur | Seconde chance | 1 / 2 / 3 second chances per round |
+| Champ de Taupes | Radar | 1 / 2 / 3 radar uses per round |
+
+The ten v0.2.0 games have two upgrades each: the one above and « Bonus pièces » (coins per round +10 % per level).
 
 ### Daily reward
 
@@ -205,7 +233,7 @@ upgrade; raised ×2.5 after the first phone test, where one session bought a who
 
 - Three challenges per local date: « Jouer 3 parties » is always the first; the two others are drawn without
   replacement from the rest of the pool below with the seeded generator (seed = hash of the date, or the session
-  seed when the app was opened through the seed deep link), among challenges whose game (if any) is unlocked
+  seed when the app was opened through the seed deep link), among challenges whose game (if any) is playable now (world and game unlocked)
   (« Jouer à 2 jeux différents » needs at least 2 unlocked games). The draw is recomputed when the date changes;
   progress of the previous date is discarded.
 - Progress is counted from rounds ended on that date (including rounds quit from Pause). Each completed
@@ -221,6 +249,7 @@ upgrade; raised ×2.5 after the first phone test, where one session bought a who
 | score_blocks | Marquer 1000 points à Pluie de Blocs | one round ≥ 1000 | 50 coins |
 | score_garden | Marquer 1500 points à Potager Fou | one round ≥ 1500 | 50 coins |
 | score_bubbles | Marquer 800 points à Bulles en Folie | one round ≥ 800 | 50 coins |
+| score_<game> | Marquer <1-star threshold> points à <game>, for each of the 10 v0.2.0 games | one round ≥ the 1-star threshold | 50 coins |
 
 ### Achievements
 
@@ -230,8 +259,9 @@ upgrade; raised ×2.5 after the first phone test, where one session bought a who
 | rounds10 | Dix parties | 10 rounds | 50 coins |
 | rounds100 | Cent parties | 100 rounds | 200 coins |
 | first_star | Première étoile | 1 star | 50 coins |
-| all_stars | Ciel étoilé | 9 stars | 500 coins |
+| all_stars | Ciel étoilé | 39 stars | 500 coins |
 | explorer | Explorateur | 3 games played at least once | 100 coins |
+| globetrotter | Globe-trotteur | 10 different games played at least once | 200 coins |
 | first_upgrade | Bricoleur | 1 upgrade bought | 50 coins |
 | maxed_upgrade | Expert | 1 upgrade at level 3 | 150 coins |
 | level5 | Niveau 5 | level 5 | 100 coins |
@@ -246,6 +276,9 @@ toast (« Succès : Première étoile ») and listed on the Profile.
 
 Every mini-game implements the same interface: `init(seed, upgrades)`, `start()`, `pause()`, `resume()`,
 `input(event)`, `tick(dt)` (real-time games), `state()` for rendering, and emits `combo` and `end(score)`.
+In code every engine (the ten v0.2.0 games included) is a pure reducer `create(seed, upgrades)` /
+`reduce(state, action)` with time as a `tick` action; the state carries `score`, `combos`, `status` and the
+`events` of the last transition (`combo`, `over`...), and the game screen adapts it to the round frame.
 The core engine, not the game, converts the score into stars, coins, XP, challenge progress and achievements.
 A round quit from Pause ends with the current score. « Recommencer » ends the current round like « Quitter »
 (settled, outcome quit) and starts a new one. Backgrounding the app pauses a running round and shows the Pause
@@ -325,6 +358,150 @@ quitting at once.
 - Tutorial bubbles: « Garde le doigt appuyé pour viser » (dismissed after a drag of 0.5 s), « Relâche pour
   tirer » (by a release that shoots).
 
+### v0.2.0: ten more mini-games (concept test)
+
+After the acceptance of v0.1.0, the user asked for about ten more games before publishing, « pour voir si le
+concept tient ». Choices: three new worlds open (Cartes, Adresse, Mémoire) plus new games in Arcade, Puzzle and
+Bulles; finish « jouable et testé » (pure engine with unit tests, screen, one tutorial bubble, 3 stars, two
+upgrades: one of the game + « Bonus pièces », sounds of the existing kit, short animation of each move, one
+shared Maestro smoke flow); games unlock one by one inside a world.
+
+Common rules of the ten games:
+
+- Inputs are taps on cells or buttons (each with a testID). Each move is shown by a short animation (≤ 250 ms:
+  flip, rotation, slide, fade); inputs are ignored while it runs only when the rule says so.
+- One tutorial bubble per game, dismissed by the first action it describes; real-time games do not advance while
+  it is shown.
+- The engine is a pure reducer like the first three games (`create(seed, upgrades)`, `reduce(state, action)`,
+  time as a `tick` action); the screen reads the injectable clock for any timer.
+- Sounds: tick (move), clear / combo / pop (success), drop (failure of a move), over (end).
+
+#### Tour Bancale (world Arcade, 2nd game) - real time
+
+- Field 10 units wide. The base floor is 4 units wide (+0.5 per « Grand plateau » level). The moving block has
+  the width of the top floor and slides left-right between 0 and 10 − width, bouncing on the edges, at
+  4 units/s + 0.25 per floor placed (capped at 12 units/s). The base floor is centred (x = 3 to 7 without
+  upgrade); each new block starts at the left edge moving right.
+- Tap: the block drops onto the stack. Overlap = intersection with the top floor. Overlap ≤ 0: round over. If
+  the offset from the top floor is ≤ 0.15 unit, the drop is perfect: the block is aligned, the width is kept and
+  the perfect streak grows by 1; otherwise the new floor is the overlap only and the streak returns to 0.
+- Scoring: 10 points per floor placed, plus 5 × streak on a perfect drop (1st perfect +5, 2nd in a row +10...).
+- Combo (challenges): a perfect drop. HUD: floors. Stars 200 / 450 / 800.
+- Tutorial bubble: « Touche pour lâcher le bloc » (dismissed by the first drop).
+
+#### Saute-Lapin (world Arcade, 3rd game) - real time
+
+- Side view, ground at y = 0, the bunny at x = 2 (box 0.8 × 0.8). Obstacles (fences, 1 unit wide, 1 unit high,
+  25 % of them 1.5 high) spawn at x = 12 and move left at 6 units/s + 0.2 per obstacle passed (capped at 14).
+  The next obstacle spawns when the gap between the last obstacle's right edge and x = 12 reaches a seeded
+  distance between max(5, 0.5 × speed) and max(10, 0.8 × speed) units (speed in units/s).
+- Tap while on the ground: jump (vertical speed 12 units/s, gravity 36 units/s²: apex 2 units, 0.67 s in the air).
+  A tap in the air is ignored.
+- A hit (boxes overlap) consumes a shield (« Carapace »: 1 / 2 / 3 shields per round) and removes that obstacle (no points, the streak returns to 0);
+  without shield the round is over.
+- Scoring: 10 points per obstacle passed. Combo (challenges): every 5th obstacle passed in a row without a hit.
+- HUD: shields left. Stars 150 / 350 / 600.
+- Tutorial bubble: « Touche pour sauter » (dismissed by the first jump).
+
+#### Lucioles (world Puzzle, 2nd game) - turn based
+
+- Grid 5 × 5 of fireflies, lit or off. Tapping a cell toggles it and its 4 orthogonal neighbours. Goal: all off.
+- A round is 5 grids. Grid k (1-5) is built by pressing 3 + k distinct seeded cells on an all-off grid; par =
+  3 + k. Grid score: max(50, 200 − 20 × (taps beyond par)). A grid still unsolved after par + 15 taps is failed (0 points). Hints are not taps.
+  Either way the next grid comes; the round ends after the 5th grid (maximum 1 000 points).
+- « Indice »: 1 / 2 / 3 hints per round; a hint highlights one cell of a solution (the seeded presses XOR the
+  player's taps, so the hint is always right).
+- Combo (challenges): a grid solved in at most par taps. HUD: grid k / 5, taps. Stars 500 / 750 / 950.
+- Tutorial bubble: « Touche une luciole : elle et ses voisines changent. Éteins tout ! » (dismissed by a tap).
+
+#### Plombier Express (world Puzzle, 3rd game) - turn based
+
+- Grid 5 × 5 of pipe pieces (straight or elbow). Water enters the left side of a seeded row and must leave by the
+  right side of a seeded row. Each grid holds one seeded self-avoiding path from entry to exit (pieces matching
+  the path); the other cells get random pieces; every cell is then turned a random number of quarter turns.
+- Tap a piece: it turns a quarter turn clockwise. The grid is solved when the pieces connected from the entry
+  reach the exit (any path counts). Pieces connected to the entry are drawn filled with water.
+- Par = the sum over the path cells of the quarter turns that bring them back (a straight piece needs 0 or 1).
+  Grid score: max(50, 300 − 15 × (taps beyond par)); a grid still unsolved after par + 20 taps is failed (0 points);
+  hints are not taps. A grid that is already solved after the random turns is turned again (par ≥ 1). A round is
+  5 grids (maximum 1 500 points).
+- « Indice »: 1 / 2 / 3 hints per round; a hint highlights a path cell that is not yet turned right.
+- Combo (challenges): a grid solved in at most par taps. HUD: grid k / 5, taps. Stars 700 / 1 100 / 1 400.
+- Tutorial bubble: « Touche un tuyau pour le tourner. Relie l'eau à la sortie ! » (dismissed by a tap).
+
+#### Raz-de-Couleurs (world Bubbles, 2nd game) - turn based
+
+- Grid 10 × 10 of 5 colours (the bubble colours and their shapes). The tide is the region of the top-left cell's
+  colour connected to it. Tapping one of the 5 colour buttons (not the tide's colour) recolours the tide, which
+  absorbs the adjacent cells of that colour.
+- Board n has 20 − (n − 1) moves (minimum 12), + 1 per « Coup en plus » level. A board filled with one colour
+  scores 500 + 100 × moves left and the next board starts. A board whose moves run out scores 3 × cells in the
+  tide and the round is over.
+- Combo (challenges): a board won with 3 or more moves left. HUD: board n, moves left. Stars 800 / 2 000 / 3 500.
+- Tutorial bubble: « Touche une couleur : ta vague grandit depuis le coin » (dismissed by a colour tap).
+
+#### Chaussettes Perdues (world Cartes, 1st game) - turn based
+
+- Cards face down hold sock patterns, two of each. Board n has 6 + 2 × (n − 1) pairs (maximum 12), in 4 columns.
+- Tap a face-down card: it turns up. With two cards up: same sock → the pair stays up, + 100 + 50 × the number of
+  pairs found in a row just before it; different socks → one miss, both turn back down on the next tap (that tap only hides
+  them, it turns no card) or after 700 ms. A miss resets the streak; the streak carries over between boards.
+- A board fully found scores 200 more and the next board starts. 8 misses in the round end it.
+- « Coup d'œil »: every card is shown face up for 1 / 2 / 3 s at the start of each board (inputs ignored).
+- Combo (challenges): every 3rd pair found in a row. HUD: board n, misses left. Stars 800 / 1 600 / 2 800.
+- Tutorial bubble: « Retourne deux cartes pour trouver la paire » (dismissed by a first card).
+
+#### Vingt-et-Un (world Cartes, 2nd game) - turn based
+
+- A 52-card deck, shuffled for each hand (seeded). 2-10 count their value, figures 10, the ace 1 or 11. No bet,
+  no money: points only.
+- Each hand: the player gets 2 cards, the dealer 1 card up and 1 down. Buttons « Tirer » (one more card) and
+  « Rester ». Over 21: the hand is lost at once. On « Rester », the dealer shows its card and draws until 17 or
+  more (it stands on every 17, a soft one included). Dealer over 21: won hand. Otherwise the higher total wins,
+  equal totals tie. A dealer 21 with its first two cards is only checked on « Rester » (or against a player's 21).
+- Points: 21 with the first two cards (« Vingt-et-un ! ») 150 at once (25 if the dealer also has it); won hand
+  100; tie 25; lost hand 0. « Main suivante » starts the next hand.
+- 10 hands per round (+1 per « Main en plus » level); the round ends after the last one.
+- Combo (challenges): every 3rd hand won in a row. HUD: hand k / n. Stars 400 / 600 / 750 (luck weighs a lot: 900 was
+  out of reach for most rounds).
+- Tutorial bubble: « Approche-toi de 21 sans dépasser : Tirer ou Rester » (dismissed by either button).
+
+#### Bougies Folles (world Adresse, 1st game) - real time
+
+- A cake turns at the centre; candles are thrown from the bottom and stick in the cake edge at the bottom point.
+  Cake n needs 5 + n candles thrown (maximum 12; the pre-placed ones excluded), already holds min(n − 1, 4) seeded
+  candles at least 30° apart, turns at min(250, 90 × (1 + 0.15 × (n − 1))) × (1 − 0.08 × « Gâteau lent » level) °/s,
+  clockwise for the first cake, and changes direction at each cake.
+- Tap: a candle is planted at once (a 120 ms flight is only drawn). If it lands less than 14° (cake frame) from
+  another candle, the round is over.
+- Scoring: 10 points per candle planted, 100 per cake completed; the next cake follows.
+- Combo (challenges): a cake completed. HUD: cake n, candles left. Stars 200 / 450 / 800.
+- Tutorial bubble: « Touche pour lancer une bougie. Ne touche pas les autres ! » (dismissed by the first throw).
+
+#### Perroquet Copieur (world Mémoire, 1st game) - turn based
+
+- Four pads of distinct colour and shape (red circle, blue square, yellow triangle, green diamond), each with
+  its tone. The parrot shows a sequence (starting at length 1, one seeded pad added each step): each pad lights
+  for 500 − 20 × (length − 1) ms (minimum 250 ms), with 150 ms off between two pads and 600 ms before the
+  sequence starts; inputs are ignored meanwhile. Then the player repeats it.
+- The whole sequence repeated: 10 × length points, the next sequence (length + 1) is shown. A wrong pad: with a
+  « Seconde chance » left (1 / 2 / 3 per round) the same sequence is shown again; otherwise the round is over.
+- Combo (challenges): a sequence of length 5, 10, 15... repeated. HUD: length. Stars 150 / 400 / 800.
+- Tutorial bubble: « Regarde le perroquet, puis répète la même suite » (dismissed by the first pad tapped).
+
+#### Champ de Taupes (world Mémoire, 2nd game) - turn based
+
+- Grid 8 × 8; board n hides 8 + 2 × (n − 1) moles (maximum 16). The first dig of a board is always safe: moles
+  are placed after it, never on that cell nor its neighbours (seeded).
+- Tap a covered cell: dig. A safe cell shows the number of neighbouring moles (8 neighbours); a 0 also digs its
+  neighbours, repeatedly. A mole ends the round. The « Drapeau » button toggles flag mode: a tap then flags or
+  unflags a covered cell (a flagged cell cannot be dug).
+- Scoring: 5 points per safe cell revealed; 300 when every safe cell is revealed, then the next board starts.
+- « Radar »: 1 / 2 / 3 uses per round; a use flags the first unflagged mole in seeded order (after the
+  first dig of the board); it is refused, no use spent, when every mole is flagged.
+- Combo (challenges): one dig that reveals 10 or more cells. HUD: board n, moles left to flag. Stars 400 / 900 / 1 500.
+- Tutorial bubble: « Touche une case pour creuser. Les chiffres comptent les taupes voisines » (dismissed by a dig).
+
 ### Tutorial (guided first round)
 
 The first round of each game shows its help bubbles in order; each disappears when its action is performed. The
@@ -365,7 +542,7 @@ clears it. Real-time games pause their timers while a bubble is shown.
 ## Telemetry events
 
 Only events listed here may be sent (after consent). Params: numbers, booleans or short enums. No identifiers.
-`game` ∈ {blocks, garden, bubbles}; `world` ∈ {arcade, puzzle, bubbles}; `outcome` ∈ {ended, quit, short}.
+`game` ∈ {blocks, garden, bubbles, tower, hop, lights, pipes, flood, socks, twentyone, candles, parrot, moles}; `world` ∈ {arcade, puzzle, cards, bubbles, skill, memory}; `outcome` ∈ {ended, quit, short}.
 
 | Event | When | Params | Feeds KPI |
 |---|---|---|---|
@@ -389,7 +566,7 @@ Business and technical indicators followed in Firebase (free Spark plan). Detail
 | D1 retention | business | ≥ 35 % | Analytics > Retention |
 | D7 retention | business | ≥ 15 % | Analytics > Retention |
 | Rounds per session | business | ≥ 3 | `round_start` count / `session_start` count |
-| Rounds per game | business | no game < 20 % of rounds | `round_start` by `game` |
+| Rounds per game | business | no unlocked game < 3 % of rounds | `round_start` by `game` |
 | World unlock rate | business | ≥ 60 % of users unlock Puzzle, ≥ 30 % Bubbles | `world_unlock` by `world` / users |
 | Daily reward rate | business | ≥ 50 % of DAU collect | `daily_reward_collect` / DAU |
 | Replay after upgrade | business | ≥ 70 % of `upgrade_buy` followed by `round_start` in the session | Funnel exploration upgrade_buy → round_start |
@@ -582,6 +759,57 @@ Telemetry and technical
   phase (cells, their colours, points) whose board no longer holds them, then a push phase when a row was pushed;
   the boards chain to the settled board; a too-flat release yields no phase; and the Bulles screen shows the points
   of the pop above the group after a scripted shot, then removes them when the replay ends.
+- AC-55 [unit] Given the v0.2.0 catalogue, then 13 games exist in their worlds and order (Arcade: Pluie de Blocs,
+  Tour Bancale, Saute-Lapin; Puzzle: Potager Fou, Lucioles, Plombier Express; Cartes: Chaussettes Perdues,
+  Vingt-et-Un; Bulles: Bulles en Folie, Raz-de-Couleurs; Adresse: Bougies Folles; Mémoire: Perroquet Copieur,
+  Champ de Taupes) with the star thresholds of the table; each new game has its own upgrade and « Bonus pièces »;
+  Cartes, Adresse and Mémoire are no longer coming soon and unlock at 6 stars + level 4, 9 stars + level 5,
+  12 stars + level 6.
+- AC-56 [unit] Given a world, then its first game is playable as soon as the world is unlocked and its k-th game
+  (k ≥ 2) needs 2 × (k − 1) stars in that world; a round that reaches the stars of a game of an already open
+  world lists it in the Result data (« Nouveau jeu : … ! »); the Game sheet refuses a locked game; the world detail
+  shows a locked game with its condition « N étoiles dans <monde> ».
+- AC-57 [unit] Given the daily challenge draw, then score challenges exist for the 13 games and only games
+  playable now are drawn; achievements: Explorateur at 3 different games, Globe-trotteur at 10 (200 coins),
+  Ciel étoilé at 39 stars.
+- AC-58 [unit] Given a save written by v0.1.0 (3 games), when it is loaded, then nothing is lost, the 10 new games
+  get default data, and the seed deep link variant /unlocked opens every world and every game in memory.
+- AC-59 [unit] Tour Bancale: the block slides and bounces at the speed of the rules; a drop keeps the overlap, a
+  perfect drop (offset ≤ 0.15) keeps the width and scores 10 + 5 × streak; no overlap ends the round; « Grand
+  plateau » widens the base. AC-59 to AC-68 also check that each engine emits a combo exactly per its rule.
+- AC-60 [unit] Saute-Lapin: a jump follows the speed and gravity of the rules and is ignored in the air; an
+  obstacle passed scores 10 and speeds up the run; a hit consumes a shield or ends the round; spawns are seeded.
+- AC-61 [unit] Lucioles: a tap toggles the cell and its neighbours; every generated grid is solvable at par; the
+  grid score follows max(50, 200 − 20 × extra taps), par + 15 taps fail the grid, the round ends after 5 grids;
+  a hint always points at a cell of a remaining solution.
+- AC-62 [unit] Plombier Express: a tap turns a piece clockwise; every generated grid has a path whose pieces
+  connect entry to exit once turned right; par is the sum of the minimal turns; solved detection follows any
+  connected path; no grid starts solved (par ≥ 1); scoring, failure after par + 20 and hints follow the rules.
+- AC-63 [unit] Raz-de-Couleurs: a colour tap absorbs the adjacent cells of that colour, the tide's own colour is
+  refused; moves per board follow 20 − (n − 1) (minimum 12, + upgrade); a full board scores 500 + 100 × moves left,
+  an exhausted board scores 3 × tide cells and ends the round.
+- AC-64 [unit] Chaussettes Perdues: boards hold 6 + 2 × (n − 1) pairs; a pair scores 100 + 50 × streak, a miss
+  hides both cards on the next tap (no card turned) or « hide » and resets the streak, 8 misses end the round, a full board scores 200 and deals the
+  next one; « Coup d'œil » sets the peek duration and inputs are ignored during the peek.
+- AC-65 [unit] Vingt-et-Un: card values with the ace as 1 or 11; over 21 loses; the dealer draws to 17; points
+  150 / 100 / 25 / 0 as in the rules; the dealer stands on soft 17, a dealer bust is a won hand, equal totals
+  tie; the round has 10 hands + upgrade and ends after the last.
+- AC-66 [unit] Bougies Folles: the cake turns at the speed of the rules and reverses at each cake; a candle closer
+  than 14° to another ends the round; a cake completed scores 100 and deals the next with its seeded candles;
+  « Gâteau lent » slows the rotation by 8 % per level after the 250°/s cap.
+- AC-67 [unit] Perroquet Copieur: the sequence grows by one seeded pad, the display time follows the rules,
+  a repeated pad shows two separate lights,
+  inputs are ignored while it is shown, a repeated sequence scores 10 × length, a mistake uses a second chance or
+  ends the round.
+- AC-68 [unit] Champ de Taupes: the first dig is safe with its neighbours, counts and flood reveal are right,
+  flags block digging, a mole ends the round, a cleared board scores 300 and deals the next; radar flags the first unflagged mole
+  and is refused when none is left.
+- AC-69 [unit] Given each of the 10 new game screens on a first round, then its tutorial bubble is shown, a
+  scripted input updates the score or HUD as its engine predicts, and Pause → Quitter shows the Result.
+- AC-70 [e2e] Given the seed deep link /unlocked, when each of the 10 new games is opened from its world, then its
+  screen shows (one capture per game) and Pause → Quitter returns to the Result.
+- AC-71 [manual] Given the release APK on the user's phone, when the 10 new games are played, then each is
+  understandable from its bubble and plays smoothly, and the user judges whether the collection concept holds.
 
 ## Player copy
 
@@ -750,10 +978,51 @@ no spoken audio). French tone: tu.
 | tutorial.garden.swap | Glisse un légume vers son voisin pour aligner 3 identiques | Drag a vegetable onto its neighbour to line up 3 of a kind |
 | tutorial.bubbles.aim | Garde le doigt appuyé pour viser | Hold your finger to aim |
 | tutorial.bubbles.shoot | Relâche pour tirer | Release to shoot |
+| game.<id>.name | Tour Bancale, Saute-Lapin, Lucioles, Plombier Express, Raz-de-Couleurs, Chaussettes Perdues, Vingt-et-Un, Bougies Folles, Perroquet Copieur, Champ de Taupes | Wobbly Tower, Bunny Hop, Fireflies, Pipe Rush, Colour Tide, Lost Socks, Twenty-One, Candle Toss, Copycat Parrot, Mole Patch |
+| game.tower.desc | Empile les étages : plus tu es précis, plus la tour monte. | Stack the floors: the more precise you are, the higher it goes. |
+| game.hop.desc | Saute par-dessus les barrières, de plus en plus vite. | Jump over the fences, faster and faster. |
+| game.lights.desc | Éteins toutes les lucioles en 5 grilles. | Switch off every firefly in 5 grids. |
+| game.pipes.desc | Tourne les tuyaux pour amener l'eau à la sortie. | Turn the pipes to bring the water to the exit. |
+| game.flood.desc | Recouvre la grille d'une seule couleur avant la fin des coups. | Cover the grid with a single colour before you run out of moves. |
+| game.socks.desc | Retrouve les paires de chaussettes. | Find the pairs of socks. |
+| game.twentyone.desc | Approche-toi de 21 sans dépasser, mieux que la banque. Sans mise : que des points. | Get close to 21 without going over, better than the dealer. No bets: points only. |
+| game.candles.desc | Plante les bougies dans le gâteau qui tourne. | Plant the candles in the spinning cake. |
+| game.parrot.desc | Répète la suite du perroquet, toujours plus longue. | Repeat the parrot's sequence, longer every time. |
+| game.moles.desc | Creuse sans tomber sur une taupe. | Dig without hitting a mole. |
+| upgrade.wide.name / desc | Grand plateau / Base plus large (+{size}) | Wide base / Wider first floor (+{size}) |
+| upgrade.shield.name / desc | Carapace / {n} bouclier(s) par partie | Shell / {n} shield(s) per round |
+| upgrade.hint.name / desc | Indice / {n} indice(s) par partie | Hint / {n} hint(s) per round |
+| upgrade.more_moves.name / desc (Raz-de-Couleurs) | Coup en plus / +{n} coup(s) par grille | Extra move / +{n} move(s) per board |
+| upgrade.peek.name / desc | Coup d'œil / Cartes visibles {n} s au début | Sneak peek / Cards shown for {n} s at the start |
+| upgrade.extra_hand.name / desc | Main en plus / +{n} main(s) par partie | Extra hand / +{n} hand(s) per round |
+| upgrade.slow_spin.name / desc | Gâteau lent / Le gâteau tourne {pct} % moins vite | Slow cake / The cake turns {pct}% slower |
+| upgrade.second_chance.name / desc | Seconde chance / {n} essai(s) de plus par partie | Second chance / {n} more try(ies) per round |
+| upgrade.radar.name / desc | Radar / {n} taupe(s) repérée(s) par partie | Radar / {n} mole(s) spotted per round |
+| hud.floors / shields / grid / taps / board / misses / hand / cake / candles / length / moles | Étages / Boucliers / Grille / Touches / Grille / Erreurs / Main / Gâteau / Bougies / Suite / Taupes | Floors / Shields / Grid / Taps / Board / Misses / Hand / Cake / Candles / Length / Moles |
+| play.hint / hit / stand / nextHand / flag / radar | Indice / Tirer / Rester / Main suivante / Drapeau / Radar | Hint / Hit / Stand / Next hand / Flag / Radar |
+| play.twentyone.win / blackjack / push / lose / bust | Gagné ! / Vingt-et-un ! / Égalité / Perdu / Plus de 21 ! | You win! / Twenty-one! / Tie / You lose / Over 21! |
+| play.parrot.watch / yourTurn | Regarde… / À toi ! | Watch… / Your turn! |
+| result.newGame | Nouveau jeu : {game} ! | New game: {game}! |
+| worlds.gameLocked | {n} étoiles dans {world} | {n} stars in {world} |
+| challenge.score_<game> | Marquer {target} points à {game} | Score {target} at {game} |
+| achievement.globetrotter | Globe-trotteur | Globetrotter |
+| achievementHint.globetrotter | Joue à 10 jeux différents | Play 10 different games |
+| achievementHint.explorer / all_stars | Joue à 3 jeux différents / Gagne les 39 étoiles | Play 3 different games / Earn all 39 stars |
+| tutorial.tower | Touche pour lâcher le bloc | Tap to drop the block |
+| tutorial.hop | Touche pour sauter | Tap to jump |
+| tutorial.lights | Touche une luciole : elle et ses voisines changent. Éteins tout ! | Tap a firefly: it and its neighbours switch. Turn them all off! |
+| tutorial.pipes | Touche un tuyau pour le tourner. Relie l'eau à la sortie ! | Tap a pipe to turn it. Bring the water to the exit! |
+| tutorial.flood | Touche une couleur : ta vague grandit depuis le coin | Tap a colour: your tide grows from the corner |
+| tutorial.socks | Retourne deux cartes pour trouver la paire | Turn over two cards to find the pair |
+| tutorial.twentyone | Approche-toi de 21 sans dépasser : Tirer ou Rester | Get close to 21 without going over: Hit or Stand |
+| tutorial.candles | Touche pour lancer une bougie. Ne touche pas les autres ! | Tap to throw a candle. Don't hit the others! |
+| tutorial.parrot | Regarde le perroquet, puis répète la même suite | Watch the parrot, then repeat the same sequence |
+| tutorial.moles | Touche une case pour creuser. Les chiffres comptent les taupes voisines | Tap a square to dig. Numbers count the moles next to it |
 
 ## Out of scope
 
-- The 47 other mini-games of the brief (including Army Rush and Coin Miner), worlds 3, 4 and 6-10 content.
+- The 37 other mini-games of the brief (including Army Rush and Coin Miner), worlds 3, 7, 8 and 10 content;
+  replays as detailed as the first three games and three upgrades for the ten v0.2.0 games (concept test first).
 - Shop, cosmetics, themes to buy, avatars, boosters; crystals; weekly challenges; passive / idle production;
   events, seasonal content, limited-time games; leaderboards (local or online) and multi-profile.
 - Selectable difficulty tiers (Débutant / Normal / Avancé / Expert).

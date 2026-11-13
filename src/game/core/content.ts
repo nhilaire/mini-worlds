@@ -1,7 +1,20 @@
-// Content catalogue of v0.1.0 (docs/PRD.md "Rules and scoring"): worlds, games, stars, upgrades, challenges,
+// Content catalogue of v0.2.0 (docs/PRD.md "Rules and scoring"): worlds, games, stars, upgrades, challenges,
 // achievements, daily rewards. Pure data and tiny pure helpers; no React, no storage.
 
-export type GameId = 'blocks' | 'garden' | 'bubbles';
+export type GameId =
+  | 'blocks'
+  | 'garden'
+  | 'bubbles'
+  | 'tower'
+  | 'hop'
+  | 'lights'
+  | 'pipes'
+  | 'flood'
+  | 'socks'
+  | 'twentyone'
+  | 'candles'
+  | 'parrot'
+  | 'moles';
 export type WorldId =
   | 'arcade'
   | 'puzzle'
@@ -19,37 +32,80 @@ export type UnlockCondition = { kind: 'starsIn'; world: WorldId; n: number } | {
 export type World = {
   id: WorldId;
   index: number; // 1-10, display order
-  games: readonly GameId[]; // games present in this version (0 or 1 in v0.1.0)
+  games: readonly GameId[]; // games present in this version, in unlock order (the k-th needs 2 × (k − 1) stars in the world)
   conditions: readonly UnlockCondition[]; // all must hold (AND); empty = open from the start
   comingSoon: boolean; // never unlocks in this version, conditions are indicative
 };
 
 export const WORLDS: readonly World[] = [
-  { id: 'arcade', index: 1, games: ['blocks'], conditions: [], comingSoon: false },
-  { id: 'puzzle', index: 2, games: ['garden'], conditions: [{ kind: 'starsIn', world: 'arcade', n: 2 }], comingSoon: false },
+  { id: 'arcade', index: 1, games: ['blocks', 'tower', 'hop'], conditions: [], comingSoon: false },
+  { id: 'puzzle', index: 2, games: ['garden', 'lights', 'pipes'], conditions: [{ kind: 'starsIn', world: 'arcade', n: 2 }], comingSoon: false },
   { id: 'strategy', index: 3, games: [], conditions: [{ kind: 'starsTotal', n: 6 }], comingSoon: true },
-  { id: 'cards', index: 4, games: [], conditions: [{ kind: 'level', n: 8 }], comingSoon: true },
+  {
+    id: 'cards',
+    index: 4,
+    games: ['socks', 'twentyone'],
+    conditions: [
+      { kind: 'starsTotal', n: 6 },
+      { kind: 'level', n: 4 },
+    ],
+    comingSoon: false,
+  },
   {
     id: 'bubbles',
     index: 5,
-    games: ['bubbles'],
+    games: ['bubbles', 'flood'],
     conditions: [
       { kind: 'starsTotal', n: 4 },
       { kind: 'level', n: 3 },
     ],
     comingSoon: false,
   },
-  { id: 'skill', index: 6, games: [], conditions: [{ kind: 'starsTotal', n: 9 }], comingSoon: true },
+  {
+    id: 'skill',
+    index: 6,
+    games: ['candles'],
+    conditions: [
+      { kind: 'starsTotal', n: 9 },
+      { kind: 'level', n: 5 },
+    ],
+    comingSoon: false,
+  },
   { id: 'building', index: 7, games: [], conditions: [{ kind: 'level', n: 12 }], comingSoon: true },
   { id: 'exploration', index: 8, games: [], conditions: [{ kind: 'level', n: 15 }], comingSoon: true },
-  { id: 'memory', index: 9, games: [], conditions: [{ kind: 'level', n: 18 }], comingSoon: true },
+  {
+    id: 'memory',
+    index: 9,
+    games: ['parrot', 'moles'],
+    conditions: [
+      { kind: 'starsTotal', n: 12 },
+      { kind: 'level', n: 6 },
+    ],
+    comingSoon: false,
+  },
   { id: 'challenges', index: 10, games: [], conditions: [{ kind: 'level', n: 25 }], comingSoon: true },
 ];
 
 export const SLOTS_PER_WORLD = 5;
 export const STARS_PER_GAME = 3;
 
-export type UpgradeId = 'preview' | 'slow_start' | 'extra_move' | 'cascade' | 'aim' | 'next' | 'coins';
+export type UpgradeId =
+  | 'preview'
+  | 'slow_start'
+  | 'extra_move'
+  | 'cascade'
+  | 'aim'
+  | 'next'
+  | 'coins'
+  | 'wide'
+  | 'shield'
+  | 'hint'
+  | 'more_moves'
+  | 'peek'
+  | 'extra_hand'
+  | 'slow_spin'
+  | 'second_chance'
+  | 'radar';
 
 export type Upgrade = { id: UpgradeId; maxLevel: number };
 
@@ -89,6 +145,76 @@ export const GAMES: readonly Game[] = [
     upgrades: [{ id: 'aim', maxLevel: UPGRADE_MAX_LEVEL }, { id: 'next', maxLevel: UPGRADE_MAX_LEVEL }, coinsUpgrade],
     realTime: true,
   },
+  {
+    id: 'tower',
+    world: 'arcade',
+    stars: [200, 450, 800],
+    upgrades: [{ id: 'wide', maxLevel: UPGRADE_MAX_LEVEL }, coinsUpgrade],
+    realTime: true,
+  },
+  {
+    id: 'hop',
+    world: 'arcade',
+    stars: [150, 350, 600],
+    upgrades: [{ id: 'shield', maxLevel: UPGRADE_MAX_LEVEL }, coinsUpgrade],
+    realTime: true,
+  },
+  {
+    id: 'lights',
+    world: 'puzzle',
+    stars: [500, 750, 950],
+    upgrades: [{ id: 'hint', maxLevel: UPGRADE_MAX_LEVEL }, coinsUpgrade],
+    realTime: false,
+  },
+  {
+    id: 'pipes',
+    world: 'puzzle',
+    stars: [700, 1100, 1400],
+    upgrades: [{ id: 'hint', maxLevel: UPGRADE_MAX_LEVEL }, coinsUpgrade],
+    realTime: false,
+  },
+  {
+    id: 'flood',
+    world: 'bubbles',
+    stars: [800, 2000, 3500],
+    upgrades: [{ id: 'more_moves', maxLevel: UPGRADE_MAX_LEVEL }, coinsUpgrade],
+    realTime: false,
+  },
+  {
+    id: 'socks',
+    world: 'cards',
+    stars: [800, 1600, 2800],
+    upgrades: [{ id: 'peek', maxLevel: UPGRADE_MAX_LEVEL }, coinsUpgrade],
+    realTime: false,
+  },
+  {
+    id: 'twentyone',
+    world: 'cards',
+    stars: [400, 600, 750],
+    upgrades: [{ id: 'extra_hand', maxLevel: UPGRADE_MAX_LEVEL }, coinsUpgrade],
+    realTime: false,
+  },
+  {
+    id: 'candles',
+    world: 'skill',
+    stars: [200, 450, 800],
+    upgrades: [{ id: 'slow_spin', maxLevel: UPGRADE_MAX_LEVEL }, coinsUpgrade],
+    realTime: true,
+  },
+  {
+    id: 'parrot',
+    world: 'memory',
+    stars: [150, 400, 800],
+    upgrades: [{ id: 'second_chance', maxLevel: UPGRADE_MAX_LEVEL }, coinsUpgrade],
+    realTime: false,
+  },
+  {
+    id: 'moles',
+    world: 'memory',
+    stars: [400, 900, 1500],
+    upgrades: [{ id: 'radar', maxLevel: UPGRADE_MAX_LEVEL }, coinsUpgrade],
+    realTime: false,
+  },
 ];
 
 export const GAME_IDS: readonly GameId[] = GAMES.map((g) => g.id);
@@ -122,7 +248,7 @@ export function mergeStars(current: number, earned: number): number {
   return Math.max(current, earned);
 }
 
-export type ChallengeId = 'rounds3' | 'games2' | 'star1' | 'combos5' | 'coins200' | 'score_blocks' | 'score_garden' | 'score_bubbles';
+export type ChallengeId = 'rounds3' | 'games2' | 'star1' | 'combos5' | 'coins200' | `score_${GameId}`;
 
 export type ChallengeDef = {
   id: ChallengeId;
@@ -145,6 +271,16 @@ export const CHALLENGES: readonly ChallengeDef[] = [
   { id: 'score_blocks', kind: 'score', target: 1000, game: 'blocks', reward: { coins: 50 }, minGames: 1 },
   { id: 'score_garden', kind: 'score', target: 1500, game: 'garden', reward: { coins: 50 }, minGames: 1 },
   { id: 'score_bubbles', kind: 'score', target: 800, game: 'bubbles', reward: { coins: 50 }, minGames: 1 },
+  { id: 'score_tower', kind: 'score', target: 200, game: 'tower', reward: { coins: 50 }, minGames: 1 },
+  { id: 'score_hop', kind: 'score', target: 150, game: 'hop', reward: { coins: 50 }, minGames: 1 },
+  { id: 'score_lights', kind: 'score', target: 500, game: 'lights', reward: { coins: 50 }, minGames: 1 },
+  { id: 'score_pipes', kind: 'score', target: 700, game: 'pipes', reward: { coins: 50 }, minGames: 1 },
+  { id: 'score_flood', kind: 'score', target: 800, game: 'flood', reward: { coins: 50 }, minGames: 1 },
+  { id: 'score_socks', kind: 'score', target: 800, game: 'socks', reward: { coins: 50 }, minGames: 1 },
+  { id: 'score_twentyone', kind: 'score', target: 400, game: 'twentyone', reward: { coins: 50 }, minGames: 1 },
+  { id: 'score_candles', kind: 'score', target: 200, game: 'candles', reward: { coins: 50 }, minGames: 1 },
+  { id: 'score_parrot', kind: 'score', target: 150, game: 'parrot', reward: { coins: 50 }, minGames: 1 },
+  { id: 'score_moles', kind: 'score', target: 400, game: 'moles', reward: { coins: 50 }, minGames: 1 },
 ];
 
 export const CHALLENGES_PER_DAY = 3;
@@ -157,6 +293,7 @@ export type AchievementId =
   | 'first_star'
   | 'all_stars'
   | 'explorer'
+  | 'globetrotter'
   | 'first_upgrade'
   | 'maxed_upgrade'
   | 'level5'
@@ -177,7 +314,8 @@ export const ACHIEVEMENTS: readonly AchievementDef[] = [
   { id: 'rounds100', kind: 'rounds', target: 100, coins: 200 },
   { id: 'first_star', kind: 'stars', target: 1, coins: 50 },
   { id: 'all_stars', kind: 'stars', target: GAMES.length * STARS_PER_GAME, coins: 500 },
-  { id: 'explorer', kind: 'gamesPlayed', target: GAMES.length, coins: 100 },
+  { id: 'explorer', kind: 'gamesPlayed', target: 3, coins: 100 },
+  { id: 'globetrotter', kind: 'gamesPlayed', target: 10, coins: 200 },
   { id: 'first_upgrade', kind: 'upgradesBought', target: 1, coins: 50 },
   { id: 'maxed_upgrade', kind: 'maxedUpgrades', target: 1, coins: 150 },
   { id: 'level5', kind: 'level', target: 5, coins: 100 },

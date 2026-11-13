@@ -48,7 +48,7 @@ export function ResultScreen({ game, result, onReplay, onUpgrade, onBack }: Prop
     if (result.short) return;
     const settings = save.settings;
     playFeedback(result.levelUps.length > 0 ? 'level_up' : result.newStars > 0 ? 'star' : 'coin', settings);
-    if (result.worldsUnlocked.length > 0) playFeedback('reward', settings);
+    if (result.worldsUnlocked.length > 0 || result.gamesUnlocked.length > 0) playFeedback('reward', settings);
   }, [result, save.settings]);
 
   return (
@@ -105,6 +105,11 @@ export function ResultScreen({ game, result, onReplay, onUpgrade, onBack }: Prop
               {result.worldsUnlocked.map((world) => (
                 <PixelText key={world} size={10} color="success" testID={`result-unlock-${world}`}>
                   {t.result.unlock(t.world[world])}
+                </PixelText>
+              ))}
+              {result.gamesUnlocked.map((game) => (
+                <PixelText key={game} size={10} color="success" testID={`result-new-game-${game}`}>
+                  {t.result.newGame(t.game[game].name)}
                 </PixelText>
               ))}
               {result.challengesCompleted.map((id) => (

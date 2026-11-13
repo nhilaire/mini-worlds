@@ -4,6 +4,7 @@ import { StyleSheet, View } from 'react-native';
 import { GameId, gameById } from '../game/core/content';
 import { gameSave } from '../game/core/save';
 import { affordableUpgrades, upgradeLevels } from '../game/core/upgrades';
+import { isGameUnlocked } from '../game/core/unlocks';
 import { BASE_MOVES } from '../game/garden/engine';
 import { useI18n } from '../i18n/I18nProvider';
 import { useGameStore } from '../state/GameStore';
@@ -41,7 +42,7 @@ export function GameSheetScreen({ game, onPlay, onUpgrades, onBack }: Props) {
         </BodyText>
       </View>
 
-      <Button label={t.sheet.play} onPress={onPlay} testID="sheet-play" />
+      <Button label={t.sheet.play} onPress={onPlay} disabled={!isGameUnlocked(save, game)} testID="sheet-play" />
 
       <Card>
         <Row style={styles.between}>

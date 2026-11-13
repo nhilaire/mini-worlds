@@ -6,7 +6,7 @@ import { applyRoundToChallenges, ensureChallenges } from './challenges';
 import { collectDaily, DailyCollection } from './daily';
 import { addCoins, addXp, LevelUp, roundCoins, roundXp } from './progression';
 import { defaultGameSave, gameSave, Save, upgradeLevel } from './save';
-import { checkUnlocks } from './unlocks';
+import { checkUnlocks, newlyUnlockedGames } from './unlocks';
 import { buyUpgrade, BuyResult } from './upgrades';
 
 export type RoundOutcome = 'ended' | 'quit';
@@ -37,6 +37,8 @@ export type RoundResult = {
   xp: number;
   levelUps: LevelUp[];
   worldsUnlocked: WorldId[];
+  /** Games that became playable inside a world that was already open (« Nouveau jeu : … ! »). */
+  gamesUnlocked: GameId[];
   challengesCompleted: ChallengeId[];
   allChallengesBonus: boolean;
   achievementsUnlocked: AchievementId[];
@@ -69,6 +71,7 @@ export function settleRound(save: Save, round: RoundInput): { save: Save; result
     xp: 0,
     levelUps: [],
     worldsUnlocked: [],
+    gamesUnlocked: [],
     challengesCompleted: [],
     allChallengesBonus: false,
     achievementsUnlocked: [],
@@ -122,6 +125,7 @@ export function settleRound(save: Save, round: RoundInput): { save: Save; result
       xp,
       levelUps: [...leveled.levelUps, ...challengeLevels.levelUps],
       worldsUnlocked: [...unlocks.unlocked, ...unlocksAfter.unlocked],
+      gamesUnlocked: newlyUnlockedGames(save, next),
       challengesCompleted: challenges.completed,
       allChallengesBonus: challenges.allDone,
       achievementsUnlocked: achievements.unlocked,

@@ -1,5 +1,6 @@
 import { StyleSheet, View } from 'react-native';
 
+import { GAME_ICONS, IconGameId } from '../art/gameIcons';
 import { PALETTE, TETROMINO_COLORS } from '../art/palette';
 import { BLOCK_TILE, BUBBLES, VEGETABLES } from '../art/sprites';
 import type { GameId } from '../game/core/content';
@@ -16,6 +17,7 @@ export function GameIcon({ game, scale = 3, testID }: { game: GameId; scale?: nu
       {game === 'blocks' && <PixelSprite sprite={BLOCK_TILE} scale={scale * 1.5} tint={{ white: PALETTE[TETROMINO_COLORS.T], light: PALETTE.pink, shade: PALETTE.darkPurple }} />}
       {game === 'garden' && <PixelSprite sprite={VEGETABLES.carrot} scale={scale} />}
       {game === 'bubbles' && <PixelSprite sprite={BUBBLES.red} scale={scale} />}
+      {game in GAME_ICONS && <PixelSprite sprite={GAME_ICONS[game as IconGameId]} scale={scale} />}
     </View>
   );
 }

@@ -1,8 +1,8 @@
-import { WORLDS } from '../../game/core/content';
+import { GameId, WORLDS } from '../../game/core/content';
 import { defaultSave, Save } from '../../game/core/save';
 import { checkUnlocks, conditionProgress, isWorldUnlocked, nextUnlock } from '../../game/core/unlocks';
 
-function withStars(save: Save, stars: Partial<Record<'blocks' | 'garden' | 'bubbles', number>>, level = 1): Save {
+function withStars(save: Save, stars: Partial<Record<GameId, number>>, level = 1): Save {
   const games = { ...save.games };
   for (const [id, n] of Object.entries(stars)) games[id] = { ...games[id], stars: n };
   return { ...save, games, profile: { ...save.profile, level } };
@@ -21,7 +21,7 @@ describe('world unlocks (AC-09)', () => {
     const { save, unlocked } = checkUnlocks(withStars(defaultSave(), { blocks: 2 }));
     expect(unlocked).toEqual(['puzzle']);
     expect(isWorldUnlocked(save, 'puzzle')).toBe(true);
-    expect(nextUnlock(save)?.id).toBe('bubbles');
+    expect(nextUnlock(save)?.id).toBe('cards'); // v0.2.0: Cartes (world 4) comes before Bulles in display order
   });
 
   it('Bubbles needs 4 stars in total AND level 3', () => {
@@ -33,13 +33,13 @@ describe('world unlocks (AC-09)', () => {
     const { save, unlocked } = checkUnlocks(withStars(defaultSave(), { blocks: 3, garden: 1 }, 3));
     expect(unlocked).toEqual(['puzzle', 'bubbles']);
     expect(save.unlockedWorlds).toEqual(['arcade', 'puzzle', 'bubbles']);
-    expect(nextUnlock(save)).toBeNull();
+    expect(nextUnlock(save)?.id).toBe('cards');
   });
 
   it('coming-soon worlds never unlock even when their indicative condition is met', () => {
     const save = withStars(defaultSave(), { blocks: 3, garden: 3, bubbles: 3 }, 50);
     const { unlocked } = checkUnlocks(save);
-    expect(unlocked).toEqual(['puzzle', 'bubbles']);
+    expect(unlocked).toEqual(['puzzle', 'cards', 'bubbles', 'skill']); // Mémoire needs 12 stars
     for (const world of WORLDS.filter((w) => w.comingSoon)) expect(unlocked).not.toContain(world.id);
   });
 

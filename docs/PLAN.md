@@ -72,6 +72,21 @@ After the first phone test (2026-11-12, RELEASE.md notes)
 - [x] T-42 Launcher icon and splash: generated pixel toy box (scripts/generate-icons.mjs), adaptive icon layers, expo-splash-screen config; generator and config tests (AC-52, AC-53) - proof: unit + device
 - [x] T-43 Bulles en Folie replay: pure replay plan (flight along the engine path, glow + points of the popped group, pop, fall of the dropped bubbles, row slide), animated canvas with inputs locked (AC-54, AC-45) - proof: unit
 
+v0.2.0: ten more mini-games (concept test, PRD amended 2026-11-13)
+
+- [x] T-44 Catalogue v0.2.0: 13 games in 6 worlds, stars, upgrades, world conditions, game unlocks inside a world, Result « Nouveau jeu », locked game card, score challenges, achievements, /unlocked opens every game, telemetry enums, fr + en copy (AC-55, AC-56, AC-57, AC-58) - proof: unit
+- [ ] T-45 Tour Bancale engine + screen (AC-59, AC-69) - proof: unit
+- [ ] T-46 Saute-Lapin engine + screen (AC-60, AC-69) - proof: unit
+- [ ] T-47 Lucioles engine + screen (AC-61, AC-69) - proof: unit
+- [ ] T-48 Plombier Express engine + screen (AC-62, AC-69) - proof: unit
+- [ ] T-49 Raz-de-Couleurs engine + screen (AC-63, AC-69) - proof: unit
+- [ ] T-50 Chaussettes Perdues engine + screen (AC-64, AC-69) - proof: unit
+- [ ] T-51 Vingt-et-Un engine + screen (AC-65, AC-69) - proof: unit
+- [ ] T-52 Bougies Folles engine + screen (AC-66, AC-69) - proof: unit
+- [ ] T-53 Perroquet Copieur engine + screen (AC-67, AC-69) - proof: unit
+- [ ] T-54 Champ de Taupes engine + screen (AC-68, AC-69) - proof: unit
+- [ ] T-55 Maestro smoke flow of the ten new games through /unlocked, one capture each (AC-70, AC-71) - proof: e2e
+
 ## Notes
 
 - Order: foundations and engines first (pure TypeScript, Jest), then screens on top of the engines, then wiring.

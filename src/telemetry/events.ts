@@ -1,19 +1,40 @@
 // Typed catalog of the only telemetry events this app may send (must match docs/PRD.md "Telemetry events").
 // Params are numbers or short lowercase enums. Never identifiers, names, free text or locations.
 
-export type GameId = 'blocks' | 'garden' | 'bubbles';
-export type WorldId = 'arcade' | 'puzzle' | 'bubbles';
+export type GameId =
+  | 'blocks'
+  | 'garden'
+  | 'bubbles'
+  | 'tower'
+  | 'hop'
+  | 'lights'
+  | 'pipes'
+  | 'flood'
+  | 'socks'
+  | 'twentyone'
+  | 'candles'
+  | 'parrot'
+  | 'moles';
+export type WorldId = 'arcade' | 'puzzle' | 'cards' | 'bubbles' | 'skill' | 'memory';
 export type RoundOutcome = 'ended' | 'quit' | 'short';
-export type UpgradeId = 'preview' | 'slow_start' | 'extra_move' | 'cascade' | 'aim' | 'next' | 'coins';
-export type ChallengeId =
-  | 'rounds3'
-  | 'games2'
-  | 'star1'
-  | 'combos5'
-  | 'coins200'
-  | 'score_blocks'
-  | 'score_garden'
-  | 'score_bubbles';
+export type UpgradeId =
+  | 'preview'
+  | 'slow_start'
+  | 'extra_move'
+  | 'cascade'
+  | 'aim'
+  | 'next'
+  | 'coins'
+  | 'wide'
+  | 'shield'
+  | 'hint'
+  | 'more_moves'
+  | 'peek'
+  | 'extra_hand'
+  | 'slow_spin'
+  | 'second_chance'
+  | 'radar';
+export type ChallengeId = 'rounds3' | 'games2' | 'star1' | 'combos5' | 'coins200' | `score_${GameId}`;
 export type AchievementId =
   | 'first_round'
   | 'rounds10'
@@ -21,6 +42,7 @@ export type AchievementId =
   | 'first_star'
   | 'all_stars'
   | 'explorer'
+  | 'globetrotter'
   | 'first_upgrade'
   | 'maxed_upgrade'
   | 'level5'

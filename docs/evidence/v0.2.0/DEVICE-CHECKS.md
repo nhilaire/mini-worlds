@@ -3,9 +3,9 @@
 Checks that `verify.mjs` does not run, done on the emulator (sdk_gphone64_x86_64, Android 16, API 36) against the
 APK of the verified commit (v0.2.0: ten more mini-games).
 
-- Verified commit: 2b63461
+- Verified commit: 2646407 (after the fixes of the first phone test of v0.2.0)
 - APK: `dist/mini-worlds-0.2.0-universal.apk` (release build of verify.mjs, package `io.github.nhilaire.miniworlds`)
-- APK SHA-256: a910035d9aa7ca65044e4ae0ec413cc03dd124055c7fda56f05c3b19543e0ed7
+- APK SHA-256: bd77baccb31455706ba10a5ba27dab2096ffe9d981b1729c36753d4212ab933b
 - Tools: aapt (Android SDK build-tools), adb (`-s emulator-5554`)
 
 | Check | Command | Result | Raw output |
@@ -13,7 +13,7 @@ APK of the verified commit (v0.2.0: ten more mini-games).
 | Launcher label per language (AC-04) | `aapt dump badging <apk>` filtered on `application-label` | PASS: default `Game Grab-Bag` (fallback English), `fr` `Bric-à-Jeux`, `en` `Game Grab-Bag` | `raw/device-labels.txt` |
 | Manifest permissions (AC-42) | `aapt dump permissions <apk>` | PASS: INTERNET, VIBRATE, ACCESS_NETWORK_STATE, WAKE_LOCK, MODIFY_AUDIO_SETTINGS, `<package>.DYNAMIC_RECEIVER_NOT_EXPORTED_PERMISSION`; no `AD_ID`, no `RECORD_AUDIO`, no location permission (same set as v0.1.0: the ten games added no permission) | `raw/device-permissions.txt` |
 | Permissions of the installed app (AC-42) | `adb -s emulator-5554 shell dumpsys package io.github.nhilaire.miniworlds` (requested permissions) | PASS: the same 6 permissions, none dangerous | `raw/device-installed-permissions.txt` |
-| Cold start and no crash (AC-43) | verify.mjs rows 10, 11 and 13 | PASS: alive after 8 s, median cold start 1 040 ms (1 634 / 1 040 / 1 032 ms, target < 3 000 ms), 0 fatal log line during the 9 flows | `REPORT.md`, `raw/logcat-smoke.txt`, `raw/logcat-e2e.txt` |
+| Cold start and no crash (AC-43) | verify.mjs rows 10 and 13; cold start re-measured on the idle emulator: `am force-stop` then `am start -W` × 3 after a warm-up | PASS: alive after 8 s, 0 fatal log line during the 9 flows; cold start 1 477 / 1 529 / 1 308 ms (median 1 477 ms, target < 3 000 ms). verify.mjs row 11 measured 3 828 ms (WARN) while a second verification was building on the same machine (disk 99 % full): load of the host, not of the app | `REPORT.md`, `raw/device-cold-start.txt`, `raw/logcat-e2e.txt` |
 | Launcher icon (AC-53) | `aapt dump badging <apk>` (`application-icon-*`), then the emulator app drawer captured with `adb exec-out screencap` | PASS: the icon resource is the adaptive `res/BW.xml` (not the template PNG); the drawer shows the cream toy-box tile with the four pieces on the orange circle, labelled « Game Grab-… » (emulator in English) | `raw/device-labels.txt`, `raw/device-launcher.png`, crop `screens/device-launcher-icon.png` |
 | Splash screen (AC-53) | `am force-stop`, `am start -n <package>/.MainActivity`, `screencap` 350 ms later | PASS: the four pieces centred on the light background before Home | `raw/device-splash.png`, copy `screens/device-splash.png` |
 | Ten new game screens (AC-70, look) | captures `screens/newgame-*.png` of `.maestro/new-games.yaml` | PASS: each game shows its board, HUD and tutorial bubble without truncated text; Saute-Lapin's field is small on screen (to judge on the phone) | `screens/` |

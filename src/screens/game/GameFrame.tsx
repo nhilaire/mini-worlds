@@ -90,14 +90,19 @@ export function useRoundFrame({ game, tutorialSteps, onFinish, score }: Params):
 
   const advanceTutorial = useCallback(
     (key: string) => {
-      setStepIndex((index) => {
-        if (index >= tutorialSteps.length || tutorialSteps[index].key !== key) return index;
-        if (index + 1 >= tutorialSteps.length) completeTutorial(game);
-        return index + 1;
-      });
+      setStepIndex((index) => (index < tutorialSteps.length && tutorialSteps[index].key === key ? index + 1 : index));
     },
-    [completeTutorial, game, tutorialSteps],
+    [tutorialSteps],
   );
+  // The save is updated after the render that dismissed the last bubble (never inside a state updater: React
+  // forbids updating the store provider while rendering this component).
+  const tutorialShown = useRef(stepIndex < tutorialSteps.length);
+  useEffect(() => {
+    if (tutorialShown.current && stepIndex >= tutorialSteps.length) {
+      tutorialShown.current = false;
+      completeTutorial(game);
+    }
+  }, [completeTutorial, game, stepIndex, tutorialSteps.length]);
 
   // Background → pause overlay; Android back → pause (or resume when already paused).
   useEffect(() => {

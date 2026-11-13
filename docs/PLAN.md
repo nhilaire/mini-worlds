@@ -106,7 +106,7 @@ v0.3.0: ten more games, worlds Stratégie and Exploration (PRD amended 2026-11-1
 - [ ] T-67 Calcul Éclair engine + screen + casual bot (AC-80, AC-86) - proof: unit
 - [ ] T-68 Armée de Poche engine + screen + casual bot (AC-81, AC-86) - proof: unit
 - [ ] T-69 Fusion de Guerriers engine + screen + casual bot (AC-82, AC-86) - proof: unit
-- [ ] T-70 Labyrinthe Express engine + screen + casual bot (AC-83, AC-86) - proof: unit
+- [x] T-70 Labyrinthe Express engine + screen + casual bot (AC-83, AC-86) - proof: unit
 - [ ] T-71 Fil d'Ariane engine + screen + casual bot (AC-84, AC-86) - proof: unit
 - [ ] T-72 Chasse au Trésor engine + screen + casual bot (AC-85, AC-86) - proof: unit
 - [ ] T-73 Plombier Express: solved grid shown 1 s with the water running, inputs locked (AC-88) - proof: unit

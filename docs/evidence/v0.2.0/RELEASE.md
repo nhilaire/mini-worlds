@@ -3,9 +3,9 @@
 Phone install: PASS
 User acceptance: pending
 Date: 2026-11-13
-Commit: 287d097
+Commit: 096e937
 APK: mini-worlds-0.2.0-arm64-v8a.apk (49.6 MB, arm64-v8a)
-SHA-256: b5394ada3bdad292cb7de2d4e3cd85d620e415b395dfa009628eedb4aa20b343
+SHA-256: 68703ca8741849ce8c5809b330c6920d28c7958311221803a09c176518cf28e9
 Signature: release signature valid
 Phone: Android 11 (API 30, arm64-v8a)
 Launch check: alive after 10 s, no fatal error
@@ -23,3 +23,9 @@ Launch check: alive after 10 s, no fatal error
    cooldown between throws (T-57, AC-72).
 5. Bougies Folles: a pause without throws is needed between two cakes. Decision: the new cake stands still 1 s with
    a « Gâteau n » banner, throws ignored (T-57, AC-72).
+6. (second install) Saute-Lapin is good now (smooth, faster, varied).
+7. Lucioles is far too hard. Decision: par 1 + k instead of 3 + k, grids 1 and 2 in 4 × 4 (T-61, AC-61).
+8. Perroquet Copieur did not work: no pad could be tapped. Cause: the round clock was a new object on every render,
+   so every lit pad re-rendered the screen and restarted the show from zero; the player's turn never came (Jest
+   jumped the clock past the whole show and hid it). Fix: stable round clock, show decoupled from dispatch, test
+   moving the clock frame by frame (T-60, AC-74).

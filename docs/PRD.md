@@ -413,9 +413,9 @@ Common rules of the ten games:
 
 #### Lucioles (world Puzzle, 2nd game) - turn based
 
-- Grid 5 × 5 of fireflies, lit or off. Tapping a cell toggles it and its 4 orthogonal neighbours. Goal: all off.
-- A round is 5 grids. Grid k (1-5) is built by pressing 3 + k distinct seeded cells on an all-off grid; par =
-  3 + k. Grid score: max(50, 200 − 20 × (taps beyond par)). A grid still unsolved after par + 15 taps is failed (0 points). Hints are not taps.
+- Grid of fireflies (4 × 4 or 5 × 5, see below), lit or off. Tapping a cell toggles it and its 4 orthogonal neighbours. Goal: all off.
+- A round is 5 grids. Grid k (1-5) is built by pressing 1 + k distinct seeded cells on an all-off grid; par =
+  1 + k (phone test: 3 + k on 5 × 5 was far too hard). Grids 1 and 2 are 4 × 4, grids 3 to 5 are 5 × 5. Grid score: max(50, 200 − 20 × (taps beyond par)). A grid still unsolved after par + 15 taps is failed (0 points). Hints are not taps.
   Either way the next grid comes; the round ends after the 5th grid (maximum 1 000 points).
 - « Indice »: 1 / 2 / 3 hints per round; a hint highlights one cell of a solution (the seeded presses XOR the
   player's taps, so the hint is always right).
@@ -793,7 +793,8 @@ Telemetry and technical
   ground and hits a bunny jumping into it; a jump follows the speed and gravity of the rules and is ignored in the air; a jump in
   the middle of its window clears a 1.5-high fence at 6 and at 14 units/s and lands before the next fence; an
   obstacle passed scores 10 and speeds up the run; a hit consumes a shield or ends the round; spawns are seeded.
-- AC-61 [unit] Lucioles: a tap toggles the cell and its neighbours; every generated grid is solvable at par; the
+- AC-61 [unit] Lucioles: grids 1-2 are 4 × 4 and 3-5 are 5 × 5 with par 1 + k; a tap toggles the cell and its
+  neighbours; every generated grid is solvable at par; the
   grid score follows max(50, 200 − 20 × extra taps), par + 15 taps fail the grid, the round ends after 5 grids;
   a hint always points at a cell of a remaining solution.
 - AC-62 [unit] Plombier Express: a tap turns a piece clockwise; every generated grid has a path whose pieces
@@ -824,6 +825,9 @@ Telemetry and technical
   screen shows (one capture per game) and Pause → Quitter returns to the Result.
 - AC-71 [manual] Given the release APK on the user's phone, when the 10 new games are played, then each is
   understandable from its bubble and plays smoothly, and the user judges whether the collection concept holds.
+- AC-74 [unit] Given a round screen, then its round clock is one stable object across renders, and the Perroquet
+  show ends and gives the turn to the player with the clock moving frame by frame (phone test: a lit pad
+  re-rendered the screen, which restarted the show for ever, so no pad could be tapped).
 - AC-72 [unit] Given Bougies Folles, when a throw comes less than 250 ms after the previous one, then it is ignored
   (no candle, no loss: two candles of a double tap are at least 22.5° apart at 90°/s); when a cake is completed, the
   next cake does not turn for 1 s and throws are ignored, then it turns and throws are accepted again.

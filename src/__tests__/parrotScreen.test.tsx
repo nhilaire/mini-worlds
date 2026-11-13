@@ -47,6 +47,17 @@ describe('Perroquet Copieur screen (AC-69)', () => {
     jest.mocked(Linking.getInitialURL).mockResolvedValue(null);
   });
 
+  it('AC-74: the show ends with the clock moving frame by frame, as on a phone (a lit pad re-rendering the screen must not restart the show)', async () => {
+    const engine = createParrot(ROUND_SEED, { second_chance: 0 });
+    await openParrot();
+    const total = showSchedule(engine.sequence).totalMs;
+    for (let t = 0; t <= total + 200; t += 50) await advance(50);
+    expect(screen.getByTestId('parrot-status')).toHaveTextContent(/À toi/);
+    expect([0, 1, 2, 3].some(isLit)).toBe(false);
+    await fireEvent.press(screen.getByTestId(`parrot-pad-${engine.sequence[0]}`));
+    expect(screen.getByTestId('hud-score')).toHaveTextContent(/^10$/);
+  }, 60_000);
+
   it('AC-69: the first round shows the bubble and the show, ignores taps during it, then a right pad scores as the engine predicts', async () => {
     const engine = createParrot(ROUND_SEED, { second_chance: 0 });
     const first = engine.sequence[0];

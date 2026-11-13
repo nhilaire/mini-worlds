@@ -1,6 +1,6 @@
 // Active play time of a round (paused time excluded), for the short-round rule and telemetry. Reads the injectable
 // clock only inside handlers, never during render.
-import { useCallback, useRef } from 'react';
+import { useCallback, useMemo, useRef } from 'react';
 
 import { now } from '../../game/clock';
 
@@ -37,5 +37,7 @@ export function useRoundClock(): RoundClock {
     runningSince.current = null;
   }, []);
 
-  return { pause, resume, elapsedS, reset };
+  // One stable object per round: callers put it in hook dependencies (a new object per render restarted the
+  // Perroquet show on every lit pad, phone test of v0.2.0).
+  return useMemo(() => ({ pause, resume, elapsedS, reset }), [pause, resume, elapsedS, reset]);
 }

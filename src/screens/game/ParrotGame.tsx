@@ -136,6 +136,11 @@ export function ParrotGame({ seed, onFinish }: { seed: number; onFinish: OnFinis
   const [lit, setLit] = useState<{ showId: number; pad: Pad; index: number } | null>(null);
   const showing = state.status === 'playing' && state.phase === 'show' && !paused;
   const { showId, sequence } = state;
+  // The show must not restart when dispatch changes identity: it reads the latest dispatch through a ref.
+  const dispatchRef = useRef(dispatch);
+  useEffect(() => {
+    dispatchRef.current = dispatch;
+  }, [dispatch]);
   useEffect(() => {
     if (!showing) return;
     const schedule = showSchedule(sequence);
@@ -146,7 +151,7 @@ export function ParrotGame({ seed, onFinish }: { seed: number; onFinish: OnFinis
       const elapsed = now() - startedAt;
       if (elapsed >= schedule.totalMs) {
         setLit(null);
-        dispatch({ type: 'shown' });
+        dispatchRef.current({ type: 'shown' });
         return;
       }
       const light = lightAt(schedule, elapsed);
@@ -160,7 +165,7 @@ export function ParrotGame({ seed, onFinish }: { seed: number; onFinish: OnFinis
     };
     handle = requestAnimationFrame(loop);
     return () => cancelAnimationFrame(handle);
-  }, [showing, showId, sequence, dispatch]);
+  }, [showing, showId, sequence]);
 
   const litPad = showing && lit && lit.showId === showId ? lit.pad : null;
 

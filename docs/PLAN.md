@@ -84,7 +84,7 @@ v0.2.0: ten more mini-games (concept test, PRD amended 2026-11-13)
 - [x] T-51 Vingt-et-Un engine + screen (AC-65, AC-69) - proof: unit
 - [x] T-52 Bougies Folles engine + screen (AC-66, AC-69) - proof: unit
 - [x] T-53 Perroquet Copieur engine + screen (AC-67, AC-69) - proof: unit
-- [ ] T-54 Champ de Taupes engine + screen (AC-68, AC-69) - proof: unit
+- [x] T-54 Champ de Taupes engine + screen (AC-68, AC-69) - proof: unit
 - [x] T-55 Maestro smoke flow of the ten new games through /unlocked, one capture each (AC-70, AC-71) - proof: e2e
 
 ## Notes

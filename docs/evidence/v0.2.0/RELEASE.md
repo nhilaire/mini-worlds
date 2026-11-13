@@ -1,11 +1,11 @@
 # Release: Bric-à-Jeux v0.2.0
 
 Phone install: PASS
-User acceptance: pending
+User acceptance: confirmed (2026-11-13)
 Date: 2026-11-13
-Commit: 096e937
+Commit: 7564234
 APK: mini-worlds-0.2.0-arm64-v8a.apk (49.6 MB, arm64-v8a)
-SHA-256: 68703ca8741849ce8c5809b330c6920d28c7958311221803a09c176518cf28e9
+SHA-256: e73dfb70dec8721843b5633a8d2fe56fef44545719d53880664fa00b44d9630b
 Signature: release signature valid
 Phone: Android 11 (API 30, arm64-v8a)
 Launch check: alive after 10 s, no fatal error
@@ -29,3 +29,8 @@ Launch check: alive after 10 s, no fatal error
    so every lit pad re-rendered the screen and restarted the show from zero; the player's turn never came (Jest
    jumped the clock past the whole show and hid it). Fix: stable round clock, show decoupled from dispatch, test
    moving the clock frame by frame (T-60, AC-74).
+9. (third install) Perroquet Copieur and Lucioles are good now (« c'est bien »).
+10. Plombier Express: when a grid is solved, the next one appears at once and the filled pipe is never seen.
+    Known issue, deferred by the user to v0.3.0: keep the solved grid about 1 s with the water flowing from the
+    entry to the exit, inputs locked.
+11. The user validated the concept (« le principe me va ») and asked for about ten more games: v0.3.0.

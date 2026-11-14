@@ -672,7 +672,7 @@ a world keep the rule 2 × (k − 1) stars in that world. 69 stars exist in v0.3
   otherwise it highlights the head of the trail (step back).
 - Input guard: taps on the head and on a new cell are 150 ms apart at least (a double tap does not extend then undo).
 - Combo: a grid with every gem. HUD: grid k / 5, gems. Stars 600 / 1 000 / 1 400 (casual bot: follows the seeded path
-  with a seeded 1-in-3 chance per grid of skipping one gem).
+  and takes an off-path gem only by a 2-cell detour starting next to its head and rejoining the next path cell).
 - Tutorial bubble: « Touche les cases voisines pour tracer ton chemin jusqu'à la sortie »
 
 #### Chasse au Trésor (world Exploration, 3rd game) - turn based

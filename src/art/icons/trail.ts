@@ -1,7 +1,20 @@
-// Icon of the game « trail » (12×12), shown on its world card, Game sheet and Result. Placeholder until the game lands.
+// Icon of the game « trail » (12×12): a winding golden thread from a green start to a door, past a purple gem.
 import type { Sprite } from '../sprites';
 
 export const ICON: Sprite = {
-  legend: { k: 'outline', c: 'purple' },
-  rows: ['............','.kkkkkkkkkk.','.kcccccccck.','.kcccccccck.','.kcccccccck.','.kcccccccck.','.kcccccccck.','.kcccccccck.','.kcccccccck.','.kcccccccck.','.kkkkkkkkkk.','............'],
+  legend: { k: 'outline', g: 'green', y: 'yellow', p: 'purple', w: 'white', b: 'brown', d: 'darkBrown', s: 'grey' },
+  rows: [
+    '.......kkkk.',
+    '.......kbbk.',
+    '..kpk..kbbk.',
+    '.kpwpk.kbyk.',
+    '..kpk..kbbk.',
+    '...y...kddk.',
+    '...yyyyyy...',
+    '.........ss.',
+    'kk.......ss.',
+    'kgk.........',
+    'kgyyyyyy....',
+    'kk.....y....',
+  ],
 };

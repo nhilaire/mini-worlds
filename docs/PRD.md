@@ -662,8 +662,10 @@ a world keep the rule 2 × (k − 1) stars in that world. 69 stars exist in v0.3
 
 #### Fil d'Ariane (world Exploration, 2nd game) - turn based
 - Grid 6 × 6. Grid k: the start is a seeded cell of the left column, the exit a seeded cell of the right column; a
-  seeded self-avoiding path of at least 12 cells joins them; 3 + k gems sit on seeded path cells other than start and
-  exit; 6 + k rocks sit on seeded cells off the path. Tap the cell next to the head of the trail to extend it (no
+  seeded self-avoiding path of at least 12 cells joins them; 3 + k gems: 1 + k on seeded path cells other than start
+  and exit, and 2 on seeded free cells next to the path, placed so that one self-avoiding trail from start to exit can
+  collect all of them (checked by a bounded search); 6 + k rocks sit on seeded cells off that full trail (amended
+  while building: with every gem on the path a casual player scored the maximum 2 000 every round). Tap the cell next to the head of the trail to extend it (no
   cell twice, no rock); tap the head to step back one cell. Reaching the exit ends the grid.
 - Grid score: 50 per gem collected, + 100 if all gems were collected. A round is 5 grids.
 - « Indice »: 1 / 2 / 3 hints per round; while the trail follows the seeded path, a hint highlights its next cell;
@@ -1043,7 +1045,7 @@ Telemetry and technical
   100 + 2 × shortest path cells (start and exit included); timer 60 s + 5 s
   per level; combo under 15 s.
 - AC-84 [unit] Fil d'Ariane: every grid has its start in the left column, its exit in the right column, a seeded path
-  of 12+ cells holding its 3 + k gems and 6 + k rocks off it; the trail extends to free neighbours only, steps back
+  of 12+ cells, 1 + k gems on it and 2 next to it, all collectable by one trail, and 6 + k rocks off that trail; the trail extends to free neighbours only, steps back
   from its head, ends at the exit; scoring 50 per gem + 100 when all; a hint gives the next path cell, or the head
   when the trail left the path; combo with every gem.
 - AC-85 [unit] Chasse au Trésor: each dig shows the band of its Manhattan distance to the chest (0, 1-2, 3-4, 5-7,

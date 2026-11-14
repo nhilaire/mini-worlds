@@ -1,7 +1,7 @@
 // v0.3.0 catalogue: ten more games, worlds Stratégie and Exploration open (AC-75).
 import { CHALLENGES, gameById, GAMES, worldById } from '../../game/core/content';
 import { checkUnlocks } from '../../game/core/unlocks';
-import { defaultSave, Save } from '../../game/core/save';
+import { defaultSave, parseSave, Save, serializeSave } from '../../game/core/save';
 import { DICTIONARIES, LANGUAGES } from '../../i18n';
 
 function withStars(stars: number, level: number): Save {
@@ -53,5 +53,22 @@ describe('v0.3.0 catalogue (AC-75)', () => {
     expect(checkUnlocks(withStars(18, 7)).unlocked).not.toContain('exploration');
     expect(GAMES).toHaveLength(23);
     expect(GAMES.length * 3).toBe(69);
+  });
+});
+
+describe('save compatibility with v0.2.0 (AC-75)', () => {
+  it('a v0.2.0 save (13 games) loads without loss and the 10 v0.3.0 games get default data', () => {
+    const V020 = ['blocks', 'garden', 'bubbles', 'tower', 'hop', 'lights', 'pipes', 'flood', 'socks', 'twentyone', 'candles', 'parrot', 'moles'];
+    const V030 = ['fruit', 'slide', 'cardline', 'marbles', 'quicksum', 'army', 'merge', 'maze', 'trail', 'treasure'];
+    const base = defaultSave();
+    const games = Object.fromEntries(V020.map((id, i) => [id, { bestScore: 100 + i, stars: i % 4, rounds: i, upgrades: { coins: 1 }, tutorialDone: true }]));
+    const v020 = { ...base, games, unlockedWorlds: ['arcade', 'puzzle', 'cards', 'bubbles'], profile: { ...base.profile, coins: 1234, level: 6 }, achievements: ['first_round', 'globetrotter'] };
+    const { save, readOnly } = parseSave(serializeSave(v020 as Save));
+    expect(readOnly).toBe(false);
+    for (const id of V020) expect(save.games[id]).toEqual(games[id]);
+    for (const id of V030) expect(save.games[id]).toEqual({ bestScore: 0, stars: 0, rounds: 0, upgrades: {}, tutorialDone: false });
+    expect(save.unlockedWorlds).toEqual(['arcade', 'puzzle', 'cards', 'bubbles']);
+    expect(save.profile.coins).toBe(1234);
+    expect(save.achievements).toEqual(['first_round', 'globetrotter']);
   });
 });

@@ -887,8 +887,9 @@ Bulles en Folie
 Screens and flow
 
 - AC-31 [e2e] Given Home, when « Jeux » is tapped, then the 10 world cards are listed, Arcade open, Puzzle,
-  Cartes, Bulles, Adresse and Mémoire locked with their conditions, the four others « Bientôt »; tapping Arcade shows
-  Pluie de Blocs, Tour Bancale and Saute-Lapin locked with their condition, and two « Bientôt » slots (v0.2.0); tapping the game shows its sheet with « Jouer ».
+  Stratégie, Cartes, Bulles, Adresse, Exploration and Mémoire locked with their conditions, Construction and Défis
+  « Bientôt »; tapping Arcade shows Pluie de Blocs, then Tour Bancale, Saute-Lapin and Fruits en Fusion locked with their
+  condition, and one « Bientôt » slot (v0.3.0); tapping the game shows its sheet with « Jouer ».
 - AC-32 [e2e] Given the Game sheet, when « Améliorations » is opened with 0 coins, then the three upgrades are
   listed with « 0 / 3 » and « Acheter » disabled.
 - AC-33 [unit] Given the Result screen data, when a round earns a new star, a level-up or unlocks a world, then
@@ -903,7 +904,7 @@ Screens and flow
 - AC-37 [e2e] Given Settings, when « Réinitialiser la progression » is confirmed, then coins, XP, stars and
   unlocks are back to the initial state and the language and consent are kept.
 - AC-38 [e2e] Given Profile, when « À propos » is tapped, then the About screen shows the story
-  (`about.story`), « Un mot de l'auteur », « Tes données » and « Version <version of the build> » (0.2.0 here).
+  (`about.story`), « Un mot de l'auteur », « Tes données » and « Version <version of the build> ».
 - AC-39 [unit] Given a running round, when the app goes to background, then the round is paused and the same
   state is shown with the Pause overlay on return.
 
@@ -965,7 +966,7 @@ Telemetry and technical
   shows a locked game with its condition « N étoiles dans <monde> ».
 - AC-57 [unit] Given the daily challenge draw, then score challenges exist for the 13 games and only games
   playable now are drawn; achievements: Explorateur at 3 different games, Globe-trotteur at 10 (200 coins),
-  Ciel étoilé at 39 stars.
+  Ciel étoilé at every star (39 in v0.2.0, 69 in v0.3.0).
 - AC-58 [unit] Given a save written by v0.1.0 (3 games), when it is loaded, then nothing is lost, the 10 new games
   get default data, and the seed deep link variant /unlocked opens every world and every game in memory.
 - AC-59 [unit] Tour Bancale: the block slides and bounces at the speed of the rules; a drop keeps the overlap, a
@@ -1266,7 +1267,7 @@ no spoken audio). French tone: tu.
 | challenge.score_<game> | Marquer {target} points à {game} | Score {target} at {game} |
 | achievement.globetrotter | Globe-trotteur | Globetrotter |
 | achievementHint.globetrotter | Joue à 10 jeux différents | Play 10 different games |
-| achievementHint.explorer / all_stars | Joue à 3 jeux différents / Gagne les 39 étoiles | Play 3 different games / Earn all 39 stars |
+| achievementHint.explorer / all_stars | Joue à 3 jeux différents / Gagne les 69 étoiles | Play 3 different games / Earn all 69 stars |
 | tutorial.tower | Touche pour lâcher le bloc | Tap to drop the block |
 | tutorial.hop | Touche pour sauter | Tap to jump |
 | tutorial.lights | Touche une luciole : elle et ses voisines changent. Éteins tout ! | Tap a firefly: it and its neighbours switch. Turn them all off! |

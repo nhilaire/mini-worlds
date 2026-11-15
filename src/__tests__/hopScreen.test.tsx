@@ -1,11 +1,14 @@
 import AsyncStorage from '@react-native-async-storage/async-storage';
 import { act, fireEvent, render, screen } from '@testing-library/react-native';
 import * as Linking from 'expo-linking';
+import { Profiler } from 'react';
+import { Animated } from 'react-native';
 
 import App from '../App';
 import { setClock } from '../game/clock';
 import { BUNNY_X, createHop, HopState, onGround, reduceHop } from '../game/hop/engine';
 import { deviceLanguageTags } from '../i18n/deviceLocale';
+import * as ThemeProvider from '../ui/ThemeProvider';
 
 // Session seed of the deep link; the first round of the session uses seed + 1. `/unlocked` opens every game.
 const SESSION_SEED = 4242;
@@ -97,6 +100,48 @@ describe('Saute-Lapin screen (AC-69)', () => {
     expect(screen.getByTestId('hud-score')).toHaveTextContent(new RegExp(`^${expected.score}$`));
     expect(screen.getByTestId('hud-shields')).toHaveTextContent(new RegExp(`^${expected.shields}$`));
     expect(screen.queryByTestId('hop-fence-0')).toBeNull();
+  });
+
+  it('AC-73: plain frames move the bunny through Animated values without rendering the game again', async () => {
+    let commits = 0;
+    await AsyncStorage.setItem('telemetry.consent.v1', 'denied');
+    await render(
+      <Profiler id="app" onRender={() => (commits += 1)}>
+        <App />
+      </Profiler>,
+    );
+    await fireEvent.press(await screen.findByTestId('tab-games'));
+    await fireEvent.press(await screen.findByTestId('world-arcade'));
+    await fireEvent.press(await screen.findByTestId('game-hop'));
+    await fireEvent.press(await screen.findByTestId('sheet-play'));
+    expect(await screen.findByTestId('hop-screen')).toBeTruthy();
+    await fireEvent(screen.getByTestId('hop-btn-jump'), 'pressIn');
+    await step();
+    const setValue = jest.spyOn(Animated.Value.prototype, 'setValue');
+    // Every themed component (HopGame, its HUD, GameFrame) reads the theme when React renders it.
+    const themeReads = jest.spyOn(ThemeProvider, 'useTheme');
+    const lift = () => -screen.getByTestId('hop-bunny').props.style.transform[0].translateY;
+    try {
+      const before = commits;
+      const heights: number[] = [];
+      const frames = 4;
+      for (let i = 0; i < frames; i++) {
+        await step();
+        heights.push(lift());
+      }
+      // The bunny is in the air and moves from frame to frame (bunny height + fence slots pushed every frame)...
+      expect(heights.every((h) => h > 0)).toBe(true);
+      expect(new Set(heights).size).toBe(frames);
+      expect(setValue.mock.calls.length).toBeGreaterThanOrEqual(frames * 2);
+      // ...and no game component rendered again during these plain frames (no spawn, event or end in the first
+      // jump). Under Jest the host view has no setNativeProps, so Animated itself commits its own props once per
+      // frame; on a phone it writes them natively.
+      expect(themeReads).not.toHaveBeenCalled();
+      expect(commits - before).toBeLessThanOrEqual(frames);
+    } finally {
+      setValue.mockRestore();
+      themeReads.mockRestore();
+    }
   });
 
   it('AC-69: Pause → Quitter ends the round and shows the Result', async () => {

@@ -94,7 +94,7 @@ After the first phone test of v0.2.0 (2026-11-13, RELEASE.md notes)
 - [x] T-59 Saute-Lapin variety: speed-up 0.35 per obstacle up to 15, gaps 0.8-1.8 s, hedge and bird obstacles (AC-60) - proof: unit
 - [x] T-60 Perroquet show restarted for ever on the phone: stable round clock, show decoupled from dispatch identity, frame-by-frame screen test (AC-74) - proof: unit
 - [x] T-61 Lucioles easier: par 1 + k, grids 1-2 in 4 × 4 (AC-61) - proof: unit
-- [x] T-58 Saute-Lapin smoothness: bunny and fences on Animated values, React renders only on changes (AC-73) - proof: unit + device
+- [x] T-58 Saute-Lapin smoothness: bunny and fences on Animated values, React renders only on changes (AC-73, AC-90) - proof: unit (AC-73) + device (AC-90)
 
 v0.3.0: ten more games, worlds Stratégie and Exploration (PRD amended 2026-11-13)
 

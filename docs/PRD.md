@@ -1069,7 +1069,10 @@ Telemetry and technical
   next cake does not turn for 1 s and throws are ignored, then it turns and throws are accepted again.
 - AC-73 [unit] Given a round of Saute-Lapin, then the frame loop moves the bunny and the fences through animated
   values and React re-renders on less than 10 % of the ticks (fence spawned or removed, event, shields, end); a
-  plain tick re-renders nothing. [device] The round runs without visible lag on the user's phone.
+  plain tick re-renders nothing.
+- AC-90 [device] Given the release APK on the user's phone, when a round of Saute-Lapin is played, then it runs
+  without visible lag (split from AC-73 on 2026-11-15, at the user's request, so the unit part and the phone part
+  each get their own verdict).
 
 ## Player copy
 

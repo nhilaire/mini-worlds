@@ -348,7 +348,7 @@ export const fr = {
     cardline: { swap: `Touche deux cartes pour les échanger. Range-les dans l'ordre${NBSP}!` },
     marbles: { move: `Touche un tube puis un autre pour déplacer les billes du dessus` },
     quicksum: { answer: `Touche la bonne réponse, le plus vite possible${NBSP}!` },
-    army: { gate: `Touche à gauche ou à droite pour choisir ta porte` },
+    army: { gate: `Touche à gauche ou à droite pour changer de couloir` },
     merge: { merge: `Touche deux guerriers pareils côte à côte pour les fusionner` },
     maze: { run: `Glisse pour courir jusqu'au prochain croisement. Trouve la sortie${NBSP}!` },
     trail: { step: `Touche les cases voisines pour tracer ton chemin jusqu'à la sortie` },

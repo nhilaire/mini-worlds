@@ -347,7 +347,7 @@ export const en: Strings = {
     cardline: { swap: `Tap two cards to swap them. Put them in order!` },
     marbles: { move: `Tap a tube, then another, to move the top marbles` },
     quicksum: { answer: `Tap the right answer, as fast as you can!` },
-    army: { gate: `Tap left or right to pick your gate` },
+    army: { gate: `Tap left or right to switch lanes` },
     merge: { merge: `Tap two matching warriors side by side to merge them` },
     maze: { run: `Swipe to run to the next crossing. Find the exit!` },
     trail: { step: `Tap the next squares to draw your way to the exit` },

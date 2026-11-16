@@ -5,6 +5,7 @@ import { SafeAreaProvider } from 'react-native-safe-area-context';
 import { setClock } from '../game/clock';
 import { defaultSave, serializeSave } from '../game/core/save';
 import { casualFruitMove, createFruit, FRUIT_COLS, FRUIT_GUARD_MS, FRUIT_ROWS, FruitState, reduceFruit } from '../game/fruit/engine';
+import { buildFruitReplay, DROP_MS } from '../game/fruit/replay';
 import type { OnFinish } from '../screens/game/GameFrame';
 import { FruitGame } from '../screens/game/FruitGame';
 import { GameStoreProvider, useGameStore } from '../state/GameStore';
@@ -58,7 +59,7 @@ function expectBoard(state: FruitState) {
   expect(screen.getByTestId('hud-fruits')).toHaveTextContent(new RegExp(`^${state.fruitsLeft}$`));
 }
 
-describe('Fruits en Fusion screen (AC-86)', () => {
+describe('Fruits en Fusion screen (AC-86, AC-91)', () => {
   let restore = () => {};
   const raf = globalThis.requestAnimationFrame;
   const caf = globalThis.cancelAnimationFrame;
@@ -89,12 +90,14 @@ describe('Fruits en Fusion screen (AC-86)', () => {
     expect(screen.getByTestId('fruit-btn-sweep')).toHaveTextContent(/Balai \(0\)/);
     expect(screen.getByTestId('fruit-btn-sweep')).toBeDisabled();
 
-    // The casual policy until a merge scored (frame by frame between drops, 50 ms steps past the 300 ms guard).
+    // The casual policy until a merge scored (frame by frame between drops, 50 ms steps past the guard: the drop
+    // and its merge replay).
     for (let i = 0; i < 40 && expected.score === 0; i++) {
       const col = casualFruitMove(expected);
-      expected = reduceFruit(reduceFruit(expected, { type: 'drop', col }), { type: 'tick', dt: FRUIT_GUARD_MS });
+      const next = reduceFruit(expected, { type: 'drop', col });
       await fireEvent.press(screen.getByTestId(`fruit-col-${col}`));
-      await runFrames(FRUIT_GUARD_MS / 50);
+      await runFrames(next.busyMs / 50);
+      expected = reduceFruit(next, { type: 'tick', dt: next.busyMs });
     }
     expect(screen.queryByTestId('tutorial-bubble')).toBeNull();
     expect(expected.score).toBeGreaterThan(0);
@@ -120,15 +123,53 @@ describe('Fruits en Fusion screen (AC-86)', () => {
     expect(screen.getByTestId('fruit-btn-sweep')).toHaveTextContent(/Balai \(1\)/);
     let expected = createFruit(SEED, { sweep: 1 });
     for (const col of [0, 2, 4]) {
-      expected = reduceFruit(reduceFruit(expected, { type: 'drop', col }), { type: 'tick', dt: FRUIT_GUARD_MS });
+      const next = reduceFruit(expected, { type: 'drop', col });
       await fireEvent.press(screen.getByTestId(`fruit-col-${col}`));
-      await runFrames(FRUIT_GUARD_MS / 50);
+      await runFrames(next.busyMs / 50);
+      expected = reduceFruit(next, { type: 'tick', dt: next.busyMs });
     }
     expected = reduceFruit(expected, { type: 'sweep' });
     await fireEvent.press(screen.getByTestId('fruit-btn-sweep'));
+    await runFrames(expected.busyMs / 50);
     expectBoard(expected);
     expect(screen.getByTestId('fruit-btn-sweep')).toHaveTextContent(/Balai \(0\)/);
     expect(screen.getByTestId('fruit-btn-sweep')).toBeDisabled();
+  });
+
+  it('AC-91: a merging drop replays on screen: the drop, the merged cells framed with « +points », then the final board', async () => {
+    await start();
+    // Casual drops (each replay waited out) until the next drop merges.
+    let expected = createFruit(SEED, { sweep: 0 });
+    let col = casualFruitMove(expected);
+    let next = reduceFruit(expected, { type: 'drop', col });
+    for (let i = 0; i < 40 && !next.events.some((e) => e.kind === 'merge'); i++) {
+      await fireEvent.press(screen.getByTestId(`fruit-col-${col}`));
+      await runFrames(next.busyMs / 50);
+      expected = reduceFruit(next, { type: 'tick', dt: next.busyMs });
+      col = casualFruitMove(expected);
+      next = reduceFruit(expected, { type: 'drop', col });
+    }
+    const merge = next.events.find((e) => e.kind === 'merge');
+    if (!merge || merge.kind !== 'merge') throw new Error('a merging drop is expected');
+    const phases = buildFruitReplay(expected.cells, next);
+    expectBoard(expected);
+
+    await fireEvent.press(screen.getByTestId(`fruit-col-${col}`));
+    // The drop phase: the fruit has landed, no merge shown yet.
+    expect(screen.queryByTestId('fruit-points-pop')).toBeNull();
+    const landed = phases[0].board;
+    for (const c of merge.cells) expect(screen.getByTestId(`fruit-cell-${c % FRUIT_COLS}-${Math.floor(c / FRUIT_COLS)}`).props.accessibilityLabel).toBe(String(landed[c]));
+
+    // 300 ms later: the flash frames every merged cell and pops the points.
+    await runFrames(DROP_MS / 50);
+    for (const c of merge.cells) expect(screen.getByTestId(`fruit-flash-${c % FRUIT_COLS}-${Math.floor(c / FRUIT_COLS)}`)).toBeTruthy();
+    expect(screen.getByTestId('fruit-points-pop')).toHaveTextContent(new RegExp(`^\\+${merge.points}$`));
+
+    // After the whole replay: no frame, no points, the engine's board.
+    await runFrames((next.busyMs - DROP_MS) / 50);
+    expect(screen.queryByTestId('fruit-points-pop')).toBeNull();
+    for (const c of merge.cells) expect(screen.queryByTestId(`fruit-flash-${c % FRUIT_COLS}-${Math.floor(c / FRUIT_COLS)}`)).toBeNull();
+    expectBoard(reduceFruit(next, { type: 'tick', dt: next.busyMs }));
   });
 
   it('AC-86: Pause → Quitter ends the round with the current score', async () => {

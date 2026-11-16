@@ -1,5 +1,5 @@
 import { Cell, cellOf, createFruit, FRUIT_COLS, FRUIT_GUARD_MS, FRUIT_ROWS, FruitState, guardFor, MERGE_STEP_MS, reduceFruit } from '../game/fruit/engine';
-import { buildFruitReplay, DROP_MS, FALL_MS, FLASH_MS, fruitReplayDuration, SHRINK_MS } from '../game/fruit/replay';
+import { buildFruitReplay, DROP_MS, FALL_MS, FLASH_MS, fruitReplayDuration, phaseIndexAt, SHRINK_MS } from '../game/fruit/replay';
 
 /** A playing state with the given fruits ({ 'col,row': fruit }) and next fruit. */
 function board(fruits: Record<string, number>, next: number, extra: Partial<FruitState> = {}): FruitState {
@@ -87,5 +87,11 @@ describe('Fruits en Fusion replay plan (AC-91)', () => {
         s = reduceFruit(next, { type: 'tick', dt: next.busyMs });
       }
     }
+  });
+
+  it('AC-91: the phase on show follows the elapsed time, and the replay is over after its duration', () => {
+    const before = board({ '0,7': 0, '2,7': 0 }, 0);
+    const phases = buildFruitReplay(before.cells, drop(before, 1));
+    expect([0, 299, 300, 579, 580, 799, 800, 979, 980, 5000].map((t) => phaseIndexAt(phases, t))).toEqual([0, 0, 1, 1, 2, 2, 3, 3, 4, 4]);
   });
 });

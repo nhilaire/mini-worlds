@@ -118,7 +118,7 @@ v0.3.0 phone test fixes (2026-11-16):
 - [x] T-76 Armée de Poche screen: neutral gates, two lane halves, army walking to the gates on an Animated value, tutorial copy (AC-92, AC-94) - proof: unit + device (AC-94)
 - [x] T-77 Champ de Taupes: cleared board held 1 200 ms with a green check and « Gagné ! », inputs ignored, then the next board (AC-68, AC-93, AC-94) - proof: unit + device (AC-94)
 - [x] T-78 Fruits en Fusion engine: merge/vanish steps carry their board, replay plan, guard 300 + 680 ms per step (AC-76, AC-91) - proof: unit
-- [ ] T-79 Fruits en Fusion screen: replay of the drop and each merge (frame, flash, +points, shrink, grow, fall) (AC-91, AC-94) - proof: unit + device (AC-94)
+- [x] T-79 Fruits en Fusion screen: replay of the drop and each merge (frame, flash, +points, shrink, grow, fall) (AC-91, AC-94) - proof: unit + device (AC-94)
 
 ## Notes
 

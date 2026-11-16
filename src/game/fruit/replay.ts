@@ -52,3 +52,13 @@ export function buildFruitReplay(before: readonly Cell[], next: FruitState): Fru
 export function fruitReplayDuration(phases: readonly FruitPhase[]): number {
   return phases.reduce((sum, p) => sum + p.ms, 0);
 }
+
+/** Index of the phase on show `elapsedMs` after the move; `phases.length` once the replay is over. */
+export function phaseIndexAt(phases: readonly FruitPhase[], elapsedMs: number): number {
+  let end = 0;
+  for (let i = 0; i < phases.length; i++) {
+    end += phases[i].ms;
+    if (elapsedMs < end) return i;
+  }
+  return phases.length;
+}

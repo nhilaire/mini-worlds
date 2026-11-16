@@ -1,5 +1,6 @@
 import {
   CLEAR_POINTS,
+  CLEARED_SHOW_MS,
   MOLES_CELLS,
   cellOf,
   count,
@@ -120,12 +121,13 @@ describe('Champ de Taupes engine: flags and moles (AC-68)', () => {
   });
 });
 
-describe('Champ de Taupes engine: cleared board (AC-68)', () => {
-  it('revealing every safe cell scores 300 and deals the next board with 10 moles placed at its first dig', () => {
+describe('Champ de Taupes engine: cleared board (AC-68, AC-93)', () => {
+  it('revealing every safe cell scores 300 and, after the cleared board is shown, deals the next board with 10 moles placed at its first dig', () => {
     const s = dig(withMoles(createMoles(1, {}), CORNER), 0, 0);
-    const next = dig(s, 6, 5);
-    expect(next.score).toBe(5 * 56 + CLEAR_POINTS);
-    expect(next.events).toContainEqual({ kind: 'cleared', board: 1, points: 300 });
+    const won = dig(s, 6, 5);
+    expect(won.score).toBe(5 * 56 + CLEAR_POINTS);
+    expect(won.events).toContainEqual({ kind: 'cleared', board: 1, points: 300 });
+    const next = reduceMoles(won, { type: 'tick', dt: CLEARED_SHOW_MS });
     expect(next.boardNumber).toBe(2);
     expect(next.moles).toBeNull();
     expect(revealedCount(next)).toBe(0);
@@ -134,6 +136,37 @@ describe('Champ de Taupes engine: cleared board (AC-68)', () => {
     const second = dig(next, 4, 4);
     expect(second.moles).toHaveLength(10);
     expect(second.status).toBe('playing');
+  });
+
+  it('AC-93: the cleared board stays 1 200 ms, fully revealed, then the next board is dealt', () => {
+    expect(CLEARED_SHOW_MS).toBe(1200);
+    const won = dig(dig(withMoles(createMoles(1, {}), CORNER), 0, 0), 6, 5);
+    expect(won.clearedMs).toBe(CLEARED_SHOW_MS);
+    expect(won.boardNumber).toBe(1);
+    expect(revealedCount(won)).toBe(MOLES_CELLS - CORNER.length);
+    const almost = reduceMoles(won, { type: 'tick', dt: CLEARED_SHOW_MS - 1 });
+    expect(almost.boardNumber).toBe(1);
+    expect(almost.clearedMs).toBe(1);
+    expect(almost.events).toEqual([]);
+    const next = reduceMoles(almost, { type: 'tick', dt: 1 });
+    expect(next.boardNumber).toBe(2);
+    expect(next.clearedMs).toBe(0);
+    expect(revealedCount(next)).toBe(0);
+    expect(next.score).toBe(won.score);
+  });
+
+  it('AC-93: digs, flags and the radar are ignored while the cleared board is shown', () => {
+    const won = dig(dig(withMoles(createMoles(1, { radar: 2 }), CORNER), 0, 0), 6, 5);
+    for (const tapped of [dig(won, 7, 7), flag(won, 7, 7), radar(won)]) {
+      expect(tapped.events).toEqual([{ kind: 'refused' }]);
+      expect({ ...tapped, events: [] }).toEqual({ ...won, events: [] });
+    }
+  });
+
+  it('AC-93: a tick outside a cleared board changes nothing', () => {
+    const s = dig(withMoles(createMoles(1, {}), CORNER), 0, 0);
+    const ticked = reduceMoles(s, { type: 'tick', dt: 500 });
+    expect({ ...ticked, events: [] }).toEqual({ ...s, events: [] });
   });
 });
 

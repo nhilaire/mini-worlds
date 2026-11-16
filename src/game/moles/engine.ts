@@ -25,7 +25,7 @@ export type MolesEvent =
   | { kind: 'mole'; cell: Cell; moles: readonly Cell[] }
   | { kind: 'flag'; cell: Cell; flagged: boolean }
   | { kind: 'radar'; cell: Cell }
-  /** Every safe cell revealed: its points; the next board is already in the state. */
+  /** Every safe cell revealed: its points; the board stays shown CLEARED_SHOW_MS, then the next one is dealt. */
   | { kind: 'cleared'; board: number; points: number }
   /** An input that changes nothing (dig on a flag or an open cell, radar with no use or no mole left...). */
   | { kind: 'refused' };
@@ -39,10 +39,15 @@ export type MolesState = RoundState<MolesEvent> & {
   flagged: readonly boolean[];
   /** Radar uses left this round (« Radar » level: 1 / 2 / 3, 0 without the upgrade). */
   radarLeft: number;
+  /** Time left of the cleared board on screen (ms, AC-93); inputs are ignored while > 0, then the next board comes. */
+  clearedMs: number;
   rngState: number;
 };
 
-export type MolesAction = { type: 'dig'; cell: Cell } | { type: 'flag'; cell: Cell } | { type: 'radar' };
+export type MolesAction = { type: 'dig'; cell: Cell } | { type: 'flag'; cell: Cell } | { type: 'radar' } | { type: 'tick'; dt: number };
+
+/** A cleared board stays on screen this long (green check, « Gagné ! ») before the next board (AC-93). */
+export const CLEARED_SHOW_MS = 1200;
 
 // --- Rules -------------------------------------------------------------------------------------------------------
 
@@ -104,6 +109,7 @@ export function createMoles(seed: number, upgrades: UpgradeLevels = {}): MolesSt
     revealed: fresh(),
     flagged: fresh(),
     radarLeft: upgrades.radar ?? 0,
+    clearedMs: 0,
     rngState: createRng(seed).state(),
   };
 }
@@ -161,16 +167,8 @@ function dig(state: MolesState, cell: Cell): MolesState {
   if (revealed.filter(Boolean).length === safeCells) {
     score += CLEAR_POINTS;
     events.push({ kind: 'cleared', board: s.boardNumber, points: CLEAR_POINTS }, { kind: 'score', points: CLEAR_POINTS });
-    return {
-      ...s,
-      score,
-      combos: s.combos + (combo ? 1 : 0),
-      events,
-      boardNumber: s.boardNumber + 1,
-      moles: null,
-      revealed: fresh(),
-      flagged: fresh(),
-    };
+    // The cleared board stays shown (every safe cell revealed); `tick` deals the next one after CLEARED_SHOW_MS.
+    return { ...s, score, combos: s.combos + (combo ? 1 : 0), events, revealed, clearedMs: CLEARED_SHOW_MS };
   }
   return { ...s, score, combos: s.combos + (combo ? 1 : 0), events, revealed };
 }
@@ -193,8 +191,19 @@ function radar(state: MolesState): MolesState {
   return { ...state, flagged, radarLeft: state.radarLeft - 1, events: [{ kind: 'radar', cell: cellOf(target) }] };
 }
 
+/** Counts the cleared board down; at 0 the next board is dealt (its moles are placed at its first dig). */
+function tick(state: MolesState, dt: number): MolesState {
+  if (state.clearedMs <= 0 || dt <= 0) return state.events.length === 0 ? state : { ...state, events: [] };
+  const clearedMs = Math.max(0, state.clearedMs - dt);
+  if (clearedMs > 0) return { ...state, clearedMs, events: [] };
+  return { ...state, clearedMs: 0, events: [], boardNumber: state.boardNumber + 1, moles: null, revealed: fresh(), flagged: fresh() };
+}
+
 export function reduceMoles(state: MolesState, action: MolesAction): MolesState {
   if (state.status !== 'playing') return refused(state);
+  if (action.type === 'tick') return tick(state, action.dt);
+  // The cleared board is on show: every input is ignored (AC-93).
+  if (state.clearedMs > 0) return refused(state);
   if (action.type === 'radar') return radar(state);
   if (!inBounds(action.cell)) return refused(state);
   return action.type === 'dig' ? dig(state, action.cell) : flag(state, action.cell);

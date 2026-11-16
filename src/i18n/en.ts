@@ -171,6 +171,7 @@ export const en: Strings = {
     dealer: 'Dealer',
     you: 'You',
     win: 'You win!',
+    boardWon: 'Cleared!',
     blackjack: 'Twenty-one!',
     push: 'Tie',
     lose: 'You lose',

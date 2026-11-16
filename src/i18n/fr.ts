@@ -171,6 +171,7 @@ export const fr = {
     dealer: 'Banque',
     you: 'Toi',
     win: `Gagné${NBSP}!`,
+    boardWon: `Gagné${NBSP}!`,
     blackjack: `Vingt-et-un${NBSP}!`,
     push: 'Égalité',
     lose: 'Perdu',

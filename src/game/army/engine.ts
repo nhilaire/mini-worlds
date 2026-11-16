@@ -1,7 +1,8 @@
 // « Armée de Poche » (docs/PRD.md "Armée de Poche"): the army walks down a road of 10 pairs of gates and picks one
 // gate of each pair; each gate adds, removes, doubles or halves the soldiers. After the 10th pair a fort with D
-// defenders waits: more soldiers than D wins the run. Pure reducer; the 500 ms walk through a gate (input guard) is
-// an engine counter advanced by `tick`; randomness (the gates) comes from the seeded generator kept in the state.
+// defenders waits: more soldiers than D wins the run. Pure reducer. Timed choice (v0.3.0 phone test, AC-92): the
+// army walks on its own to the next pair (`approachMs`, advanced by `tick`) in its lane, a `steer` sets the lane,
+// and on arrival it goes through the gate of its lane. Randomness (the gates) comes from the seeded generator.
 import type { BaseEvent, RoundState, UpgradeLevels } from '../contract';
 import { createRng, Rng } from '../rng';
 
@@ -12,8 +13,9 @@ export const MAX_RUNS = 8;
 export const RUN_POINTS = 100;
 export const MARGIN_POINTS = 5; // per soldier above the defenders
 export const MAX_MARGIN_POINTS = 200;
-/** The army walks through the chosen gate this long; taps are ignored meanwhile (input guard). */
-export const WALK_MS = 500;
+/** Time to reach the first pair of gates at run 1, and at the last run (AC-92). */
+export const APPROACH_FIRST_MS = 3000;
+export const APPROACH_LAST_MS = 2000;
 /** Seeded attempts at drawing a run whose best count reaches the start count, before the fallback run. */
 export const RUN_ATTEMPTS = 50;
 
@@ -33,8 +35,8 @@ export type ArmyEvent =
   | ({ kind: 'fort' } & FortResult)
   /** A new run starts. */
   | { kind: 'run'; run: number }
-  /** A tap during the walk: ignored. */
-  | { kind: 'ignored' };
+  /** The army moved to the lane of `side`. */
+  | { kind: 'lane'; side: Side };
 
 export type ArmyState = RoundState<ArmyEvent> & {
   /** Soldiers at the start of every run (10 + 5 per « Recrues » level). */
@@ -49,14 +51,22 @@ export type ArmyState = RoundState<ArmyEvent> & {
   best: number;
   /** Defenders of the fort of this run: floor(f × best). */
   defenders: number;
-  /** Time left of the walk through the last gate (ms); taps are ignored meanwhile. */
-  walkMs: number;
+  /** Lane of the army: on arrival it goes through the gate of this side. Kept from pair to pair and run to run. */
+  lane: Side;
+  /** Time left before the army reaches the next pair of gates (ms). */
+  approachMs: number;
   /** Outcome of the last fort, kept for the screen until the next gate. */
   lastFort: FortResult | null;
   rngState: number;
 };
 
-export type ArmyAction = { type: 'choose'; side: Side } | { type: 'tick'; dt: number };
+export type ArmyAction = { type: 'steer'; side: Side } | { type: 'tick'; dt: number };
+
+/** Approach time of run r: 3 000 ms at run 1 down to 2 000 ms at run 8 (3 000 − round((r − 1) × 1 000 / 7)). */
+export function approachTime(run: number): number {
+  const steps = Math.min(MAX_RUNS, Math.max(1, run)) - 1;
+  return APPROACH_FIRST_MS - Math.round((steps * (APPROACH_FIRST_MS - APPROACH_LAST_MS)) / (MAX_RUNS - 1));
+}
 
 export function applyGate(gate: Gate, soldiers: number): number {
   switch (gate.op) {
@@ -148,16 +158,17 @@ export function fortPoints(army: number, defenders: number): number {
 
 export function createArmy(seed: number, upgrades: UpgradeLevels = {}): ArmyState {
   const start = BASE_SOLDIERS + RECRUITS_PER_LEVEL * (upgrades.recruits ?? 0);
-  return { score: 0, combos: 0, status: 'playing', events: [], start, walkMs: 0, lastFort: null, ...startRun(1, start, seed >>> 0) };
+  return { score: 0, combos: 0, status: 'playing', events: [], start, lane: 'left', approachMs: approachTime(1), lastFort: null, ...startRun(1, start, seed >>> 0) };
 }
 
-function choose(state: ArmyState, side: Side): ArmyState {
-  if (state.walkMs > 0) return { ...state, events: [{ kind: 'ignored' }] };
+/** The army reaches the pair and goes through the gate of its lane; the next approach starts at once. */
+function passGate(state: ArmyState): ArmyState {
+  const side = state.lane;
   const gate = state.pairs[state.pair][side === 'left' ? 0 : 1];
   const army = applyGate(gate, state.army);
   const pair = state.pair + 1;
   const gateEvent: ArmyEvent = { kind: 'gate', side, from: state.army, to: army };
-  if (pair < PAIRS_PER_RUN) return { ...state, army, pair, walkMs: WALK_MS, lastFort: null, events: [gateEvent] };
+  if (pair < PAIRS_PER_RUN) return { ...state, army, pair, approachMs: approachTime(state.run), lastFort: null, events: [gateEvent] };
 
   // The fort at the end of the road.
   const won = army > state.defenders;
@@ -165,26 +176,29 @@ function choose(state: ArmyState, side: Side): ArmyState {
   const fort: FortResult = { run: state.run, won, army, defenders: state.defenders, points };
   const fortEvent: ArmyEvent = { kind: 'fort', ...fort };
   if (!won) {
-    return { ...state, army, pair, walkMs: WALK_MS, lastFort: fort, status: 'over', events: [gateEvent, fortEvent, { kind: 'over', score: state.score }] };
+    return { ...state, army, pair, approachMs: 0, lastFort: fort, status: 'over', events: [gateEvent, fortEvent, { kind: 'over', score: state.score }] };
   }
   const score = state.score + points;
   const combos = state.combos + 1;
   const scored: ArmyEvent[] = [gateEvent, fortEvent, { kind: 'score', points }, { kind: 'combo' }];
   if (state.run >= MAX_RUNS) {
-    return { ...state, army, pair, walkMs: WALK_MS, lastFort: fort, score, combos, status: 'over', events: [...scored, { kind: 'over', score }] };
+    return { ...state, army, pair, approachMs: 0, lastFort: fort, score, combos, status: 'over', events: [...scored, { kind: 'over', score }] };
   }
   const next = startRun(state.run + 1, state.start, state.rngState);
-  return { ...state, ...next, walkMs: WALK_MS, lastFort: fort, score, combos, events: [...scored, { kind: 'run', run: next.run }] };
+  return { ...state, ...next, approachMs: approachTime(next.run), lastFort: fort, score, combos, events: [...scored, { kind: 'run', run: next.run }] };
 }
 
 export function reduceArmy(state: ArmyState, action: ArmyAction): ArmyState {
   if (state.status !== 'playing') return state;
   switch (action.type) {
-    case 'tick':
-      if (action.dt <= 0 || state.walkMs <= 0) return state.events.length === 0 ? state : { ...state, events: [] };
-      return { ...state, walkMs: Math.max(0, state.walkMs - action.dt), events: [] };
-    case 'choose':
-      return choose(state, action.side);
+    case 'tick': {
+      if (action.dt <= 0) return state.events.length === 0 ? state : { ...state, events: [] };
+      const approachMs = state.approachMs - action.dt;
+      return approachMs > 0 ? { ...state, approachMs, events: [] } : passGate(state);
+    }
+    case 'steer':
+      if (action.side === state.lane) return state.events.length === 0 ? state : { ...state, events: [] };
+      return { ...state, lane: action.side, events: [{ kind: 'lane', side: action.side }] };
   }
 }
 

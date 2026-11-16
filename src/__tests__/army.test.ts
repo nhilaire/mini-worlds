@@ -3,6 +3,7 @@ import { playArmyBot } from '../game/army/bot';
 import {
   addRange,
   applyGate,
+  approachTime,
   ArmyState,
   BASE_SOLDIERS,
   bestCount,
@@ -18,7 +19,6 @@ import {
   reduceArmy,
   RUN_ATTEMPTS,
   subRange,
-  WALK_MS,
 } from '../game/army/engine';
 
 const add = (n: number): Gate => ({ op: 'add', n });
@@ -32,14 +32,16 @@ function withPairs(state: ArmyState, pair: GatePair, defenders: number): ArmySta
   return { ...state, pairs, best: bestCount(pairs, state.start), defenders };
 }
 
-/** Plays the 10 pairs on the given side, waiting out the walk after each gate. */
+/** Steers to `side`, then lets the army walk until it goes through the gate of that lane. */
+function pass(state: ArmyState, side: 'left' | 'right'): ArmyState {
+  return reduceArmy(reduceArmy(state, { type: 'steer', side }), { type: 'tick', dt: state.approachMs });
+}
+
+/** Plays the 10 pairs on the given side. */
 function playRun(state: ArmyState, side: 'left' | 'right'): ArmyState {
   let s = state;
   const run = s.run;
-  for (let i = 0; i < PAIRS_PER_RUN && s.status === 'playing' && s.run === run; i++) {
-    s = reduceArmy(s, { type: 'choose', side });
-    s = reduceArmy(s, { type: 'tick', dt: WALK_MS });
-  }
+  for (let i = 0; i < PAIRS_PER_RUN && s.status === 'playing' && s.run === run; i++) s = pass(s, side);
   return s;
 }
 
@@ -111,8 +113,7 @@ describe('Armée de Poche engine (AC-81)', () => {
     let s = state;
     while (s.run === 1 && s.status === 'playing') {
       const [l, r] = s.pairs[s.pair];
-      s = reduceArmy(s, { type: 'choose', side: applyGate(l, s.army) >= applyGate(r, s.army) ? 'left' : 'right' });
-      s = reduceArmy(s, { type: 'tick', dt: WALK_MS });
+      s = pass(s, applyGate(l, s.army) >= applyGate(r, s.army) ? 'left' : 'right');
     }
     expect(s.run).toBe(2);
     expect(s.army).toBe(s.start);
@@ -148,16 +149,49 @@ describe('Armée de Poche engine (AC-81)', () => {
     expect(s.combos).toBe(1);
   });
 
-  it('AC-81: taps during the 500 ms walk are ignored', () => {
-    const first = reduceArmy(createArmy(9), { type: 'choose', side: 'left' });
-    expect(first.walkMs).toBe(WALK_MS);
-    const double = reduceArmy(first, { type: 'choose', side: 'right' });
-    expect(double.events).toEqual([{ kind: 'ignored' }]);
-    expect({ ...double, events: [] }).toEqual({ ...first, events: [] });
-    const almost = reduceArmy(first, { type: 'tick', dt: WALK_MS - 1 });
-    expect(reduceArmy(almost, { type: 'choose', side: 'right' }).pair).toBe(1);
-    const walked = reduceArmy(almost, { type: 'tick', dt: 1 });
-    expect(reduceArmy(walked, { type: 'choose', side: 'right' }).pair).toBe(2);
+  it('AC-92: the approach takes 3 000 ms at run 1, down to 2 000 ms at run 8', () => {
+    expect([1, 2, 3, 4, 5, 6, 7, 8].map(approachTime)).toEqual([3000, 2857, 2714, 2571, 2429, 2286, 2143, 2000]);
+    const s = createArmy(9);
+    expect(s.lane).toBe('left');
+    expect(s.approachMs).toBe(3000);
+  });
+
+  it('AC-92: without any tap the army reaches the pair after the approach and goes through the gate of its lane', () => {
+    const start = withPairs(createArmy(9), [add(4), sub(2)], 5);
+    const almost = reduceArmy(start, { type: 'tick', dt: 2999 });
+    expect(almost.pair).toBe(0);
+    expect(almost.army).toBe(10);
+    expect(almost.approachMs).toBe(1);
+    const through = reduceArmy(almost, { type: 'tick', dt: 1 });
+    expect(through.pair).toBe(1);
+    expect(through.army).toBe(14);
+    expect(through.events).toContainEqual({ kind: 'gate', side: 'left', from: 10, to: 14 });
+    // The next approach starts at once.
+    expect(through.approachMs).toBe(3000);
+  });
+
+  it('AC-92: a tap sets the lane; the lane is kept to the next pair; a tap on its own lane changes nothing', () => {
+    const start = withPairs(createArmy(9), [add(4), sub(2)], 5);
+    const right = reduceArmy(start, { type: 'steer', side: 'right' });
+    expect(right.lane).toBe('right');
+    expect(right.events).toEqual([{ kind: 'lane', side: 'right' }]);
+    const same = reduceArmy(right, { type: 'steer', side: 'right' });
+    expect({ ...same, events: [] }).toEqual({ ...right, events: [] });
+    expect(same.events).toEqual([]);
+    // Back and forth during the approach: the last lane counts.
+    const back = reduceArmy(reduceArmy(right, { type: 'steer', side: 'left' }), { type: 'steer', side: 'right' });
+    const first = reduceArmy(back, { type: 'tick', dt: 3000 });
+    expect(first.army).toBe(8);
+    const second = reduceArmy(first, { type: 'tick', dt: 3000 });
+    expect(second.army).toBe(6);
+    expect(second.lane).toBe('right');
+  });
+
+  it('AC-92: the lane is kept to the next run, whose approach follows its run number', () => {
+    const s = playRun(withPairs(createArmy(1), [sub(1), add(3)], 30), 'right'); // 40 vs 30: won
+    expect(s.run).toBe(2);
+    expect(s.lane).toBe('right');
+    expect(s.approachMs).toBe(approachTime(2));
   });
 
   it('AC-81: « Recrues » adds 5 soldiers per level', () => {
@@ -183,9 +217,10 @@ describe('Armée de Poche balance and guards (AC-86)', () => {
     }
   });
 
-  it('AC-86: a double tap during the walk changes nothing', () => {
-    const once = reduceArmy(createArmy(11), { type: 'choose', side: 'left' });
-    const twice = reduceArmy(reduceArmy(once, { type: 'tick', dt: 50 }), { type: 'choose', side: 'left' });
+  it('AC-86: a double tap on a lane changes nothing more than one tap', () => {
+    const once = reduceArmy(createArmy(11), { type: 'steer', side: 'right' });
+    const twice = reduceArmy(reduceArmy(once, { type: 'tick', dt: 50 }), { type: 'steer', side: 'right' });
+    expect(twice.lane).toBe(once.lane);
     expect(twice.army).toBe(once.army);
     expect(twice.pair).toBe(once.pair);
     expect(twice.score).toBe(once.score);

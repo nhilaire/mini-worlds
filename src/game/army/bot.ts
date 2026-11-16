@@ -1,8 +1,8 @@
 // Casual bot of « Armée de Poche » (docs/PRD.md AC-86): takes the better gate of each pair 3 times in 4 (seeded,
-// ties: left), the worse one otherwise; one tap per 500 ms walk (no lookahead beyond the current pair).
+// ties: left), the worse one otherwise; it steers to that lane at once, then walks to the pair (no lookahead).
 import type { UpgradeLevels } from '../contract';
 import { createRng } from '../rng';
-import { applyGate, ArmyState, createArmy, reduceArmy, Side, WALK_MS } from './engine';
+import { applyGate, ArmyState, createArmy, reduceArmy, Side } from './engine';
 
 export const BOT_BETTER_CHANCE = 0.75;
 
@@ -18,8 +18,8 @@ export function playArmyBot(seed: number, upgrades: UpgradeLevels = {}): ArmySta
   const rng = createRng((seed ^ 0x5bd1e995) >>> 0);
   let state = createArmy(seed, upgrades);
   for (let guard = 0; state.status === 'playing' && guard < 1000; guard++) {
-    state = reduceArmy(state, { type: 'choose', side: botSide(state, rng.next()) });
-    state = reduceArmy(state, { type: 'tick', dt: WALK_MS });
+    state = reduceArmy(state, { type: 'steer', side: botSide(state, rng.next()) });
+    state = reduceArmy(state, { type: 'tick', dt: state.approachMs });
   }
   return state;
 }

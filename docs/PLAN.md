@@ -114,7 +114,7 @@ v0.3.0: ten more games, worlds Stratégie and Exploration (PRD amended 2026-11-1
 
 v0.3.0 phone test fixes (2026-11-16):
 
-- [ ] T-75 Armée de Poche engine: lane, timed approach per run (3 000 → 2 000 ms), gate of the lane on arrival, no walk guard; bot and stars re-checked (AC-81, AC-92) - proof: unit
+- [x] T-75 Armée de Poche engine: lane, timed approach per run (3 000 → 2 000 ms), gate of the lane on arrival, no walk guard; bot and stars re-checked (AC-81, AC-92) - proof: unit
 - [ ] T-76 Armée de Poche screen: neutral gates, two lane halves, army walking to the gates on an Animated value, tutorial copy (AC-92, AC-94) - proof: unit + device (AC-94)
 - [ ] T-77 Champ de Taupes: cleared board held 1 200 ms with a green check and « Gagné ! », inputs ignored, then the next board (AC-68, AC-93, AC-94) - proof: unit + device (AC-94)
 - [ ] T-78 Fruits en Fusion engine: merge/vanish steps carry their board, replay plan, guard 300 + 680 ms per step (AC-76, AC-91) - proof: unit

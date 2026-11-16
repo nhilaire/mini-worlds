@@ -632,9 +632,10 @@ a world keep the rule 2 × (k − 1) stars in that world. 69 stars exist in v0.3
   fort, and the casual bot scored a median of 0). A run whose best is below the start count is drawn again (seeded). Army > D: run won,
   + 100 + min(200, 5 × (army − D)), next run (army back to the start count). Otherwise the round is over.
 - A round has at most 8 runs (maximum 2 400 points).
-- Input guard: the army walks through the chosen gate in 500 ms; taps are ignored meanwhile.
+- Timed choice (amended after the v0.3.0 phone test, see below): the army walks on its own to each pair of gates and
+  takes the gate of its lane; there is no 500 ms walk guard any more.
 - Combo: a run won. HUD: soldiers, run n / 8. Stars 300 / 800 / 1 500 (casual bot: the better gate 3 times in 4).
-- Tutorial bubble: « Touche à gauche ou à droite pour choisir ta porte »
+- Tutorial bubble: « Touche à gauche ou à droite pour changer de couloir »
 
 #### Fusion de Guerriers (world Stratégie, 2nd game) - turn based
 - Grid 4 × 4; the round starts with 6 level-1 warriors on seeded cells including at least one adjacent pair. Tap a
@@ -695,6 +696,26 @@ Game ids: fruit, slide, cardline, marbles, quicksum, army, merge, maze, trail, t
 - Phone test of v0.2.0: when a grid was solved, the next one appeared at once and the filled pipe was never seen.
   Now the solved grid stays on screen for 1 s: the water runs from the entry to the exit through the connected
   pieces (cells fill in path order), the grid points pop above it, and taps are ignored; then the next grid comes.
+
+#### v0.3.0 phone test changes
+
+First phone test of v0.3.0 (2026-11-16), decisions of the user:
+
+- Fruits en Fusion: a merge must be seen. After a drop, the screen replays the drop and each merge step by step
+  (as Potager Fou): the fruits that merge are framed and flash (280 ms) with « +points » above the cell of the new
+  fruit, they shrink into that cell while the new fruit grows there (220 ms), then the fruits above fall (180 ms);
+  two pastèques that vanish flash and shrink the same way. The input guard of a drop lasts 300 ms plus 680 ms per
+  merge or vanish step, so taps are ignored until the replay ends.
+- Armée de Poche: every gate has the same neutral colour (the colour must not tell a good gate from a bad one; the
+  label alone does). The army walks on its own: it starts in the left lane and reaches the next pair of gates after
+  the approach time of the run, 3 000 ms at run 1 down to 2 000 ms at run 8 (3 000 − round((r − 1) × 1 000 / 7)).
+  A tap on the left or right half of the road moves it to that lane (any number of times during the approach; a tap
+  on its own lane changes nothing). When it reaches the pair, it goes through the gate of its lane, and the next
+  approach starts at once; the lane is kept from pair to pair and from run to run. The approach does not run while
+  the tutorial bubble or the pause is shown.
+- Champ de Taupes: a cleared board stays on screen 1 200 ms with a green check and « Gagné ! » over the board (the
+  300 points pop), taps and the radar are ignored meanwhile, then the next board is dealt.
+- Wish noted for v0.4.0: a 2048-like game (not in this release).
 
 ### Tutorial (guided first round)
 
@@ -1038,7 +1059,7 @@ Telemetry and technical
 - AC-81 [unit] Armée de Poche: gates follow the shares and ranges per run (one multiplicative gate per pair at most)
   and apply +n, −n, × 2, ÷ 2 (never below 0); best is reached by the greedy choice and is at least the start count;
   D = floor(f × best) with f = 0.25 / 0.3 / 0.35 / 0.4 / 0.45; a won run scores 100 + min(200, 5 × (army − D)); a lost fort or the 8th run ends
-  the round; taps during the 500 ms walk are ignored; « Recrues » adds 5 soldiers per level.
+  the round; « Recrues » adds 5 soldiers per level (the 500 ms walk guard was replaced by the timed choice, AC-92).
 - AC-82 [unit] Fusion de Guerriers: the start holds 6 warriors with an adjacent pair; only adjacent warriors of the same
   level merge, scoring 10 × 2^(level − 1); two warriors spawn after each merge, never more than the free cells (level 2 with the « Vétéran » chance); the round ends as soon as no adjacent pair shares a level; a level 5+ merge is a combo.
 - AC-83 [unit] Labyrinthe Express: every generated maze is perfect (one path between any two cells) and grows with
@@ -1073,6 +1094,19 @@ Telemetry and technical
 - AC-90 [device] Given the release APK on the user's phone, when a round of Saute-Lapin is played, then it runs
   without visible lag (split from AC-73 on 2026-11-15, at the user's request, so the unit part and the phone part
   each get their own verdict).
+- AC-91 [unit] Given a drop of Fruits en Fusion that merges, then its replay plan lists the drop, then for each merge
+  or vanish step a flash of the merged cells with its points, a shrink into the new fruit's cell and a fall, ending
+  on the engine's board; the input guard covers the whole replay (300 + 680 ms per step); the screen shows the framed
+  cells and « +points » during a flash and removes them after the replay.
+- AC-92 [unit] Given a round of Armée de Poche, then every gate has the same colour; the army starts in the left
+  lane, a tap on a half of the road sets the lane, and after the approach time of the run (3 000 ms at run 1, 2 000
+  ms at run 8) it goes through the gate of its lane without any other tap; the lane is kept to the next pair and
+  the next run; ticks do not advance the approach before the first tap of a first round.
+- AC-93 [unit] Given a cleared board of Champ de Taupes, then it stays 1 200 ms with « Gagné ! » and a green check,
+  digs, flags and the radar are ignored meanwhile, and the next board is dealt afterwards.
+- AC-94 [manual] Given the release APK on the user's phone, then merges of Fruits en Fusion are clearly seen, Armée
+  de Poche is a timed choice that is no longer obvious from the colours, and a cleared board of Champ de Taupes
+  is seen as won before the next one.
 
 ## Player copy
 
@@ -1297,7 +1331,8 @@ no spoken audio). French tone: tu.
 | tutorial.cardline | Touche deux cartes pour les échanger. Range-les dans l'ordre ! | Tap two cards to swap them. Put them in order! |
 | tutorial.marbles | Touche un tube puis un autre pour déplacer les billes du dessus | Tap a tube, then another, to move the top marbles |
 | tutorial.quicksum | Touche la bonne réponse, le plus vite possible ! | Tap the right answer, as fast as you can! |
-| tutorial.army | Touche à gauche ou à droite pour choisir ta porte | Tap left or right to pick your gate |
+| tutorial.army | Touche à gauche ou à droite pour changer de couloir | Tap left or right to switch lanes |
+| play.boardWon | Gagné ! | Cleared! |
 | tutorial.merge | Touche deux guerriers pareils côte à côte pour les fusionner | Tap two matching warriors side by side to merge them |
 | tutorial.maze | Glisse pour courir jusqu'au prochain croisement. Trouve la sortie ! | Swipe to run to the next crossing. Find the exit! |
 | tutorial.trail | Touche les cases voisines pour tracer ton chemin jusqu'à la sortie | Tap the next squares to draw your way to the exit |
@@ -1308,6 +1343,7 @@ no spoken audio). French tone: tu.
 
 ## Out of scope
 
+- A 2048-like game (wished at the v0.3.0 phone test): planned as the first game of v0.4.0.
 - The 27 other mini-games of the brief (including Coin Miner and the other idle games of world 7), worlds 7 and 10
   content; replays as detailed as the first three games and three upgrades for the v0.2.0 and v0.3.0 games.
 - Shop, cosmetics, themes to buy, avatars, boosters; crystals; weekly challenges; passive / idle production;

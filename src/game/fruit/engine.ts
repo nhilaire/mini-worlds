@@ -23,8 +23,13 @@ export const FRUIT_KINDS = 8;
 export const NEXT_MAX = 3;
 export const WATERMELON = FRUIT_KINDS - 1;
 export const VANISH_POINTS = 2000;
-/** The drop and its merges play in this time; taps are ignored meanwhile (input guard). */
+/** The drop plays in this time; taps are ignored meanwhile (input guard). */
 export const FRUIT_GUARD_MS = 300;
+/** Each merge or vanish step is replayed in this time: flash 280 + shrink 220 + fall 180 ms (AC-91). */
+export const MERGE_STEP_MS = 680;
+
+/** Input guard of a drop or a sweep: the drop, then every merge step of its replay (AC-91). */
+export const guardFor = (steps: number): number => FRUIT_GUARD_MS + MERGE_STEP_MS * steps;
 /** Fruits in a round (PRD amendment after the balance measurement: an endless round for a careful player). */
 export const FRUIT_ROUND = 40;
 /**
@@ -38,10 +43,10 @@ export type Cell = number | null;
 export type FruitEvent =
   | BaseEvent
   | { kind: 'drop'; col: number; row: number; fruit: number }
-  /** `cells` merged into `fruit` at `at`; `points` scored. */
-  | { kind: 'merge'; cells: readonly number[]; at: number; fruit: number; points: number }
-  /** Touching pastèques vanished. */
-  | { kind: 'vanish'; cells: readonly number[]; points: number }
+  /** `cells` merged into `fruit` at `at`; `points` scored. `board`: the grid just before this step (for the replay). */
+  | { kind: 'merge'; cells: readonly number[]; at: number; fruit: number; points: number; board: readonly Cell[] }
+  /** Touching pastèques vanished. `board`: the grid just before this step. */
+  | { kind: 'vanish'; cells: readonly number[]; points: number; board: readonly Cell[] }
   | { kind: 'sweep'; cells: readonly number[] }
   /** A tap during the guard, on a full column, or a sweep refused. */
   | { kind: 'ignored' };
@@ -135,6 +140,7 @@ export function resolve(start: readonly Cell[], toCheck: Iterable<number>): Reso
     const mates = neighbours(cell).filter((n) => cells[n] === fruit);
     if (mates.length === 0) continue;
     const group = [cell, ...mates];
+    const board = cells.slice();
     for (const c of group) {
       cells[c] = null;
       pending.delete(c);
@@ -142,7 +148,7 @@ export function resolve(start: readonly Cell[], toCheck: Iterable<number>): Reso
     let created: number | null = null;
     if (fruit === WATERMELON) {
       points += VANISH_POINTS;
-      events.push({ kind: 'vanish', cells: group, points: VANISH_POINTS }, { kind: 'score', points: VANISH_POINTS });
+      events.push({ kind: 'vanish', cells: group, points: VANISH_POINTS, board }, { kind: 'score', points: VANISH_POINTS });
     } else {
       const at = lowest(group);
       const value = fruit + 1;
@@ -150,7 +156,7 @@ export function resolve(start: readonly Cell[], toCheck: Iterable<number>): Reso
       created = at;
       const gained = mergePoints(value);
       points += gained;
-      events.push({ kind: 'merge', cells: group, at, fruit: value, points: gained }, { kind: 'score', points: gained });
+      events.push({ kind: 'merge', cells: group, at, fruit: value, points: gained, board }, { kind: 'score', points: gained });
     }
     merges += 1;
     const fallen = gravity(cells);
@@ -205,7 +211,7 @@ function drop(state: FruitState, col: number): FruitState {
   }
   const score = state.score + result.points;
   const drawn = drawNext(state.rngState);
-  const next: FruitState = { ...state, cells: result.cells, score, combos, next: drawn.next, rngState: drawn.rngState, busyMs: FRUIT_GUARD_MS, drops: state.drops + 1, fruitsLeft: state.fruitsLeft - 1, events };
+  const next: FruitState = { ...state, cells: result.cells, score, combos, next: drawn.next, rngState: drawn.rngState, busyMs: guardFor(result.merges), drops: state.drops + 1, fruitsLeft: state.fruitsLeft - 1, events };
   // The round ends after the 40th drop and its merges, or when the next fruit fits in no column (all columns full).
   if (next.fruitsLeft <= 0 || boardFull(result.cells)) return { ...next, status: 'over', events: [...events, { kind: 'over', score }] };
   return next;
@@ -225,7 +231,7 @@ function sweep(state: FruitState): FruitState {
     cells: result.cells,
     score,
     sweepsLeft: state.sweepsLeft - 1,
-    busyMs: FRUIT_GUARD_MS,
+    busyMs: guardFor(result.merges),
     events: [{ kind: 'sweep', cells: bottom }, ...result.events],
   };
 }
@@ -275,7 +281,7 @@ export function playCasualFruit(seed: number, upgrades: UpgradeLevels = {}, maxD
   let state = createFruit(seed, upgrades);
   for (let i = 0; i < maxDrops && state.status === 'playing'; i++) {
     state = reduceFruit(state, { type: 'drop', col: casualFruitMove(state) });
-    state = reduceFruit(state, { type: 'tick', dt: FRUIT_GUARD_MS });
+    state = reduceFruit(state, { type: 'tick', dt: state.busyMs });
   }
   return state;
 }

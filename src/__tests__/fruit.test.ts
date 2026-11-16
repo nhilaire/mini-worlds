@@ -55,7 +55,7 @@ describe('Fruits en Fusion engine (AC-76)', () => {
     expect(at(three, 0, 7)).toBe(1);
     expect(count(three)).toBe(1);
     expect(three.score).toBe(20);
-    expect(three.events).toContainEqual({ kind: 'merge', cells: [cellOf(1, 7), cellOf(0, 7), cellOf(2, 7)], at: cellOf(0, 7), fruit: 1, points: 20 });
+    expect(three.events).toContainEqual(expect.objectContaining({ kind: 'merge', cells: [cellOf(1, 7), cellOf(0, 7), cellOf(2, 7)], at: cellOf(0, 7), fruit: 1, points: 20 }));
     // Stacked: the lower cell keeps the new fruit.
     const stacked = drop(board({ '0,7': 0 }, 0), 0);
     expect(at(stacked, 0, 7)).toBe(1);
@@ -149,7 +149,10 @@ describe('Fruits en Fusion engine (AC-76)', () => {
     expect(FRUIT_ROUND).toBe(40);
     let s = createFruit(31);
     expect(s.fruitsLeft).toBe(40);
-    for (let i = 0; i < 39; i++) s = reduceFruit(drop(s, casualFruitMove(s)), { type: 'tick', dt: FRUIT_GUARD_MS });
+    for (let i = 0; i < 39; i++) {
+      s = drop(s, casualFruitMove(s));
+      s = reduceFruit(s, { type: 'tick', dt: s.busyMs });
+    }
     expect(s.status).toBe('playing');
     expect(s.fruitsLeft).toBe(1);
     // The 40th drop merges on a matching top, scores, then ends the round.
@@ -175,7 +178,7 @@ describe('Fruits en Fusion engine (AC-76)', () => {
     expect(s1.score).toBe(20); // the merge only, nothing for the cleared row
     expect(s1.events[0]).toEqual({ kind: 'sweep', cells: [cellOf(0, 7), cellOf(1, 7), cellOf(3, 7)] });
     // No use left: refused.
-    const s2 = reduceFruit(reduceFruit(s1, { type: 'tick', dt: FRUIT_GUARD_MS }), { type: 'sweep' });
+    const s2 = reduceFruit(reduceFruit(s1, { type: 'tick', dt: s1.busyMs }), { type: 'sweep' });
     expect(s2.cells).toBe(s1.cells);
     expect(s2.events).toEqual([{ kind: 'ignored' }]);
   });
@@ -209,7 +212,8 @@ describe('Fruits en Fusion engine (AC-76)', () => {
       for (let i = 0; i < 10; i++) {
         expect(s.next).toBeGreaterThanOrEqual(0);
         expect(s.next).toBeLessThanOrEqual(NEXT_MAX);
-        s = reduceFruit(drop(s, i % FRUIT_COLS), { type: 'tick', dt: FRUIT_GUARD_MS });
+        s = drop(s, i % FRUIT_COLS);
+        s = reduceFruit(s, { type: 'tick', dt: s.busyMs });
       }
     }
     expect(NEXT_MAX).toBe(3);

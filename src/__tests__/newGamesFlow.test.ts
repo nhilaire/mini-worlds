@@ -41,3 +41,17 @@ describe('v0.3.0 smoke flow (AC-87)', () => {
     expect(flow.match(/- runFlow:\n\s+file: helpers\/new-game\.yaml\n\s+env:/g)).toHaveLength(10);
   });
 });
+// AC-109: same smoke flow for the twelve v0.4.0 games, in world display order.
+describe('v0.4.0 smoke flow (AC-109)', () => {
+  const flow = fs.readFileSync(path.join(__dirname, '..', '..', '.maestro', 'new-games-v040.yaml'), 'utf8');
+  const V040_GAMES: GameId[] = ['dash', 'tiles', 'conquest', 'defense', 'hands', 'patience', 'darts', 'shot', 'pattern', 'chain', 'laser', 'twins'];
+
+  it('opens the twelve v0.4.0 games from their worlds in display order, through the /unlocked link', () => {
+    const pairs = [...flow.matchAll(/WORLD: (\w+)\n\s+GAME: (\w+)/g)].map((m) => [m[1], m[2]]);
+    const expected = WORLDS.flatMap((w) => w.games.filter((g) => V040_GAMES.includes(g)).map((g) => [w.id, g]));
+    expect(pairs).toEqual(expected);
+    expect(pairs).toHaveLength(12);
+    expect(flow).toMatch(/openLink: miniworlds:\/\/seed\/\d+\/unlocked/);
+    expect(flow.match(/- runFlow:\n\s+file: helpers\/new-game\.yaml\n\s+env:/g)).toHaveLength(12);
+  });
+});

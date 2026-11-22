@@ -16,19 +16,20 @@ function withStars(save: Save, stars: Partial<Record<GameId, number>>, level = 1
 }
 
 describe('v0.2.0 catalogue (AC-55)', () => {
-  it('13 games sit in their worlds in unlock order', () => {
+  it('the games sit in their worlds in unlock order (v0.4.0 list)', () => {
     const byWorld = Object.fromEntries(WORLDS.filter((w) => w.games.length > 0).map((w) => [w.id, w.games]));
     expect(byWorld).toEqual({
-      arcade: ['blocks', 'tower', 'hop', 'fruit'],
-      puzzle: ['garden', 'lights', 'pipes', 'slide'],
-      strategy: ['army', 'merge'],
-      cards: ['socks', 'twentyone', 'cardline'],
+      arcade: ['blocks', 'tower', 'hop', 'fruit', 'dash'],
+      puzzle: ['garden', 'lights', 'pipes', 'slide', 'tiles'],
+      strategy: ['army', 'merge', 'conquest', 'defense'],
+      cards: ['socks', 'twentyone', 'cardline', 'hands', 'patience'],
       bubbles: ['bubbles', 'flood', 'marbles'],
-      skill: ['candles'],
+      skill: ['candles', 'darts', 'shot'],
       exploration: ['maze', 'trail', 'treasure'],
-      memory: ['parrot', 'moles', 'quicksum'],
+      memory: ['parrot', 'moles', 'quicksum', 'pattern', 'chain'],
+      challenges: ['laser', 'twins'],
     });
-    expect(GAMES).toHaveLength(23); // v0.3.0
+    expect(GAMES).toHaveLength(35); // v0.4.0
     for (const game of GAMES) expect(worldById(game.world).games).toContain(game.id);
   });
 
@@ -55,7 +56,7 @@ describe('v0.2.0 catalogue (AC-55)', () => {
     expect(worldById('cards')).toMatchObject({ comingSoon: false, conditions: [{ kind: 'starsTotal', n: 6 }, { kind: 'level', n: 4 }] });
     expect(worldById('skill')).toMatchObject({ comingSoon: false, conditions: [{ kind: 'starsTotal', n: 9 }, { kind: 'level', n: 5 }] });
     expect(worldById('memory')).toMatchObject({ comingSoon: false, conditions: [{ kind: 'starsTotal', n: 12 }, { kind: 'level', n: 6 }] });
-    expect(WORLDS.filter((w) => w.comingSoon).map((w) => w.id)).toEqual(['building', 'challenges']); // v0.3.0 opened Stratégie and Exploration
+    expect(WORLDS.filter((w) => w.comingSoon).map((w) => w.id)).toEqual(['building']); // v0.3.0 opened Stratégie and Exploration, v0.4.0 Défis
     // 6 stars at level 4 opens Cartes; 5 stars or level 3 does not.
     expect(checkUnlocks(withStars(defaultSave(), { blocks: 3, garden: 3 }, 4)).unlocked).toContain('cards');
     expect(checkUnlocks(withStars(defaultSave(), { blocks: 3, garden: 2 }, 4)).unlocked).not.toContain('cards');
@@ -138,7 +139,7 @@ describe('challenges and achievements (AC-57)', () => {
     expect(ACHIEVEMENTS.find((a) => a.id === 'explorer')).toMatchObject({ kind: 'gamesPlayed', target: 3 });
     expect(ACHIEVEMENTS.find((a) => a.id === 'globetrotter')).toMatchObject({ kind: 'gamesPlayed', target: 10, coins: 200 });
     const allStars = ACHIEVEMENTS.find((a) => a.id === 'all_stars')!;
-    expect(allStars.target).toBe(69);
+    expect(allStars.target).toBe(105);
     const played = defaultSave();
     for (const id of NEW_GAMES) played.games[id] = { ...played.games[id], rounds: 1, stars: 3 };
     expect(achievementValue(played, ACHIEVEMENTS.find((a) => a.id === 'globetrotter')!)).toBe(10);
@@ -166,6 +167,6 @@ describe('save compatibility and test link (AC-58)', () => {
 
   it('the /unlocked session flag opens every game of every open world', () => {
     const save = { ...defaultSave(), unlockedWorlds: WORLDS.filter((w) => !w.comingSoon).map((w) => w.id), sessionAllGames: true };
-    expect(playableGames(save)).toHaveLength(23);
+    expect(playableGames(save)).toHaveLength(35);
   });
 });

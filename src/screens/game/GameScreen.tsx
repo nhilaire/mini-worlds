@@ -24,6 +24,18 @@ import { MergeGame } from './MergeGame';
 import { MazeGame } from './MazeGame';
 import { TrailGame } from './TrailGame';
 import { TreasureGame } from './TreasureGame';
+import { DashGame } from './DashGame';
+import { TilesGame } from './TilesGame';
+import { ConquestGame } from './ConquestGame';
+import { DefenseGame } from './DefenseGame';
+import { HandsGame } from './HandsGame';
+import { PatienceGame } from './PatienceGame';
+import { DartsGame } from './DartsGame';
+import { ShotGame } from './ShotGame';
+import { PatternGame } from './PatternGame';
+import { ChainGame } from './ChainGame';
+import { LaserGame } from './LaserGame';
+import { TwinsGame } from './TwinsGame';
 
 export function GameScreen({ game, seed, onFinish }: { game: GameId; seed: number; onFinish: OnFinish }) {
   switch (game) {
@@ -73,5 +85,29 @@ export function GameScreen({ game, seed, onFinish }: { game: GameId; seed: numbe
       return <TrailGame key={seed} seed={seed} onFinish={onFinish} />;
     case 'treasure':
       return <TreasureGame key={seed} seed={seed} onFinish={onFinish} />;
+    case 'dash':
+      return <DashGame key={seed} seed={seed} onFinish={onFinish} />;
+    case 'tiles':
+      return <TilesGame key={seed} seed={seed} onFinish={onFinish} />;
+    case 'conquest':
+      return <ConquestGame key={seed} seed={seed} onFinish={onFinish} />;
+    case 'defense':
+      return <DefenseGame key={seed} seed={seed} onFinish={onFinish} />;
+    case 'hands':
+      return <HandsGame key={seed} seed={seed} onFinish={onFinish} />;
+    case 'patience':
+      return <PatienceGame key={seed} seed={seed} onFinish={onFinish} />;
+    case 'darts':
+      return <DartsGame key={seed} seed={seed} onFinish={onFinish} />;
+    case 'shot':
+      return <ShotGame key={seed} seed={seed} onFinish={onFinish} />;
+    case 'pattern':
+      return <PatternGame key={seed} seed={seed} onFinish={onFinish} />;
+    case 'chain':
+      return <ChainGame key={seed} seed={seed} onFinish={onFinish} />;
+    case 'laser':
+      return <LaserGame key={seed} seed={seed} onFinish={onFinish} />;
+    case 'twins':
+      return <TwinsGame key={seed} seed={seed} onFinish={onFinish} />;
   }
 }

@@ -1,4 +1,4 @@
-// Content catalogue of v0.3.0 (docs/PRD.md "Rules and scoring"): worlds, games, stars, upgrades, challenges,
+// Content catalogue of v0.4.0 (docs/PRD.md "Rules and scoring"): worlds, games, stars, upgrades, challenges,
 // achievements, daily rewards. Pure data and tiny pure helpers; no React, no storage.
 
 export type GameId =
@@ -24,7 +24,19 @@ export type GameId =
   | 'merge'
   | 'maze'
   | 'trail'
-  | 'treasure';
+  | 'treasure'
+  | 'dash'
+  | 'tiles'
+  | 'conquest'
+  | 'defense'
+  | 'hands'
+  | 'patience'
+  | 'darts'
+  | 'shot'
+  | 'pattern'
+  | 'chain'
+  | 'laser'
+  | 'twins';
 export type WorldId =
   | 'arcade'
   | 'puzzle'
@@ -48,12 +60,12 @@ export type World = {
 };
 
 export const WORLDS: readonly World[] = [
-  { id: 'arcade', index: 1, games: ['blocks', 'tower', 'hop', 'fruit'], conditions: [], comingSoon: false },
-  { id: 'puzzle', index: 2, games: ['garden', 'lights', 'pipes', 'slide'], conditions: [{ kind: 'starsIn', world: 'arcade', n: 2 }], comingSoon: false },
+  { id: 'arcade', index: 1, games: ['blocks', 'tower', 'hop', 'fruit', 'dash'], conditions: [], comingSoon: false },
+  { id: 'puzzle', index: 2, games: ['garden', 'lights', 'pipes', 'slide', 'tiles'], conditions: [{ kind: 'starsIn', world: 'arcade', n: 2 }], comingSoon: false },
   {
     id: 'strategy',
     index: 3,
-    games: ['army', 'merge'],
+    games: ['army', 'merge', 'conquest', 'defense'],
     conditions: [
       { kind: 'starsTotal', n: 15 },
       { kind: 'level', n: 7 },
@@ -63,7 +75,7 @@ export const WORLDS: readonly World[] = [
   {
     id: 'cards',
     index: 4,
-    games: ['socks', 'twentyone', 'cardline'],
+    games: ['socks', 'twentyone', 'cardline', 'hands', 'patience'],
     conditions: [
       { kind: 'starsTotal', n: 6 },
       { kind: 'level', n: 4 },
@@ -83,7 +95,7 @@ export const WORLDS: readonly World[] = [
   {
     id: 'skill',
     index: 6,
-    games: ['candles'],
+    games: ['candles', 'darts', 'shot'],
     conditions: [
       { kind: 'starsTotal', n: 9 },
       { kind: 'level', n: 5 },
@@ -104,14 +116,23 @@ export const WORLDS: readonly World[] = [
   {
     id: 'memory',
     index: 9,
-    games: ['parrot', 'moles', 'quicksum'],
+    games: ['parrot', 'moles', 'quicksum', 'pattern', 'chain'],
     conditions: [
       { kind: 'starsTotal', n: 12 },
       { kind: 'level', n: 6 },
     ],
     comingSoon: false,
   },
-  { id: 'challenges', index: 10, games: [], conditions: [{ kind: 'level', n: 25 }], comingSoon: true },
+  {
+    id: 'challenges',
+    index: 10,
+    games: ['laser', 'twins'],
+    conditions: [
+      { kind: 'starsTotal', n: 30 },
+      { kind: 'level', n: 10 },
+    ],
+    comingSoon: false,
+  },
 ];
 
 export const SLOTS_PER_WORLD = 5;
@@ -138,7 +159,16 @@ export type UpgradeId =
   | 'extra_time'
   | 'recruits'
   | 'veteran'
-  | 'detector';
+  | 'detector'
+  | 'guard'
+  | 'undo'
+  | 'reinforce'
+  | 'arsenal'
+  | 'redraw'
+  | 'wild'
+  | 'steady'
+  | 'sight'
+  | 'shuffle';
 
 export type Upgrade = { id: UpgradeId; maxLevel: number };
 
@@ -318,6 +348,90 @@ export const GAMES: readonly Game[] = [
     upgrades: [{ id: 'detector', maxLevel: UPGRADE_MAX_LEVEL }, coinsUpgrade],
     realTime: false,
   },
+  {
+    id: 'dash',
+    world: 'arcade',
+    stars: [150, 300, 400],
+    upgrades: [{ id: 'guard', maxLevel: UPGRADE_MAX_LEVEL }, coinsUpgrade],
+    realTime: true,
+  },
+  {
+    id: 'tiles',
+    world: 'puzzle',
+    stars: [3700, 4650, 8400],
+    upgrades: [{ id: 'undo', maxLevel: UPGRADE_MAX_LEVEL }, coinsUpgrade],
+    realTime: false,
+  },
+  {
+    id: 'conquest',
+    world: 'strategy',
+    stars: [500, 1100, 1200],
+    upgrades: [{ id: 'reinforce', maxLevel: UPGRADE_MAX_LEVEL }, coinsUpgrade],
+    realTime: false,
+  },
+  {
+    id: 'defense',
+    world: 'strategy',
+    stars: [950, 1250, 1400],
+    upgrades: [{ id: 'arsenal', maxLevel: UPGRADE_MAX_LEVEL }, coinsUpgrade],
+    realTime: true,
+  },
+  {
+    id: 'hands',
+    world: 'cards',
+    stars: [150, 250, 350],
+    upgrades: [{ id: 'redraw', maxLevel: UPGRADE_MAX_LEVEL }, coinsUpgrade],
+    realTime: false,
+  },
+  {
+    id: 'patience',
+    world: 'cards',
+    stars: [250, 450, 650],
+    upgrades: [{ id: 'wild', maxLevel: UPGRADE_MAX_LEVEL }, coinsUpgrade],
+    realTime: false,
+  },
+  {
+    id: 'darts',
+    world: 'skill',
+    stars: [350, 550, 800],
+    upgrades: [{ id: 'steady', maxLevel: UPGRADE_MAX_LEVEL }, coinsUpgrade],
+    realTime: true,
+  },
+  {
+    id: 'shot',
+    world: 'skill',
+    stars: [500, 650, 800],
+    upgrades: [{ id: 'sight', maxLevel: UPGRADE_MAX_LEVEL }, coinsUpgrade],
+    realTime: false,
+  },
+  {
+    id: 'pattern',
+    world: 'memory',
+    stars: [450, 600, 1050],
+    upgrades: [{ id: 'extra_time', maxLevel: UPGRADE_MAX_LEVEL }, coinsUpgrade],
+    realTime: true,
+  },
+  {
+    id: 'chain',
+    world: 'memory',
+    stars: [1350, 1600, 2500],
+    upgrades: [{ id: 'shuffle', maxLevel: UPGRADE_MAX_LEVEL }, coinsUpgrade],
+    realTime: false,
+  },
+  {
+    id: 'laser',
+    world: 'challenges',
+    stars: [1000, 1350, 1450],
+    upgrades: [{ id: 'hint', maxLevel: UPGRADE_MAX_LEVEL }, coinsUpgrade],
+    realTime: false,
+  },
+  {
+    id: 'twins',
+    world: 'challenges',
+    stars: [700, 1150, 1400],
+    upgrades: [{ id: 'hint', maxLevel: UPGRADE_MAX_LEVEL }, coinsUpgrade],
+    realTime: false,
+  },
 ];
 
 export const GAME_IDS: readonly GameId[] = GAMES.map((g) => g.id);
@@ -394,6 +508,18 @@ export const CHALLENGES: readonly ChallengeDef[] = [
   { id: 'score_maze', kind: 'score', target: 300, game: 'maze', reward: { coins: 50 }, minGames: 1 },
   { id: 'score_trail', kind: 'score', target: 600, game: 'trail', reward: { coins: 50 }, minGames: 1 },
   { id: 'score_treasure', kind: 'score', target: 400, game: 'treasure', reward: { coins: 50 }, minGames: 1 },
+  { id: 'score_dash', kind: 'score', target: 150, game: 'dash', reward: { coins: 50 }, minGames: 1 },
+  { id: 'score_tiles', kind: 'score', target: 3700, game: 'tiles', reward: { coins: 50 }, minGames: 1 },
+  { id: 'score_conquest', kind: 'score', target: 500, game: 'conquest', reward: { coins: 50 }, minGames: 1 },
+  { id: 'score_defense', kind: 'score', target: 950, game: 'defense', reward: { coins: 50 }, minGames: 1 },
+  { id: 'score_hands', kind: 'score', target: 150, game: 'hands', reward: { coins: 50 }, minGames: 1 },
+  { id: 'score_patience', kind: 'score', target: 250, game: 'patience', reward: { coins: 50 }, minGames: 1 },
+  { id: 'score_darts', kind: 'score', target: 350, game: 'darts', reward: { coins: 50 }, minGames: 1 },
+  { id: 'score_shot', kind: 'score', target: 500, game: 'shot', reward: { coins: 50 }, minGames: 1 },
+  { id: 'score_pattern', kind: 'score', target: 450, game: 'pattern', reward: { coins: 50 }, minGames: 1 },
+  { id: 'score_chain', kind: 'score', target: 1350, game: 'chain', reward: { coins: 50 }, minGames: 1 },
+  { id: 'score_laser', kind: 'score', target: 1000, game: 'laser', reward: { coins: 50 }, minGames: 1 },
+  { id: 'score_twins', kind: 'score', target: 700, game: 'twins', reward: { coins: 50 }, minGames: 1 },
 ];
 
 export const CHALLENGES_PER_DAY = 3;

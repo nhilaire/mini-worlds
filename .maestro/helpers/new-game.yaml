@@ -8,6 +8,12 @@ name: Helper - from the Games tab, open ${GAME} in ${WORLD}, capture its first s
     timeout: 30000
 - tapOn:
     id: "world-${WORLD}"
+# A world of five games may hold its last cards below the fold.
+- scrollUntilVisible:
+    element:
+      id: "game-${GAME}"
+    direction: DOWN
+    timeout: 15000
 - tapOn:
     id: "game-${GAME}"
 - assertVisible:

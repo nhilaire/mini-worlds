@@ -281,7 +281,7 @@ The v0.2.0, v0.3.0 and v0.4.0 games have two upgrades each: the one above and «
 | score_blocks | Marquer 1000 points à Pluie de Blocs | one round ≥ 1000 | 50 coins |
 | score_garden | Marquer 1500 points à Potager Fou | one round ≥ 1500 | 50 coins |
 | score_bubbles | Marquer 800 points à Bulles en Folie | one round ≥ 800 | 50 coins |
-| score_<game> | Marquer <1-star threshold> points à <game>, for each of the 20 v0.2.0 and v0.3.0 games | one round ≥ the 1-star threshold | 50 coins |
+| score_<game> | Marquer <1-star threshold> points à <game>, for each of the 32 v0.2.0, v0.3.0 and v0.4.0 games | one round ≥ the 1-star threshold | 50 coins |
 
 ### Achievements
 
@@ -756,7 +756,7 @@ Game ids: dash, tiles, conquest, defense, hands, patience, darts, shot, pattern,
   start of the next approach.
 - Approach time of gate n (1-based): max(900, 2 200 − 30 × (n − 1)) ms. The approach does not run while the tutorial
   bubble or the pause is shown. A round ends at the 3rd life lost or after gate 60.
-- « Bouclier » (id shield): 1 / 2 / 3 wrong doors per round cost no life (the streak is still reset).
+- « Bouclier » (id guard): 1 / 2 / 3 wrong doors per round cost no life (the streak is still reset).
 - Combo: every 5th door in a row. HUD: lives, gates passed, the runner's colour.
 - Tutorial bubble: « Touche à gauche, au milieu ou à droite : passe la porte de ta couleur ! »
 
@@ -858,7 +858,7 @@ Game ids: dash, tiles, conquest, defense, hands, patience, darts, shot, pattern,
 - Shot score from the distance between the landing point and the centre of the target: 2 m or less 100, 5 m or less
   60, 10 m or less 30, else 0. Up to 3 shots per target: the target is over at the first shot that scores (+50 if
   it is the 1st shot, +20 if it is the 2nd) or after the 3rd shot. The last landing point stays marked. 6 targets.
-- « Viseur » (id aim): the first 25 / 40 / 55 % of the trajectory is drawn before the shot.
+- « Viseur » (id sight): the first 25 / 40 / 55 % of the trajectory is drawn before the shot.
 - Input guard: the flight plays in 700 ms; taps are ignored meanwhile.
 - Combo: a 100-point shot. HUD: target k / 6, shots left, wind.
 - Tutorial bubble: « Règle l'angle et la puissance, puis tire au plus près de la cible ! »
@@ -893,7 +893,9 @@ Game ids: dash, tiles, conquest, defense, hands, patience, darts, shot, pattern,
   cells, each leaning « / » or « \ »; the beam turns on a mirror and goes straight otherwise.
 - Tap a mirror: it flips to the other lean. The puzzle is solved when the beam reaches the target.
 - Generation: a seeded beam path with 2 + k turns (k = puzzle number 1 to 5) gets its mirrors, plus k decoy mirrors
-  off the path; then each mirror gets a seeded lean such that the puzzle is not solved. Par = the minimum number of
+  off the path; then the mirrors get seeded leans: among at most 20 seeded draws the unsolved one with the highest
+  par is kept, stopping as soon as par ≥ min(k + 1, 4) (amended while building: plain random leans gave a
+  one-flip puzzle a third of the time). Par = the minimum number of
   flips that solve it (search over the mirror leans). Bounded attempts, then a fixed fallback puzzle.
 - Puzzle score: max(50, 300 − 30 × (flips beyond par)); a puzzle still unsolved after par + 10 flips is failed (0).
   A solved puzzle stays 800 ms with the beam on the target. A round is 5 puzzles.
@@ -911,15 +913,48 @@ Game ids: dash, tiles, conquest, defense, hands, patience, darts, shot, pattern,
   breadth-first and the exits are a pair of different cells whose distance from the start (par, in moves) is in
   [4 + k, 7 + 2k], the furthest such pair in seeded order. Bounded attempts, then a fixed fallback puzzle.
 - Puzzle score: max(50, 300 − 15 × (moves beyond par)); a puzzle still unsolved after par + 25 moves is failed (0).
-  A round is 5 puzzles.
+  A move after which the exits can no longer be reached (e.g. both characters on one cell: they never part again)
+  fails the puzzle at once (amended while building: the player had no way to know). A command that moves neither
+  character changes nothing and is not counted. A solved or failed puzzle stays 800 ms. A round is 5 puzzles.
 - « Indice » (id hint): 1 / 2 / 3 hints per round; a hint shows the direction of the next move of a shortest
   solution from the current positions.
 - Input guard: a move animates in 120 ms; swipes and taps are ignored meanwhile.
 - Combo: a puzzle solved at par. HUD: puzzle k / 5, moves.
 - Tutorial bubble: « Les deux bougent ensemble : amène chacun sur sa sortie ! »
 
-Upgrades of v0.4.0: Bouclier (shield), Annuler (undo), Renforts (reinforce), Arsenal (arsenal), Seconde donne
-(redraw), Joker (wild), Main sûre (steady), Viseur (aim), Sablier (extra_time: +5 s for Suite Logique), Mélange
+Stars of v0.4.0 (set from the casual bots over seeds 1 to 50; where the formula gave a 3rd star equal to the perfect
+round or far above every simulated score, it was lowered by hand):
+
+| Game | Bot p25 / median / p90 | Stars |
+|---|---|---|
+| Couleur Éclair | 160 / 210 / 310 | 150 / 300 / 400 |
+| Glisse-Fusion | 3 720 / 4 190 / 4 660 | 3 700 / 4 650 / 8 400 |
+| Bataille de Nombres | 500 / 590 / 1 090 | 500 / 1 100 / 1 200 |
+| Mini Défense | 950 / 1 270 / 1 410 | 950 / 1 250 / 1 400 |
+| Mains de Cartes | 130 / 180 / 290 | 150 / 250 / 350 |
+| Réussite Express | 270 / 330 / 445 | 250 / 450 / 650 |
+| Lancer de Cible | 350 / 390 / 540 | 350 / 550 / 800 |
+| Tir Parfait | 500 / 550 / 670 | 500 / 650 / 800 |
+| Suite Logique | 480 / 520 / 610 | 450 / 600 / 1 050 |
+| Chaîne de Nombres | 1 370 / 1 440 / 1 580 | 1 350 / 1 600 / 2 500 |
+| Miroirs et Laser | 1 020 / 1 165 / 1 350 | 1 000 / 1 350 / 1 450 |
+| Duo Synchro | 690 / 862 / 1 140 | 700 / 1 150 / 1 400 |
+
+Readings fixed while building (each is in the header of its engine): Couleur Éclair starts in the middle lane with
+a seeded colour; Glisse-Fusion: a diamant merges with nothing and « Annuler » does not rewind the seeded draw;
+Bataille de Nombres: « Renforts » applies to each of the 3 battles and a finished battle stays 900 ms; Mini Défense:
+6 × 9 grid, slots covering 4, 6, 4, 6, 5 and 2 path cells; Mains de Cartes: a hand scores at the end of its exchange
+and stays 900 ms, the next one is dealt by itself; Réussite Express: an armed joker is only spent on a card that is
+not a neighbour, a deal is not stuck while a joker is left; Lancer de Cible: a bounced dart is not consumed, exactly
+12° sticks; Tir Parfait: whole metres, wind −2, −1, +1 or +2 from the 3rd target, angle and power kept from one
+target to the next (start 45° and 5); Suite Logique: a number question is kept only when no other simple rule fits
+its 4 terms; Chaîne de Nombres: a tap that cannot extend the chain cancels it.
+
+Balance notes for the phone test (not blocking): Mini Défense is decided in waves 1 and 2 (afterwards gold outruns
+the waves); a random player of Glisse-Fusion comes close to 1 star; level 8 of Lancer de Cible forgives very little.
+
+Upgrades of v0.4.0: Bouclier (guard), Annuler (undo), Renforts (reinforce), Arsenal (arsenal), Seconde donne
+(redraw), Joker (wild), Main sûre (steady), Viseur (sight), Sablier (extra_time: +5 s for Suite Logique), Mélange
 (shuffle), Indice (hint, shared: Miroirs et Laser, Duo Synchro).
 
 ### Tutorial (guided first round)
@@ -1633,8 +1668,8 @@ no spoken audio). French tone: tu.
 | tutorial.chain | Relie des nombres voisins identiques, puis retouche le dernier : ils fusionnent ! | Link equal neighbouring numbers, then tap the last one again: they merge! |
 | tutorial.laser | Touche les miroirs pour guider le rayon jusqu'à la cible | Tap the mirrors to guide the beam to the target |
 | tutorial.twins | Les deux bougent ensemble : amène chacun sur sa sortie ! | Both move together: bring each one to its exit! |
-| upgrade.shield / undo / reinforce / arsenal / redraw / wild / steady / aim / shuffle (name / desc) | Bouclier / {n} erreur(s) sans perdre de vie · Annuler / {n} retour(s) en arrière par partie · Renforts / +{n} unités au départ · Arsenal / +{n} pièces d'or au départ · Seconde donne / {n} second(s) échange(s) par partie · Joker / {n} carte(s) libre(s) par partie · Main sûre / fléchettes plus serrées · Viseur / début de la trajectoire affiché · Mélange / {n} mélange(s) par partie | Shield / {n} mistake(s) without losing a life · Undo / {n} step(s) back per round · Reinforcements / +{n} starting units · Arsenal / +{n} starting gold · Second deal / {n} second swap(s) per round · Joker / {n} free card(s) per round · Steady hand / darts may land closer · Sight / start of the trajectory shown · Shuffle / {n} shuffle(s) per round |
-| hud / play (v0.4.0) | Vies / Portes / Coups / Bataille / Tours / Or / Vague / Main / Donne / Pioche / Niveau / Fléchettes / Cible / Tirs / Vent / Chaînes / Retours ; Passer / Lancer la vague / Échanger / Garder / Tirer / Angle / Puissance / Annuler ({n}) / Joker ({n}) / Mélange ({n}) ; Paire / Deux paires / Brelan / Suite / Couleur / Full / Carré / Quinte flush / Rien | Lives / Gates / Moves / Battle / Turns / Gold / Wave / Hand / Deal / Stock / Level / Darts / Target / Shots / Wind / Chains / Flips ; Pass / Start the wave / Swap / Keep / Shoot / Angle / Power / Undo ({n}) / Joker ({n}) / Shuffle ({n}) ; Pair / Two pairs / Three of a kind / Straight / Flush / Full house / Four of a kind / Straight flush / Nothing |
+| upgrade.guard / undo / reinforce / arsenal / redraw / wild / steady / sight / shuffle (name / desc) | Bouclier / {n} erreur(s) sans perdre de vie · Annuler / {n} retour(s) en arrière par partie · Renforts / +{n} unités au départ · Arsenal / +{n} pièces d'or au départ · Seconde donne / {n} second(s) échange(s) par partie · Joker / {n} carte(s) libre(s) par partie · Main sûre / fléchettes plus serrées · Viseur / début de la trajectoire affiché · Mélange / {n} mélange(s) par partie | Shield / {n} mistake(s) without losing a life · Undo / {n} step(s) back per round · Reinforcements / +{n} starting units · Arsenal / +{n} starting gold · Second deal / {n} second swap(s) per round · Joker / {n} free card(s) per round · Steady hand / darts may land closer · Sight / start of the trajectory shown · Shuffle / {n} shuffle(s) per round |
+| hud / play (v0.4.0) | Vies / Portes / Coups / Bataille / Tours / Or / Vague / Main / Donne / Pioche / Niveau / Fléchettes / Cible / Tirs / Vent / Chaînes / Bascules ; Passer / Lancer la vague / Échanger / Garder / Tirer / Angle / Puissance / Annuler ({n}) / Joker ({n}) / Mélange ({n}) ; Paire / Deux paires / Brelan / Suite / Couleur / Full / Carré / Quinte flush / Rien | Lives / Gates / Moves / Battle / Turns / Gold / Wave / Hand / Deal / Stock / Level / Darts / Target / Shots / Wind / Chains / Flips ; Pass / Start the wave / Swap / Keep / Shoot / Angle / Power / Undo ({n}) / Joker ({n}) / Shuffle ({n}) ; Pair / Two pairs / Three of a kind / Straight / Flush / Full house / Four of a kind / Straight flush / Nothing |
 
 ## Out of scope
 

@@ -64,7 +64,9 @@ describe('meta-game screens', () => {
     expect(screen.getByTestId('game-tower-condition')).toHaveTextContent('2 étoiles dans Arcade');
     expect(screen.getByTestId('game-hop-condition')).toHaveTextContent('4 étoiles dans Arcade');
     expect(screen.getByTestId('game-fruit-condition')).toHaveTextContent('6 étoiles dans Arcade');
-    expect(screen.getByTestId('slot-soon-4')).toBeTruthy();
+    // v0.4.0: Arcade is full (5 games), no coming-soon slot is left.
+    expect(screen.getByTestId('game-dash-condition')).toHaveTextContent('8 étoiles dans Arcade');
+    expect(screen.queryByTestId('slot-soon-4')).toBeNull();
 
     await fireEvent.press(screen.getByTestId('game-blocks'));
     expect(await screen.findByTestId('game-sheet-screen')).toBeTruthy();
@@ -139,8 +141,8 @@ describe('meta-game screens', () => {
     await render(<App />);
     await fireEvent.press(await screen.findByTestId('tab-profile'));
     expect(await screen.findByTestId('profile-rounds')).toHaveTextContent(/1/);
-    expect(screen.getByTestId('profile-games')).toHaveTextContent(/1 \/ 23/);
-    expect(screen.getByTestId('profile-stars')).toHaveTextContent(/1 \/ 69/);
+    expect(screen.getByTestId('profile-games')).toHaveTextContent(/1 \/ 35/);
+    expect(screen.getByTestId('profile-stars')).toHaveTextContent(/1 \/ 105/);
     expect(screen.getByTestId('achievement-first_round-unlocked')).toBeTruthy();
     expect(screen.getByTestId('achievement-first_star-unlocked')).toBeTruthy();
     expect(screen.getByTestId('achievement-rounds10')).toBeTruthy();

@@ -51,8 +51,8 @@ describe('v0.3.0 catalogue (AC-75)', () => {
     expect(checkUnlocks(withStars(15, 6)).unlocked).not.toContain('strategy');
     expect(checkUnlocks(withStars(18, 8)).unlocked).toContain('exploration');
     expect(checkUnlocks(withStars(18, 7)).unlocked).not.toContain('exploration');
-    expect(GAMES).toHaveLength(23);
-    expect(GAMES.length * 3).toBe(69);
+    // 23 games and 69 stars in v0.3.0; v0.4.0 added twelve (catalogueV040.test.ts).
+    expect(GAMES.length).toBeGreaterThanOrEqual(23);
   });
 });
 

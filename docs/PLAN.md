@@ -136,7 +136,7 @@ v0.4.0 (twelve more games, world Défis opens)
 - [x] T-91 Miroirs et Laser engine + casual bot + stars (AC-106, AC-108) - proof: unit
 - [x] T-92 Duo Synchro engine + casual bot + stars (AC-107, AC-108) - proof: unit
 - [x] T-93 Screens of the 12 v0.4.0 games: tutorial bubble, HUD, input guards, Pause → Quitter (AC-108) - proof: unit
-- [ ] T-94 Maestro smoke flow of the twelve v0.4.0 games through /unlocked (AC-109, AC-110) - proof: e2e + device (AC-110)
+- [x] T-94 Maestro smoke flow of the twelve v0.4.0 games through /unlocked (AC-109, AC-110) - proof: e2e + device (AC-110)
 
 ## Notes
 

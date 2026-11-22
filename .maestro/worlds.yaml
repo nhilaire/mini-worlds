@@ -24,6 +24,15 @@ tags:
     text: "Verrouillé"
 - assertVisible: "2 étoiles dans Arcade"
 - takeScreenshot: worlds-01-map
+# Construction is the only world still to come; Défis opened in v0.4.0 and is locked on a new save.
+- scrollUntilVisible:
+    element:
+      id: "world-building-state"
+    direction: DOWN
+    timeout: 30000
+- assertVisible:
+    id: "world-building-state"
+    text: "Bientôt"
 - scrollUntilVisible:
     element:
       id: "world-challenges-state"
@@ -31,7 +40,7 @@ tags:
     timeout: 30000
 - assertVisible:
     id: "world-challenges-state"
-    text: "Bientôt"
+    text: "Verrouillé"
 - takeScreenshot: worlds-02-map-bottom
 - scrollUntilVisible:
     element:
@@ -59,9 +68,18 @@ tags:
     id: "game-blocks"
 - assertVisible:
     id: "game-tower-locked"
-- assertVisible:
-    id: "slot-soon-4"
 - takeScreenshot: worlds-04-arcade
+# Arcade holds its five games since v0.4.0: the fifth card is Couleur Éclair, locked on a new save.
+- scrollUntilVisible:
+    element:
+      id: "game-dash-locked"
+    direction: DOWN
+    timeout: 15000
+- scrollUntilVisible:
+    element:
+      id: "game-blocks"
+    direction: UP
+    timeout: 15000
 - tapOn:
     id: "game-blocks"
 - assertVisible:

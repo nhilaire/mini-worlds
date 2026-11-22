@@ -3,9 +3,9 @@
 Phone install: PASS
 User acceptance: pending
 Date: 2026-11-16
-Commit: 6007278
+Commit: 0e1fd55
 APK: mini-worlds-0.3.0-arm64-v8a.apk (49.7 MB, arm64-v8a)
-SHA-256: 79a04efd4195548c71be8063084aece103b6a325725382054ff1ca0157193650
+SHA-256: 6099fd63c984a35ac6a55d74b6e8f8cb79afa01958c12ef0683e58f9b20f14e5
 Signature: release signature valid
 Phone: Android 11 (API 30, arm64-v8a)
 Launch check: alive after 10 s, no fatal error

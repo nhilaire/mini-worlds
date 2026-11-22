@@ -120,6 +120,24 @@ v0.3.0 phone test fixes (2026-11-16):
 - [x] T-78 Fruits en Fusion engine: merge/vanish steps carry their board, replay plan, guard 300 + 680 ms per step (AC-76, AC-91) - proof: unit
 - [x] T-79 Fruits en Fusion screen: replay of the drop and each merge (frame, flash, +points, shrink, grow, fall) (AC-91, AC-94) - proof: unit + device (AC-94)
 
+v0.4.0 (twelve more games, world Défis opens)
+
+- [ ] T-80 Catalogue v0.4.0: 12 game ids in their worlds, Défis unlock (30 stars AND level 10), new upgrades, copy fr/en, icons, telemetry ids, v0.3.0 save still loads (AC-95) - proof: unit
+- [ ] T-81 Couleur Éclair engine + casual bot + stars (AC-96, AC-108) - proof: unit
+- [ ] T-82 Glisse-Fusion engine + casual bot + stars (AC-97, AC-108) - proof: unit
+- [ ] T-83 Bataille de Nombres engine + casual bot + stars (AC-98, AC-108) - proof: unit
+- [ ] T-84 Mini Défense engine + casual bot + stars (AC-99, AC-108) - proof: unit
+- [ ] T-85 Mains de Cartes engine + casual bot + stars (AC-100, AC-108) - proof: unit
+- [ ] T-86 Réussite Express engine + casual bot + stars (AC-101, AC-108) - proof: unit
+- [ ] T-87 Lancer de Cible engine + casual bot + stars (AC-102, AC-108) - proof: unit
+- [ ] T-88 Tir Parfait engine + casual bot + stars (AC-103, AC-108) - proof: unit
+- [ ] T-89 Suite Logique engine + casual bot + stars (AC-104, AC-108) - proof: unit
+- [ ] T-90 Chaîne de Nombres engine + casual bot + stars (AC-105, AC-108) - proof: unit
+- [ ] T-91 Miroirs et Laser engine + casual bot + stars (AC-106, AC-108) - proof: unit
+- [ ] T-92 Duo Synchro engine + casual bot + stars (AC-107, AC-108) - proof: unit
+- [ ] T-93 Screens of the 12 v0.4.0 games: tutorial bubble, HUD, input guards, Pause → Quitter (AC-108) - proof: unit
+- [ ] T-94 Maestro smoke flow of the twelve v0.4.0 games through /unlocked (AC-109, AC-110) - proof: e2e + device (AC-110)
+
 ## Notes
 
 - Order: foundations and engines first (pure TypeScript, Jest), then screens on top of the engines, then wiring.

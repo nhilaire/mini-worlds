@@ -4,8 +4,8 @@ Status: approved
 Project slug: mini-worlds
 Final app name: Bric-à-Jeux
 Android package: io.github.nhilaire.miniworlds
-Version target: 0.3.0
-Last updated: 2026-11-13 (v0.3.0: ten more games, worlds Stratégie and Exploration open; Plombier Express solved grid shown)
+Version target: 0.4.0
+Last updated: 2026-11-22 (v0.4.0: twelve more games, world Défis opens; replaces v0.3.0, never accepted on the phone)
 
 > Written in English. Player-facing text is quoted in the "Player copy" section, in every language of the game
 > (`factory-app.json` "languages"; French is the reference).
@@ -127,18 +127,18 @@ for the session and suppresses every write to the save (Maestro flows of Potager
 
 ### Worlds and unlocks
 
-| # | World (fr / en) | Content (v0.3.0) | Unlock condition |
+| # | World (fr / en) | Content (v0.4.0) | Unlock condition |
 |---|---|---|---|
-| 1 | Arcade / Arcade | Pluie de Blocs, Tour Bancale, Saute-Lapin, Fruits en Fusion | open from the start |
-| 2 | Puzzle / Puzzle | Potager Fou, Lucioles, Plombier Express, Bloc Glissant | 2 stars in world 1 |
-| 3 | Stratégie / Strategy | Armée de Poche, Fusion de Guerriers | 15 stars in total AND level 7 |
-| 4 | Cartes / Cards | Chaussettes Perdues, Vingt-et-Un, Suite de Cartes | 6 stars in total AND level 4 |
+| 1 | Arcade / Arcade | Pluie de Blocs, Tour Bancale, Saute-Lapin, Fruits en Fusion, Couleur Éclair | open from the start |
+| 2 | Puzzle / Puzzle | Potager Fou, Lucioles, Plombier Express, Bloc Glissant, Glisse-Fusion | 2 stars in world 1 |
+| 3 | Stratégie / Strategy | Armée de Poche, Fusion de Guerriers, Bataille de Nombres, Mini Défense | 15 stars in total AND level 7 |
+| 4 | Cartes / Cards | Chaussettes Perdues, Vingt-et-Un, Suite de Cartes, Mains de Cartes, Réussite Express | 6 stars in total AND level 4 |
 | 5 | Bulles / Bubbles | Bulles en Folie, Raz-de-Couleurs, Tri de Billes | 4 stars in total AND level 3 |
-| 6 | Adresse / Skill | Bougies Folles | 9 stars in total AND level 5 |
+| 6 | Adresse / Skill | Bougies Folles, Lancer de Cible, Tir Parfait | 9 stars in total AND level 5 |
 | 7 | Construction / Building | coming soon | level 12 (indicative) |
 | 8 | Exploration / Exploration | Labyrinthe Express, Fil d'Ariane, Chasse au Trésor | 18 stars in total AND level 8 |
-| 9 | Mémoire / Memory | Perroquet Copieur, Champ de Taupes, Calcul Éclair | 12 stars in total AND level 6 |
-| 10 | Défis / Challenges | coming soon | level 25 (indicative) |
+| 9 | Mémoire / Memory | Perroquet Copieur, Champ de Taupes, Calcul Éclair, Suite Logique, Chaîne de Nombres | 12 stars in total AND level 6 |
+| 10 | Défis / Challenges | Miroirs et Laser, Duo Synchro | 30 stars in total AND level 10 |
 
 A world is unlocked the moment its conditions are met (checked after every round and level-up); the unlock is
 announced on the Result screen (« Monde débloqué : Puzzle ! ») and the world card changes state. Coming-soon
@@ -234,8 +234,20 @@ upgrade; raised ×2.5 after the first phone test, where one session bought a who
 | Labyrinthe Express | Sablier | +5 s per level |
 | Fil d'Ariane | Indice | 1 / 2 / 3 hints per round |
 | Chasse au Trésor | Détecteur | +1 dig per map per level |
+| Couleur Éclair | Bouclier | 1 / 2 / 3 wrong doors without losing a life per round |
+| Glisse-Fusion | Annuler | 1 / 2 / 3 undos per round |
+| Bataille de Nombres | Renforts | +2 / +4 / +6 starting units |
+| Mini Défense | Arsenal | +20 / +40 / +60 starting gold |
+| Mains de Cartes | Seconde donne | 1 / 2 / 3 second exchanges per round |
+| Réussite Express | Joker | 1 / 2 / 3 free cards per round |
+| Lancer de Cible | Main sûre | bounce angle 11° / 10° / 9° (12° without) |
+| Tir Parfait | Viseur | first 25 / 40 / 55 % of the trajectory drawn |
+| Suite Logique | Sablier | +5 s per level |
+| Chaîne de Nombres | Mélange | 1 / 2 / 3 shuffles per round |
+| Miroirs et Laser | Indice | 1 / 2 / 3 hints per round |
+| Duo Synchro | Indice | 1 / 2 / 3 hints per round |
 
-The ten v0.2.0 games have two upgrades each: the one above and « Bonus pièces » (coins per round +10 % per level).
+The v0.2.0, v0.3.0 and v0.4.0 games have two upgrades each: the one above and « Bonus pièces » (coins per round +10 % per level).
 
 ### Daily reward
 
@@ -717,6 +729,199 @@ First phone test of v0.3.0 (2026-11-16), decisions of the user:
   300 points pop), taps and the radar are ignored meanwhile, then the next board is dealt.
 - Wish noted for v0.4.0: a 2048-like game (not in this release).
 
+### v0.4.0: twelve more mini-games, world Défis opens
+
+Asked by the user on 2026-11-22 (« implémente 5 ou 6 jeux supplémentaires », then all twelve proposals chosen).
+v0.3.0 was verified but never accepted on the phone: v0.4.0 replaces it (its phone test changes are part of
+v0.4.0). Same finish and same rules as the v0.3.0 games (pure engine with unit tests, screen, one tutorial bubble,
+3 stars, two upgrades: one of the game + « Bonus pièces », input guards, injectable clock, seeded bounded
+generators, a casual bot per engine whose median over 50 seeds reaches 1 star and stays below 3 stars; stars are
+set from the bot: 1 star ≈ its p25, 2 stars ≈ its p90, 3 stars ≈ twice its median capped at the maximum score,
+rounded to 50, and written in the catalogue).
+
+Worlds: Arcade +Couleur Éclair (5th), Puzzle +Glisse-Fusion (5th), Stratégie +Bataille de Nombres (3rd) and Mini
+Défense (4th), Cartes +Mains de Cartes (4th) and Réussite Express (5th), Adresse +Lancer de Cible (2nd) and Tir
+Parfait (3rd), Mémoire +Suite Logique (4th) and Chaîne de Nombres (5th), Défis opens with Miroirs et Laser (1st) and
+Duo Synchro (2nd). Défis unlocks at 30 stars in total AND level 10 (it is no longer « coming soon »; Construction
+stays coming soon). Games inside a world keep the rule 2 × (k − 1) stars in that world. 35 games, 105 stars.
+Game ids: dash, tiles, conquest, defense, hands, patience, darts, shot, pattern, chain, laser, twins.
+
+#### Couleur Éclair (world Arcade, 5th game) - real time
+- Three lanes. The runner has one of 3 colours, each with its own shape (rouge rond, bleu carré, jaune triangle).
+  Gates come one after another; a gate has 3 doors, one per lane, holding the 3 colours in a seeded order.
+- Tap the left, middle or right third of the road: the runner goes to that lane (any number of times). When the
+  gate reaches the runner (after the approach time), the door of its lane must have its colour: +10 points and the
+  streak grows, else one life is lost and the streak is reset. 3 lives.
+- After gates 4, 8, 12... the runner takes a new colour (seeded, different from the current one), shown from the
+  start of the next approach.
+- Approach time of gate n (1-based): max(900, 2 200 − 30 × (n − 1)) ms. The approach does not run while the tutorial
+  bubble or the pause is shown. A round ends at the 3rd life lost or after gate 60.
+- « Bouclier » (id shield): 1 / 2 / 3 wrong doors per round cost no life (the streak is still reset).
+- Combo: every 5th door in a row. HUD: lives, gates passed, the runner's colour.
+- Tutorial bubble: « Touche à gauche, au milieu ou à droite : passe la porte de ta couleur ! »
+
+#### Glisse-Fusion (world Puzzle, 5th game) - turn based
+- 4 × 4 board of gems, level 1 to 11, each level with its own shape and colour (caillou, galet, silex, quartz,
+  ambre, jade, topaze, saphir, rubis, émeraude, diamant). Start: two level-1 gems on seeded cells.
+- Swipe up, down, left or right (or tap one of the 4 arrows): every gem slides as far as it can; two gems of the
+  same level that meet merge into one gem of the next level (a gem merges once per move; merges are resolved from
+  the side the gems slide to). A move that changes nothing is ignored. After a move a new gem appears on a seeded
+  empty cell: level 1 (90 %) or level 2 (10 %).
+- Own rule, the joker: every 10th move the new gem is a joker (étoile). A joker merges with any gem it meets (the
+  result is the next level of that gem); two jokers that meet make a level-3 gem.
+- Points: a merge into level L scores 2^L × 5 (level 2: 20 ... level 11: 10 240). A round is 80 moves; it ends
+  earlier when no move is possible.
+- « Annuler » (id undo): 1 / 2 / 3 uses per round; a use restores the board, the score and the move count of before
+  the last move (one step back only).
+- Input guard: a move animates in 150 ms; swipes and taps are ignored meanwhile.
+- Combo: a move with 2 merges or more. HUD: moves left, best gem.
+- Tutorial bubble: « Glisse pour pousser toutes les gemmes. Deux pareilles fusionnent ! »
+
+#### Bataille de Nombres (world Stratégie, 3rd game) - turn based
+- A map of territories joined by roads (3 fixed maps of 5, 6 and 7 territories, played in this order). Each
+  territory holds units; the player owns one (blue, 10 units), the enemy one (red, 10 units), the others are neutral
+  (grey, seeded 2 to 8 units). Owners are told by colour and by an emblem.
+- A turn: tap one of your territories with 2 units or more, then a territory joined to it: all its units but one
+  march. Onto your own territory they add up. Otherwise, if they outnumber the units there, the territory is taken
+  and holds the difference; else its units drop by the number sent (0 stays to its owner). Tapping the selected
+  territory again unselects it. « Passer » skips the turn.
+- Then the enemy plays one move with the same rules (the attack that takes a territory with the most units left;
+  else, if none, the move from its strongest territory onto its weakest neighbour it owns; else it passes), then
+  every territory owned by the player or the enemy gains 1 unit.
+- A battle ends when one side owns no territory, or after 15 turns. Battle score: 60 per territory owned + 200 if the
+  enemy owns none + 10 per turn not played after such a win. A lost battle (no territory) scores 0. A round is the 3
+  battles.
+- « Renforts » (id reinforce): the player's first territory starts with +2 / +4 / +6 units.
+- Input guard: a move and the enemy's answer play in 600 ms; taps are ignored meanwhile.
+- Combo: a battle won. HUD: battle k / 3, turns left.
+- Tutorial bubble: « Touche ton territoire puis un voisin : tes unités attaquent si elles sont plus nombreuses ! »
+
+#### Mini Défense (world Stratégie, 4th game) - turn based planning, real-time waves
+- A fixed winding path of 20 cells and 6 turret slots beside it. A turret hits the enemies on the path cells within
+  2 cells of its slot (Chebyshev distance). 5 lives, 120 gold at the start, 6 waves.
+- Between waves: tap an empty slot to build a turret (50 gold, level 1), tap a turret to upgrade it (level 2: 40
+  gold, level 3: 80 gold). Level 1 / 2 / 3: 1 / 2 / 3 damage per shot, one shot every 600 ms at the enemy furthest
+  along the path within range. « Lancer la vague » starts the wave; nothing can be built during a wave.
+- Wave w (1 to 6): 4 + 2w enemies, one every 700 ms, each with 2 + w health points, walking one cell every
+  max(250, 500 − 40 × (w − 1)) ms. The simulation advances in ticks of 50 ms of the injectable clock.
+- An enemy killed: +10 points and +8 gold. An enemy that leaves the path: −1 life. A wave without any leak: +100.
+  The round ends after wave 6 (+30 per life left) or when no life is left.
+- « Arsenal » (id arsenal): +20 / +40 / +60 gold at the start.
+- Combo: a wave without any leak. HUD: lives, gold, wave k / 6.
+- Tutorial bubble: « Pose des tourelles près du chemin, puis lance la vague ! »
+
+#### Mains de Cartes (world Cartes, 4th game) - turn based
+- Each hand: a fresh seeded shuffle of the 52 cards, 5 cards dealt. Tap the cards to keep (tap again to release),
+  then « Échanger »: the other cards are replaced from the deck, once; « Garder » keeps the hand as it is.
+- The hand then scores its best combination: paire 20, deux paires 40, brelan 70, suite 110 (ace low or high),
+  couleur 130, full 170, carré 260, quinte flush 500, nothing 0. No money, no bet.
+- A round is 8 hands.
+- « Seconde donne » (id redraw): 1 / 2 / 3 times per round, a second exchange is allowed on a hand.
+- Input guard: the exchange animates in 300 ms and the result stays 900 ms; taps are ignored meanwhile.
+- Combo: a hand worth a brelan or better. HUD: hand k / 8, the combination of the cards held.
+- Tutorial bubble: « Garde tes meilleures cartes, échange les autres : vise la plus belle combinaison ! »
+
+#### Réussite Express (world Cartes, 5th game) - turn based
+- A fresh seeded shuffle; 5 columns of 4 cards face up (20 cards), 1 card on the pile, 15 cards in the stock.
+- Tap the bottom card of a column: it goes onto the pile if its rank is one above or one below the pile's card
+  (ace and king are neighbours; suits do not matter). Tap the stock: its next card goes onto the pile (streak reset).
+- Points: 10 per card moved from a column + 5 × (streak − 1), the streak being the number of column cards played in
+  a row without drawing. A cleared board: +200 and +10 per card left in the stock. A deal ends when the board is
+  cleared, or when the stock is empty and no column card can be played. A round is 2 deals.
+- « Joker » (id wild): 1 / 2 / 3 times per round, any bottom card may be played whatever its rank.
+- Input guard: a card moves in 150 ms; taps are ignored meanwhile.
+- Combo: a streak reaching 5. HUD: deal k / 2, cards in the stock, streak.
+- Tutorial bubble: « Pose une carte qui suit ou précède celle de la pile. Sinon, pioche ! »
+
+#### Lancer de Cible (world Adresse, 2nd game) - real time
+- A round target turns; tap to throw a dart, which lands at the bottom of the target (flight 120 ms, the landing
+  angle is the one under the bottom point when it lands). A dart landing within 12° of another one bounces off: one
+  life lost (3 lives). Otherwise it sticks: +10 points.
+- Level k (1 to 8): 4 + k darts to stick, min(k − 1, 4) darts already on the target at seeded angles (at least 30°
+  apart), rotation 90 + 15 × (k − 1) degrees per second, clockwise on odd levels and anticlockwise on even ones; from
+  level 5 the rotation reverses every 2 000 ms. A level cleared: +50 points, the next target appears after 600 ms.
+- The round ends at the 3rd life lost or after level 8. The rotation does not run while the tutorial bubble or the
+  pause is shown.
+- « Main sûre » (id steady): the bounce angle is 11° / 10° / 9°.
+- Input guard: one dart in flight at a time; a tap during a flight is ignored.
+- Combo: a level cleared without losing a life in it. HUD: lives, level, darts left.
+- Tutorial bubble: « Touche pour lancer. Ne touche pas une fléchette déjà plantée ! »
+
+#### Tir Parfait (world Adresse, 3rd game) - turn based
+- A catapult on the left, a target on the ground at a seeded distance (40 to 100 m). Set the angle (15° to 75° by
+  steps of 5°, « − » and « + ») and the power (1 to 10, « − » and « + »), then « Tirer ».
+- The shot follows a parabola: speed = 3.4 × power m/s, gravity 9.8 m/s², landing distance = speed² × sin(2 ×
+  angle) / 9.8, shifted by the wind: + wind × flight time² / 2 with flight time = 2 × speed × sin(angle) / 9.8
+  (wind in m/s², seeded in −2 to +2 from the 3rd target, 0 before; an arrow and a number show it). From the 5th
+  target a wall (seeded height 6 to 14 m, half-way to the target) must be cleared: a shot lower than the wall at
+  its distance stops there (it scores 0).
+- Shot score from the distance between the landing point and the centre of the target: 2 m or less 100, 5 m or less
+  60, 10 m or less 30, else 0. Up to 3 shots per target: the target is over at the first shot that scores (+50 if
+  it is the 1st shot, +20 if it is the 2nd) or after the 3rd shot. The last landing point stays marked. 6 targets.
+- « Viseur » (id aim): the first 25 / 40 / 55 % of the trajectory is drawn before the shot.
+- Input guard: the flight plays in 700 ms; taps are ignored meanwhile.
+- Combo: a 100-point shot. HUD: target k / 6, shots left, wind.
+- Tutorial bubble: « Règle l'angle et la puissance, puis tire au plus près de la cible ! »
+
+#### Suite Logique (world Mémoire, 4th game) - real time (timer)
+- 60 s. A sequence of 4 terms and « ? » is shown with 4 answers, exactly one of them right. Families by level
+  (level = 1 + right answers ÷ 4, capped at 5): 1 symbols repeating with period 2 or 3; 2 numbers with a constant
+  step (+2 to +9); 3 numbers with a constant negative step or ×2; 4 two alternating steps (+a, +b); 5 growing steps
+  (+1, +2, +3...) or the sum of the two previous terms. Terms and wrong answers are seeded; wrong answers differ
+  from the right one and from each other.
+- Right answer: 20 + 5 × level points. Wrong answer: −3 s and the streak is reset; the next question comes at once.
+- « Sablier » (id extra_time): +5 s per level.
+- Input guard: an answer is shown 250 ms (green or red); taps are ignored meanwhile.
+- Combo: every 5th right answer in a row. HUD: time left, level.
+- Tutorial bubble: « Trouve ce qui vient après. Vite et bien ! »
+
+#### Chaîne de Nombres (world Mémoire, 5th game) - turn based
+- 5 columns × 6 rows of numbers (seeded 1 to 3 at the start), each value with its own colour.
+- Tap a cell, then cells next to the last one (8 directions) holding the same value, to build a chain; tap the last
+  cell again to validate it (2 cells or more), tap any other cell to cancel it. The last cell becomes value + 1
+  (chains of 2 or 3 cells) or value + 2 (4 cells or more); the other cells of the chain empty, the numbers above
+  fall, and seeded numbers (1 to 3) fill the top.
+- Points: 10 × value × cells of the chain. A round is 25 chains. A board with no two neighbours of the same value is
+  dealt again (seeded, no move spent).
+- « Mélange » (id shuffle): 1 / 2 / 3 times per round, the numbers of the board are shuffled (seeded).
+- Input guard: a chain resolves in 250 ms; taps are ignored meanwhile.
+- Combo: a chain of 4 cells or more. HUD: chains left, best number.
+- Tutorial bubble: « Relie des nombres voisins identiques, puis retouche le dernier : ils fusionnent ! »
+
+#### Miroirs et Laser (world Défis, 1st game) - turn based
+- 6 × 6 grid. A laser enters from the left edge on a seeded row; a target sits on an edge cell. Mirrors lie on
+  cells, each leaning « / » or « \ »; the beam turns on a mirror and goes straight otherwise.
+- Tap a mirror: it flips to the other lean. The puzzle is solved when the beam reaches the target.
+- Generation: a seeded beam path with 2 + k turns (k = puzzle number 1 to 5) gets its mirrors, plus k decoy mirrors
+  off the path; then each mirror gets a seeded lean such that the puzzle is not solved. Par = the minimum number of
+  flips that solve it (search over the mirror leans). Bounded attempts, then a fixed fallback puzzle.
+- Puzzle score: max(50, 300 − 30 × (flips beyond par)); a puzzle still unsolved after par + 10 flips is failed (0).
+  A solved puzzle stays 800 ms with the beam on the target. A round is 5 puzzles.
+- « Indice » (id hint): 1 / 2 / 3 hints per round; a hint highlights a mirror to flip on a shortest solution.
+- Input guard: a flip animates in 120 ms; taps are ignored meanwhile.
+- Combo: a puzzle solved at par. HUD: puzzle k / 5, flips.
+- Tutorial bubble: « Touche les miroirs pour guider le rayon jusqu'à la cible »
+
+#### Duo Synchro (world Défis, 2nd game) - turn based
+- 6 × 6 grid with walls. Two characters (rond bleu, carré orange) and two exits of the same shape and colour.
+- Swipe or tap one of the 4 arrows: both characters move one cell in that direction, each one only if its cell is
+  free (inside the grid, no wall); they may share a cell. Solved when each one stands on its own exit after the same
+  move.
+- Generation: seeded walls (6 + k, k = puzzle number 1 to 5) and seeded starts; the joint positions are explored
+  breadth-first and the exits are a pair of different cells whose distance from the start (par, in moves) is in
+  [4 + k, 7 + 2k], the furthest such pair in seeded order. Bounded attempts, then a fixed fallback puzzle.
+- Puzzle score: max(50, 300 − 15 × (moves beyond par)); a puzzle still unsolved after par + 25 moves is failed (0).
+  A round is 5 puzzles.
+- « Indice » (id hint): 1 / 2 / 3 hints per round; a hint shows the direction of the next move of a shortest
+  solution from the current positions.
+- Input guard: a move animates in 120 ms; swipes and taps are ignored meanwhile.
+- Combo: a puzzle solved at par. HUD: puzzle k / 5, moves.
+- Tutorial bubble: « Les deux bougent ensemble : amène chacun sur sa sortie ! »
+
+Upgrades of v0.4.0: Bouclier (shield), Annuler (undo), Renforts (reinforce), Arsenal (arsenal), Seconde donne
+(redraw), Joker (wild), Main sûre (steady), Viseur (aim), Sablier (extra_time: +5 s for Suite Logique), Mélange
+(shuffle), Indice (hint, shared: Miroirs et Laser, Duo Synchro).
+
 ### Tutorial (guided first round)
 
 The first round of each game shows its help bubbles in order; each disappears when its action is performed. The
@@ -757,7 +962,7 @@ clears it. Real-time games pause their timers while a bubble is shown.
 ## Telemetry events
 
 Only events listed here may be sent (after consent). Params: numbers, booleans or short enums. No identifiers.
-`game` ∈ {blocks, garden, bubbles, tower, hop, lights, pipes, flood, socks, twentyone, candles, parrot, moles, fruit, slide, cardline, marbles, quicksum, army, merge, maze, trail, treasure}; `world` ∈ {arcade, puzzle, strategy, cards, bubbles, skill, exploration, memory}; `outcome` ∈ {ended, quit, short}.
+`game` ∈ {blocks, garden, bubbles, tower, hop, lights, pipes, flood, socks, twentyone, candles, parrot, moles, fruit, slide, cardline, marbles, quicksum, army, merge, maze, trail, treasure, dash, tiles, conquest, defense, hands, patience, darts, shot, pattern, chain, laser, twins}; `world` ∈ {arcade, puzzle, strategy, cards, bubbles, skill, exploration, memory}; `outcome` ∈ {ended, quit, short}.
 
 | Event | When | Params | Feeds KPI |
 |---|---|---|---|
@@ -1108,6 +1313,69 @@ Telemetry and technical
   de Poche is a timed choice that is no longer obvious from the colours, and a cleared board of Champ de Taupes
   is seen as won before the next one.
 
+v0.4.0: twelve more games
+- AC-95 [unit] Given the v0.4.0 catalogue, then 35 games sit in their worlds and unlock order (Arcade +Couleur Éclair;
+  Puzzle +Glisse-Fusion; Stratégie +Bataille de Nombres, Mini Défense; Cartes +Mains de Cartes, Réussite Express;
+  Adresse +Lancer de Cible, Tir Parfait; Mémoire +Suite Logique, Chaîne de Nombres; Défis: Miroirs et Laser, Duo
+  Synchro), Défis unlocks at 30 stars in total AND level 10 and is no longer coming soon, 105 stars exist, each new
+  game has its upgrade and « Bonus pièces », and a v0.3.0 save loads with its stars, coins and upgrades unchanged.
+- AC-96 [unit] Couleur Éclair: a gate holds the 3 colours once each; the door of the runner's lane with its colour
+  scores 10, a wrong door costs a life (or a shield) and resets the streak; the colour changes after every 4th gate
+  to another colour; the approach time follows max(900, 2 200 − 30 × (n − 1)); the round ends at the 3rd life lost
+  or after gate 60.
+- AC-97 [unit] Glisse-Fusion: a swipe slides every gem and merges equal neighbours once per move from the side they
+  slide to, scoring 2^L × 5; a move that changes nothing is ignored; a new gem (level 1 or 2) appears after each
+  move and a joker every 10th move, which merges with any gem; « Annuler » restores the previous board, score and
+  move count once; the round ends after 80 moves or when no move is possible.
+- AC-98 [unit] Bataille de Nombres: a move sends all units but one; it adds up on an own territory, takes a weaker
+  one with the difference, else lowers it; the enemy answers with its rule, then owned territories gain 1; a battle
+  ends when a side owns nothing or after 15 turns and scores 60 per territory, +200 and +10 per turn left for a
+  win, 0 when lost; the round is the 3 maps of 5, 6 and 7 territories.
+- AC-99 [unit] Mini Défense: turrets cost 50 and their levels 40 and 80, deal 1 / 2 / 3 per shot every 600 ms to the
+  enemy furthest along the path within 2 cells; wave w sends 4 + 2w enemies of 2 + w health every 700 ms at one
+  cell per max(250, 500 − 40 × (w − 1)) ms; a kill gives 10 points and 8 gold, a leak costs a life, a clean wave
+  gives 100; nothing is built during a wave; the round ends after wave 6 (+30 per life) or without lives; the same
+  seed, builds and ticks give the same result whatever the tick grouping.
+- AC-100 [unit] Mains de Cartes: each hand deals 5 cards of a fresh 52-card shuffle; one exchange replaces the cards
+  not kept (a second one only with « Seconde donne »); every combination is recognised and scored (paire 20, deux
+  paires 40, brelan 70, suite 110 with the ace low or high, couleur 130, full 170, carré 260, quinte flush 500); a
+  round is 8 hands.
+- AC-101 [unit] Réussite Express: a deal has 5 columns of 4, a pile card and 15 stock cards; only a bottom card one
+  rank above or below the pile (ace and king neighbours) is played; drawing resets the streak; points are 10 + 5 ×
+  (streak − 1) per card, +200 and +10 per stock card for a cleared board; a deal ends when cleared or stuck with an
+  empty stock; « Joker » plays any bottom card; a round is 2 deals.
+- AC-102 [unit] Lancer de Cible: the landing angle is the one under the bottom point after the 120 ms flight; a dart
+  within the bounce angle of another costs a life, else it sticks for 10 points; level k follows its darts, planted
+  darts, speed, direction and reversals; a level cleared gives 50; a tap during a flight is ignored; the round ends
+  at the 3rd life lost or after level 8; « Main sûre » narrows the bounce angle.
+- AC-103 [unit] Tir Parfait: the landing distance follows the stated formula with wind from the 3rd target and the
+  wall from the 5th (a shot under the wall scores 0); bands 2 / 5 / 10 m score 100 / 60 / 30; a target ends at the
+  first scoring shot (+50 on the 1st, +20 on the 2nd) or after 3 shots; every target can be hit at 2 m or less with
+  some angle and power; a round is 6 targets.
+- AC-104 [unit] Suite Logique: each question follows the family of its level with exactly one right answer among 4
+  different ones; a right answer scores 20 + 5 × level, a wrong one costs 3 s and resets the streak; the round lasts
+  60 s (+5 s per « Sablier » level).
+- AC-105 [unit] Chaîne de Nombres: a chain accepts only cells next to the last one with the same value, each once;
+  validating 2 cells or more turns the last cell into value + 1 (or + 2 from 4 cells), empties the others, makes
+  the numbers fall and refills the top, scoring 10 × value × cells; a board without any pair is dealt again; «
+  Mélange » shuffles the board; a round is 25 chains.
+- AC-106 [unit] Miroirs et Laser: the beam turns on mirrors as their lean says and stops at the edges; every
+  generated puzzle starts unsolved and is solvable in its par, the minimum number of flips; the score is max(50, 300
+  − 30 × flips beyond par), 0 after par + 10 flips; a hint is a flip of a shortest solution; a round is 5 puzzles.
+- AC-107 [unit] Duo Synchro: both characters move one cell when their own cell is free; a puzzle is solved when each
+  stands on its own exit; every generated puzzle is solvable in its par (breadth-first on the joint positions) within
+  [4 + k, 7 + 2k]; the score is max(50, 300 − 15 × moves beyond par), 0 after par + 25 moves; a hint is the next
+  move of a shortest solution; a round is 5 puzzles.
+- AC-108 [unit] Given each of the 12 v0.4.0 engines, then its casual bot (policy of its rules) reaches over 50 seeds
+  a median score at or above the 1-star threshold and below the 3-star threshold, every generator starts a round for
+  every seed tried, and an input during the input guard changes nothing. Given each of the 12 new game screens on a
+  first round, then its tutorial bubble is shown, a scripted input updates the score or HUD as its engine predicts
+  (timers driven through the injectable clock), and Pause → Quitter ends the round.
+- AC-109 [e2e] Given the seed deep link /unlocked, when each of the 12 new v0.4.0 games is opened from its world,
+  then its screen shows (one capture per game) and Pause → Quitter reaches the Result.
+- AC-110 [manual] Given the release APK on the user's phone, when the twelve v0.4.0 games are played, then each is
+  understandable from its bubble, smooth and fair.
+
 ## Player copy
 
 Final app name: fr « Bric-à-Jeux », en « Game Grab-Bag ». No language-specific asset (sprites contain no text,
@@ -1340,12 +1608,38 @@ no spoken audio). French tone: tu.
 | upgrade.sweep / extra_time / recruits / veteran / detector (name / desc) | Coup de balai / {n} rangée(s) balayée(s) par partie · Sablier / +{s} s par partie · Recrues / +{n} soldats au départ · Vétéran / {pct} % de guerriers niveau 2 · Détecteur / +{n} coup(s) de pelle par carte | Sweep / {n} row(s) swept per round · Hourglass / +{s} s per round · Recruits / +{n} soldiers at the start · Veteran / {pct}% level-2 warriors · Detector / +{n} dig(s) per map |
 | hud.next / puzzle / row / time / streak / soldiers / run / best / maze / gems / map / digs | Suivant / Puzzle / Rangée / Temps / Série / Soldats / Course / Meilleur / Labyrinthe / Gemmes / Carte / Pelles | Next / Puzzle / Row / Time / Streak / Soldiers / Run / Best / Maze / Gems / Map / Digs |
 | play.sweep / left / right / fort / burning / hot / warm / cold / found / restart | Balai ({n}) / Gauche / Droite / Fort : {n} / Brûlant / Chaud / Tiède / Froid / Trésor ! / Recommencer | Sweep ({n}) / Left / Right / Fort: {n} / Burning / Hot / Warm / Cold / Treasure! / Restart |
+| game.<id>.name (v0.4.0) | Couleur Éclair, Glisse-Fusion, Bataille de Nombres, Mini Défense, Mains de Cartes, Réussite Express, Lancer de Cible, Tir Parfait, Suite Logique, Chaîne de Nombres, Miroirs et Laser, Duo Synchro (ids dash, tiles, conquest, defense, hands, patience, darts, shot, pattern, chain, laser, twins) | Colour Dash, Slide and Merge, Number Battle, Mini Defence, Card Hands, Quick Patience, Target Throw, Perfect Shot, What Comes Next, Number Chain, Mirrors and Laser, Twin Steps |
+| game.dash.desc | Passe les portes de ta couleur, de plus en plus vite. | Go through the doors of your colour, faster and faster. |
+| game.tiles.desc | Glisse les gemmes : deux pareilles fusionnent en une plus rare. | Slide the gems: two of a kind merge into a rarer one. |
+| game.conquest.desc | Envoie tes unités conquérir tous les territoires. | Send your units to take every territory. |
+| game.defense.desc | Pose des tourelles et arrête les vagues d'ennemis. | Build turrets and stop the enemy waves. |
+| game.hands.desc | Compose les plus belles combinaisons de cartes. | Make the best card combinations. |
+| game.patience.desc | Vide les colonnes en posant les cartes qui se suivent. | Clear the columns by playing cards that follow each other. |
+| game.darts.desc | Plante tes fléchettes sur la cible qui tourne. | Stick your darts in the spinning target. |
+| game.shot.desc | Règle l'angle et la puissance pour toucher la cible. | Set the angle and the power to hit the target. |
+| game.pattern.desc | Trouve la suite logique avant la fin du temps. | Find what comes next before time runs out. |
+| game.chain.desc | Relie les nombres identiques pour en créer de plus grands. | Link equal numbers to make bigger ones. |
+| game.laser.desc | Tourne les miroirs pour guider le rayon jusqu'à la cible. | Flip the mirrors to guide the beam to the target. |
+| game.twins.desc | Deux personnages, une seule commande : amène-les à leur sortie. | Two characters, one control: bring them to their exits. |
+| tutorial.dash | Touche à gauche, au milieu ou à droite : passe la porte de ta couleur ! | Tap left, middle or right: go through the door of your colour! |
+| tutorial.tiles | Glisse pour pousser toutes les gemmes. Deux pareilles fusionnent ! | Swipe to push all the gems. Two of a kind merge! |
+| tutorial.conquest | Touche ton territoire puis un voisin : tes unités attaquent si elles sont plus nombreuses ! | Tap your territory, then a neighbour: your units attack if they outnumber it! |
+| tutorial.defense | Pose des tourelles près du chemin, puis lance la vague ! | Build turrets near the path, then start the wave! |
+| tutorial.hands | Garde tes meilleures cartes, échange les autres : vise la plus belle combinaison ! | Keep your best cards, swap the others: aim for the best combination! |
+| tutorial.patience | Pose une carte qui suit ou précède celle de la pile. Sinon, pioche ! | Play a card one above or one below the pile. Otherwise, draw! |
+| tutorial.darts | Touche pour lancer. Ne touche pas une fléchette déjà plantée ! | Tap to throw. Do not hit a dart already stuck! |
+| tutorial.shot | Règle l'angle et la puissance, puis tire au plus près de la cible ! | Set the angle and the power, then shoot as close to the target as you can! |
+| tutorial.pattern | Trouve ce qui vient après. Vite et bien ! | Find what comes next. Fast and right! |
+| tutorial.chain | Relie des nombres voisins identiques, puis retouche le dernier : ils fusionnent ! | Link equal neighbouring numbers, then tap the last one again: they merge! |
+| tutorial.laser | Touche les miroirs pour guider le rayon jusqu'à la cible | Tap the mirrors to guide the beam to the target |
+| tutorial.twins | Les deux bougent ensemble : amène chacun sur sa sortie ! | Both move together: bring each one to its exit! |
+| upgrade.shield / undo / reinforce / arsenal / redraw / wild / steady / aim / shuffle (name / desc) | Bouclier / {n} erreur(s) sans perdre de vie · Annuler / {n} retour(s) en arrière par partie · Renforts / +{n} unités au départ · Arsenal / +{n} pièces d'or au départ · Seconde donne / {n} second(s) échange(s) par partie · Joker / {n} carte(s) libre(s) par partie · Main sûre / fléchettes plus serrées · Viseur / début de la trajectoire affiché · Mélange / {n} mélange(s) par partie | Shield / {n} mistake(s) without losing a life · Undo / {n} step(s) back per round · Reinforcements / +{n} starting units · Arsenal / +{n} starting gold · Second deal / {n} second swap(s) per round · Joker / {n} free card(s) per round · Steady hand / darts may land closer · Sight / start of the trajectory shown · Shuffle / {n} shuffle(s) per round |
+| hud / play (v0.4.0) | Vies / Portes / Coups / Bataille / Tours / Or / Vague / Main / Donne / Pioche / Niveau / Fléchettes / Cible / Tirs / Vent / Chaînes / Retours ; Passer / Lancer la vague / Échanger / Garder / Tirer / Angle / Puissance / Annuler ({n}) / Joker ({n}) / Mélange ({n}) ; Paire / Deux paires / Brelan / Suite / Couleur / Full / Carré / Quinte flush / Rien | Lives / Gates / Moves / Battle / Turns / Gold / Wave / Hand / Deal / Stock / Level / Darts / Target / Shots / Wind / Chains / Flips ; Pass / Start the wave / Swap / Keep / Shoot / Angle / Power / Undo ({n}) / Joker ({n}) / Shuffle ({n}) ; Pair / Two pairs / Three of a kind / Straight / Flush / Full house / Four of a kind / Straight flush / Nothing |
 
 ## Out of scope
 
-- A 2048-like game (wished at the v0.3.0 phone test): planned as the first game of v0.4.0.
-- The 27 other mini-games of the brief (including Coin Miner and the other idle games of world 7), worlds 7 and 10
-  content; replays as detailed as the first three games and three upgrades for the v0.2.0 and v0.3.0 games.
+- The 15 other mini-games of the brief (including Coin Miner and the other idle games of world 7), world 7
+  content; replays as detailed as the first three games and three upgrades for the v0.2.0, v0.3.0 and v0.4.0 games.
 - Shop, cosmetics, themes to buy, avatars, boosters; crystals; weekly challenges; passive / idle production;
   events, seasonal content, limited-time games; leaderboards (local or online) and multi-profile.
 - Selectable difficulty tiers (Débutant / Normal / Avancé / Expert).

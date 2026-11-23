@@ -1,0 +1,45 @@
+appId: io.github.nhilaire.miniworlds
+name: Game of the day - the Home card shows the game and « Pièces ×2 aujourd'hui », its « Jouer » starts that game, Pause and Quitter reach the Result (AC-112)
+tags:
+  - dailygame
+---
+- launchApp:
+    clearState: true
+- extendedWaitUntil:
+    visible:
+      id: "consent-screen"
+    timeout: 30000
+- tapOn:
+    id: "consent-refuse"
+- runFlow: helpers/french.yaml
+- openLink: miniworlds://seed/5/unlocked
+- extendedWaitUntil:
+    visible:
+      id: "home-screen"
+    timeout: 30000
+- scrollUntilVisible:
+    element:
+      id: "home-daily-game-play"
+    direction: DOWN
+    timeout: 15000
+- assertVisible:
+    id: "home-daily-game-name"
+- assertVisible: "Jeu du jour"
+- assertVisible: "Pièces ×2 aujourd'hui"
+- takeScreenshot: daily-game-01-home
+- tapOn:
+    id: "home-daily-game-play"
+- extendedWaitUntil:
+    visible:
+      id: "game-pause"
+    timeout: 15000
+- takeScreenshot: daily-game-02-game
+- tapOn:
+    id: "game-pause"
+- tapOn:
+    id: "pause-quit"
+- extendedWaitUntil:
+    visible:
+      id: "result-screen"
+    timeout: 10000
+- takeScreenshot: daily-game-03-result

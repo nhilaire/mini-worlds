@@ -5,12 +5,14 @@ import { appName } from '../config/app';
 import { challengeProgress } from '../game/core/challenges';
 import { GameId, xpToNextLevel } from '../game/core/content';
 import { canCollectDaily } from '../game/core/daily';
+import { dailyGameFor } from '../game/core/dailyGame';
 import { today } from '../game/clock';
 import { conditionProgress, nextUnlock } from '../game/core/unlocks';
 import { useI18n } from '../i18n/I18nProvider';
 import { useGameStore } from '../state/GameStore';
 import { Button } from '../ui/Button';
 import { Card, Row } from '../ui/Card';
+import { GameIcon } from '../ui/GameIcon';
 import { PixelSprite } from '../ui/PixelSprite';
 import { Screen } from '../ui/Screen';
 import { useTheme } from '../ui/ThemeProvider';
@@ -30,7 +32,7 @@ const DEFAULT_GAME: GameId = 'blocks';
 export function HomeScreen({ onPlay, onDaily, onGame, onWorlds }: Props) {
   const { t, language } = useI18n();
   const { colors } = useTheme();
-  const { save } = useGameStore();
+  const { save, sessionSeed } = useGameStore();
   const names = useGameNames();
   const { profile } = save;
   const next = xpToNextLevel(profile.level);
@@ -38,6 +40,7 @@ export function HomeScreen({ onPlay, onDaily, onGame, onWorlds }: Props) {
   const dailyReady = canCollectDaily(save.dailyReward, today());
   const playGame = profile.lastPlayedGame ?? DEFAULT_GAME;
   const unlock = nextUnlock(save);
+  const dailyGame = dailyGameFor(save, today(), sessionSeed ?? undefined);
 
   return (
     <Screen testID="home-screen" bottomInset={false}>
@@ -75,6 +78,22 @@ export function HomeScreen({ onPlay, onDaily, onGame, onWorlds }: Props) {
             </Row>
           </Card>
         )}
+
+        <Card testID="home-daily-game" accent={colors.accent} accessibilityLabel={t.home.dailyGame}>
+          <Row>
+            <GameIcon game={dailyGame} scale={3} />
+            <View style={styles.flex}>
+              <PixelText size={10} color="muted">
+                {t.home.dailyGame}
+              </PixelText>
+              <PixelText testID="home-daily-game-name">{names[dailyGame]}</PixelText>
+              <PixelText size={8} color="accent" testID="home-daily-game-boost">
+                {t.home.dailyGameBoost}
+              </PixelText>
+            </View>
+          </Row>
+          <Button label={t.home.play} onPress={() => onPlay(dailyGame)} variant="secondary" testID="home-daily-game-play" />
+        </Card>
 
         <Button label={t.home.play} onPress={() => onPlay(playGame)} testID="home-play" />
 

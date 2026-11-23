@@ -1,7 +1,9 @@
 import { useState } from 'react';
 import { StyleSheet, View } from 'react-native';
 
+import { today } from '../game/clock';
 import { GameId, gameById } from '../game/core/content';
+import { dailyGameFor } from '../game/core/dailyGame';
 import { gameSave } from '../game/core/save';
 import { affordableUpgrades, upgradeLevels } from '../game/core/upgrades';
 import { isGameUnlocked } from '../game/core/unlocks';
@@ -21,13 +23,14 @@ type Props = { game: GameId; onPlay: () => void; onUpgrades: () => void; onBack:
 
 export function GameSheetScreen({ game, onPlay, onUpgrades, onBack }: Props) {
   const { t } = useI18n();
-  const { save, resetTutorial } = useGameStore();
+  const { save, resetTutorial, sessionSeed } = useGameStore();
   const names = useGameNames();
   const [tutorialReset, setTutorialReset] = useState(false);
   const def = gameById(game);
   const data = gameSave(save, game);
   const affordable = affordableUpgrades(save, game);
   const levels = upgradeLevels(save, game);
+  const isDailyGame = isGameUnlocked(save, game) && dailyGameFor(save, today(), sessionSeed ?? undefined) === game;
   const description = game === 'garden' ? t.game.garden.desc(BASE_MOVES + (levels.extra_move ?? 0)) : t.game[game].desc;
 
   return (
@@ -40,6 +43,11 @@ export function GameSheetScreen({ game, onPlay, onUpgrades, onBack }: Props) {
         <BodyText color="muted" size={font.small} style={styles.center}>
           {description}
         </BodyText>
+        {isDailyGame && (
+          <PixelText size={10} color="accent" testID="sheet-daily-game">
+            {t.home.dailyGameBoost}
+          </PixelText>
+        )}
       </View>
 
       <Button label={t.sheet.play} onPress={onPlay} disabled={!isGameUnlocked(save, game)} testID="sheet-play" />

@@ -246,3 +246,42 @@ describe('game sheet of a locked game (AC-56)', () => {
     expect(onPlay).toHaveBeenCalledTimes(1);
   });
 });
+
+describe('game of the day (AC-111, AC-112)', () => {
+  const wrap = (ui: React.ReactElement) => (
+    <GameStoreProvider sessionSeed={null}>
+      <ThemeProvider setting="dark">
+        <I18nProvider setting="fr" onChange={() => {}}>
+          {ui}
+        </I18nProvider>
+      </ThemeProvider>
+    </GameStoreProvider>
+  );
+  let restore = () => {};
+  beforeEach(async () => {
+    await AsyncStorage.clear();
+    jest.mocked(deviceLanguageTags).mockReturnValue(['fr-FR']);
+    restore = setClock(() => DATE);
+  });
+  afterEach(() => restore());
+
+  it('shows the Home card with the game and « Pièces ×2 aujourd’hui », and its « Jouer » starts that game', async () => {
+    const save = defaultSave();
+    save.games.blocks.tutorialDone = true;
+    await seed(save);
+    await render(<App />);
+    expect(await screen.findByTestId('home-daily-game-name')).toHaveTextContent('Pluie de Blocs'); // the only playable game
+    expect(screen.getByTestId('home-daily-game-boost')).toHaveTextContent(/Pièces ×2 aujourd'hui/);
+    await fireEvent.press(screen.getByTestId('home-daily-game-play'));
+    expect(await screen.findByTestId('blocks-screen')).toBeTruthy();
+  });
+
+  it('shows the badge on the sheet of the game of the day only', async () => {
+    await render(wrap(<GameSheetScreen game="blocks" onPlay={() => {}} onUpgrades={() => {}} onBack={() => {}} />));
+    expect(await screen.findByTestId('sheet-daily-game')).toHaveTextContent(/Pièces ×2 aujourd'hui/);
+    screen.unmount();
+    await render(wrap(<GameSheetScreen game="tower" onPlay={() => {}} onUpgrades={() => {}} onBack={() => {}} />));
+    expect(await screen.findByTestId('sheet-play')).toBeTruthy();
+    expect(screen.queryByTestId('sheet-daily-game')).toBeNull();
+  });
+});

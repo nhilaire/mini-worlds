@@ -1148,9 +1148,10 @@ Bulles en Folie
 Screens and flow
 
 - AC-31 [e2e] Given Home, when « Jeux » is tapped, then the 10 world cards are listed, Arcade open, Puzzle,
-  Stratégie, Cartes, Bulles, Adresse, Exploration and Mémoire locked with their conditions, Construction and Défis
-  « Bientôt »; tapping Arcade shows Pluie de Blocs, then Tour Bancale, Saute-Lapin and Fruits en Fusion locked with their
-  condition, and one « Bientôt » slot (v0.3.0); tapping the game shows its sheet with « Jouer ».
+  Stratégie, Cartes, Bulles, Adresse, Exploration, Mémoire and Défis locked with their conditions, Construction
+  « Bientôt »; tapping Arcade shows Pluie de Blocs, then Tour Bancale, Saute-Lapin, Fruits en Fusion and Couleur Éclair
+  locked with their condition, and no « Bientôt » slot (v0.4.0: Défis opens and Arcade holds its five games, see
+  AC-95); tapping the game shows its sheet with « Jouer ».
 - AC-32 [e2e] Given the Game sheet, when « Améliorations » is opened with 0 coins, then the three upgrades are
   listed with « 0 / 3 » and « Acheter » disabled.
 - AC-33 [unit] Given the Result screen data, when a round earns a new star, a level-up or unlocks a world, then
@@ -1236,7 +1237,7 @@ Telemetry and technical
 - AC-60 [unit] Saute-Lapin: the run speeds up by 0.35 per obstacle up to 15; obstacle kinds follow their seeded
   shares (no bird before 10 obstacles), a hedge is cleared by a timely jump, a bird passes over a bunny on the
   ground and hits a bunny jumping into it; a jump follows the speed and gravity of the rules and is ignored in the air; a jump in
-  the middle of its window clears a 1.5-high fence at 6 and at 14 units/s and lands before the next fence; an
+  the middle of its window clears a 1.5-high fence at 6 and at 15 units/s (the speed cap) and lands before the next fence; an
   obstacle passed scores 10 and speeds up the run; a hit consumes a shield or ends the round; spawns are seeded.
 - AC-61 [unit] Lucioles: grids 1-2 are 4 × 4 and 3-5 are 5 × 5 with par 1 + k; a tap toggles the cell and its
   neighbours; every generated grid is solvable at par; the

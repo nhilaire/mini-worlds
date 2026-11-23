@@ -18,7 +18,7 @@ function withStars(stars: number, level: number): Save {
 }
 
 const V040 = [
-  ['dash', 'arcade', [450, 550, 950], 'guard', true],
+  ['dash', 'arcade', [250, 450, 800], 'guard', true],
   ['tiles', 'puzzle', [3700, 4650, 8400], 'undo', false],
   ['conquest', 'strategy', [550, 1400, 1700], 'reinforce', false],
   ['defense', 'strategy', [1400, 2150, 3200], 'arsenal', true],

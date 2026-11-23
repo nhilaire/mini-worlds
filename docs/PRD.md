@@ -981,7 +981,7 @@ round or far above every simulated score, it was lowered by hand):
 
 | Game | Bot p25 / median / p90 | Stars |
 |---|---|---|
-| Couleur Éclair | 430 / 470 / 550 (endless, reaction bot) | 450 / 550 / 950 |
+| Couleur Éclair | 430 / 470 / 550 (endless, reaction bot) | 250 / 450 / 800 (lowered by the user, 2026-11-23: families) |
 | Glisse-Fusion | 3 720 / 4 190 / 4 660 | 3 700 / 4 650 / 8 400 |
 | Bataille de Nombres | 540 / 860 / 1 390 (training map, no own moves) | 550 / 1 400 / 1 700 |
 | Mini Défense | 1 400 / 1 600 / 2 170 (3 turrets, 3 enemies, endless) | 1 400 / 2 150 / 3 200 |

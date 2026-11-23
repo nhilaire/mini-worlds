@@ -324,7 +324,7 @@ export const fr = {
     score_maze: `Marquer 300 points à Labyrinthe Express`,
     score_trail: `Marquer 600 points à Fil d'Ariane`,
     score_treasure: `Marquer 400 points à Chasse au Trésor`,
-    score_dash: `Marquer 450 points à Couleur Éclair`,
+    score_dash: `Marquer 250 points à Couleur Éclair`,
     score_tiles: `Marquer 3700 points à Glisse-Fusion`,
     score_conquest: `Marquer 550 points à Bataille de Nombres`,
     score_defense: `Marquer 1400 points à Mini Défense`,

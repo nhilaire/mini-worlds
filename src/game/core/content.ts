@@ -351,7 +351,7 @@ export const GAMES: readonly Game[] = [
   {
     id: 'dash',
     world: 'arcade',
-    stars: [450, 550, 950], // v0.4.0 phone test: endless run, from the reaction bot (p25 430, p90 550, median 470)
+    stars: [250, 450, 800], // v0.4.0 phone test: endless run; the reaction bot gives p25 430, p90 550, median 470, lowered by the user for families
     upgrades: [{ id: 'guard', maxLevel: UPGRADE_MAX_LEVEL }, coinsUpgrade],
     realTime: true,
   },
@@ -508,7 +508,7 @@ export const CHALLENGES: readonly ChallengeDef[] = [
   { id: 'score_maze', kind: 'score', target: 300, game: 'maze', reward: { coins: 50 }, minGames: 1 },
   { id: 'score_trail', kind: 'score', target: 600, game: 'trail', reward: { coins: 50 }, minGames: 1 },
   { id: 'score_treasure', kind: 'score', target: 400, game: 'treasure', reward: { coins: 50 }, minGames: 1 },
-  { id: 'score_dash', kind: 'score', target: 450, game: 'dash', reward: { coins: 50 }, minGames: 1 },
+  { id: 'score_dash', kind: 'score', target: 250, game: 'dash', reward: { coins: 50 }, minGames: 1 },
   { id: 'score_tiles', kind: 'score', target: 3700, game: 'tiles', reward: { coins: 50 }, minGames: 1 },
   { id: 'score_conquest', kind: 'score', target: 550, game: 'conquest', reward: { coins: 50 }, minGames: 1 },
   { id: 'score_defense', kind: 'score', target: 1400, game: 'defense', reward: { coins: 50 }, minGames: 1 },

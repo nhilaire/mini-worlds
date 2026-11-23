@@ -23,7 +23,7 @@ describe('App', () => {
     await render(<App />);
     expect(await screen.findByText('Statistiques anonymes')).toBeTruthy();
     await fireEvent.press(screen.getByText('Refuser'));
-    expect(await screen.findByText('Jouer')).toBeTruthy();
+    expect(await screen.findByTestId('home-play')).toHaveTextContent('Jouer');
     expect(screen.getByText(appName('fr'))).toBeTruthy();
     expect(screen.getByTestId('home-daily')).toBeTruthy();
     expect(screen.getByTestId('challenge-rounds3')).toBeTruthy();
@@ -40,7 +40,7 @@ describe('App', () => {
     await AsyncStorage.setItem('telemetry.consent.v1', 'denied');
     await render(<App />);
     expect(await screen.findByTestId('home-screen')).toBeTruthy();
-    expect(screen.getByText('Play')).toBeTruthy();
+    expect(screen.getByTestId('home-play')).toHaveTextContent('Play');
     expect(screen.getByText(appName('en'))).toBeTruthy();
   });
 
@@ -56,7 +56,7 @@ describe('App', () => {
 
     await screen.unmount();
     await render(<App />);
-    expect(await screen.findByText('Play')).toBeTruthy();
+    expect(await screen.findByTestId('home-play')).toHaveTextContent('Play');
   });
 
   it('goes back to the phone language with the automatic choice (AC-03)', async () => {
@@ -88,7 +88,7 @@ describe('App', () => {
   it('does not ask again once the player has chosen', async () => {
     await AsyncStorage.setItem('telemetry.consent.v1', 'denied');
     await render(<App />);
-    expect(await screen.findByText('Jouer')).toBeTruthy();
+    expect(await screen.findByTestId('home-play')).toHaveTextContent('Jouer');
     expect(screen.queryByText('Statistiques anonymes')).toBeNull();
   });
 

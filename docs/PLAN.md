@@ -138,6 +138,21 @@ v0.4.0 (twelve more games, world Défis opens)
 - [x] T-93 Screens of the 12 v0.4.0 games: tutorial bubble, HUD, input guards, Pause → Quitter (AC-108) - proof: unit
 - [x] T-94 Maestro smoke flow of the twelve v0.4.0 games through /unlocked (AC-109, AC-110) - proof: e2e + device (AC-110)
 
+v0.4.0 phone test changes (PRD amendment 4e3bbd3, approved 2026-11-23)
+
+- [ ] T-95 Daily reward: any missed day resets the calendar to day 1 (AC-11) - proof: unit
+- [ ] T-96 Game of the day core: draw among playable games, saved {date, gameId}, coins x2 at settlement, round_end daily_game, Result line (AC-111, AC-40) - proof: unit
+- [ ] T-97 Home « Jeu du jour » card and game sheet badge, Maestro flow (AC-112) - proof: unit + e2e
+- [ ] T-98 Couleur Éclair endless: approach formula past gate 44, no gate limit, bot reaction time, stars recomputed (AC-96, AC-115) - proof: unit
+- [ ] T-99 Fruits en Fusion until overflow: draws 0-3 / 0-4 / 0-5, red line, HUD fruits dropped, stars recomputed (AC-76, AC-91, AC-115) - proof: unit
+- [ ] T-100 Plombier Express endless: growing grids, allowed taps and timer per grid, HUD, stars recomputed (AC-62, AC-88, AC-115) - proof: unit
+- [ ] T-101 Bataille de Nombres engine: training map, no move onto own territory, enemy rule, outcome preview, 4 battles, stars recomputed (AC-98, AC-115) - proof: unit
+- [ ] T-102 Bataille de Nombres screen: preview labels, 3 tutorial bubbles, own-territory reselect (AC-113) - proof: unit
+- [ ] T-103 Mini Défense engine: 3 turrets, 3 enemies, endless waves, economy, stars recomputed (AC-99, AC-115) - proof: unit
+- [ ] T-104 Mini Défense screen: turret picker, HUD « Vague k » (AC-114) - proof: unit
+- [ ] T-105 Ciel étoilé copy for every star (105), catalogue check (AC-14, AC-95) - proof: unit
+- [ ] T-106 Phone test of the reworked games and the game of the day (AC-116) - proof: device
+
 ## Notes
 
 - Order: foundations and engines first (pure TypeScript, Jest), then screens on top of the engines, then wiring.

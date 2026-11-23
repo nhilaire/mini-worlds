@@ -62,6 +62,34 @@ describe('Plombier Express screen (AC-69)', () => {
   });
   afterEach(() => restore());
 
+  it('AC-62: the grid clock does not run while the tutorial bubble or the pause is shown, and runs while the grid is played', async () => {
+    /** 50 ms frames of the injectable clock (the frame loop counts at most 50 ms per frame). */
+    const frames = async (count: number) => {
+      for (let k = 0; k < count; k++) await advance(50);
+    };
+    await start();
+    expect(screen.getByTestId('tutorial-turn')).toBeTruthy();
+    expect(screen.getByTestId('hud-time')).toHaveTextContent(/^60 s$/);
+    await frames(60); // 3 s behind the bubble
+    expect(screen.getByTestId('hud-time')).toHaveTextContent(/^60 s$/);
+
+    // The first tap dismisses the bubble: the clock runs.
+    const engine = createPipes(SEED, {});
+    const first = engine.path.find((p) => turnsToFit(engine.pieces[p.cell], p.need) !== 0)!.cell;
+    await fireEvent.press(screen.getByTestId(`pipes-cell-${pos(first)}`));
+    expect(screen.queryByTestId('tutorial-bubble')).toBeNull();
+    await frames(41); // a little over 2 s
+    expect(screen.getByTestId('hud-time')).toHaveTextContent(/^58 s$/);
+
+    // Paused: 3 s more change nothing; after « Reprendre » it runs again.
+    await fireEvent.press(screen.getByTestId('game-pause'));
+    await frames(60);
+    await fireEvent.press(await screen.findByTestId('pause-resume'));
+    expect(screen.getByTestId('hud-time')).toHaveTextContent(/^58 s$/);
+    await frames(21);
+    expect(screen.getByTestId('hud-time')).toHaveTextContent(/^57 s$/);
+  });
+
   it('AC-69: a first round shows the tutorial bubble; a tap turns the piece and updates the HUD and water as the engine predicts', async () => {
     await start();
     expect(screen.getByTestId('tutorial-turn')).toHaveTextContent(/Touche un tuyau pour le tourner/);

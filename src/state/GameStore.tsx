@@ -4,6 +4,7 @@ import { createContext, ReactNode, useCallback, useContext, useEffect, useMemo, 
 
 import { today } from '../game/clock';
 import { ensureChallenges } from '../game/core/challenges';
+import { ensureDailyGame } from '../game/core/dailyGame';
 import { AchievementId, GameId, UpgradeId, WORLDS } from '../game/core/content';
 import {
   collectDailyReward,
@@ -21,7 +22,7 @@ import { randomSeed } from '../game/rng';
 import { clearSave, loadSave, writeSave } from '../storage/saveStore';
 import { track } from '../telemetry/telemetry';
 
-export type Round = Omit<RoundInput, 'date' | 'sessionSeed'>;
+export type Round = Omit<RoundInput, 'date' | 'startDate' | 'sessionSeed'>;
 
 export type GameStore = {
   save: Save;
@@ -62,6 +63,8 @@ export function GameStoreProvider({ sessionSeed, testUnlocked = false, children 
   const [toasts, setToasts] = useState<AchievementId[]>([]);
   const saveRef = useRef<Save>(save);
   const roundIndex = useRef(0);
+  /** Local date of the start of the current round (game of the day). */
+  const roundStartDate = useRef<string | null>(null);
 
   // Synchronous updates: actions read and write the ref so that two actions in a row see each other.
   const apply = useCallback((next: Save) => {
@@ -81,7 +84,7 @@ export function GameStoreProvider({ sessionSeed, testUnlocked = false, children 
       const result = await loadSave();
       if (!alive) return;
       const opened = testUnlocked ? { ...result.save, unlockedWorlds: WORLDS.filter((w) => !w.comingSoon).map((w) => w.id), sessionAllGames: true } : result.save;
-      const withDay = ensureChallenges(opened, today(), sessionSeed ?? undefined);
+      const withDay = ensureDailyGame(ensureChallenges(opened, today(), sessionSeed ?? undefined), today(), sessionSeed ?? undefined);
       saveRef.current = withDay;
       setSave(withDay);
       setReadOnly(result.readOnly || testUnlocked);
@@ -101,14 +104,15 @@ export function GameStoreProvider({ sessionSeed, testUnlocked = false, children 
 
   const roundSeed = useCallback(() => {
     roundIndex.current += 1;
+    roundStartDate.current = today();
     return sessionSeed === null ? randomSeed() : (sessionSeed + roundIndex.current) >>> 0;
   }, [sessionSeed]);
 
   const settle = useCallback(
     (round: Round): RoundResult => {
-      const { save: next, result } = settleRound(saveRef.current, { ...round, date: today(), sessionSeed: sessionSeed ?? undefined });
+      const { save: next, result } = settleRound(saveRef.current, { ...round, date: today(), startDate: roundStartDate.current ?? undefined, sessionSeed: sessionSeed ?? undefined });
       apply(next);
-      track('round_end', { game: round.game, score: round.score, duration_s: Math.round(round.durationS), stars_new: result.newStars, outcome: result.outcome });
+      track('round_end', { game: round.game, score: round.score, duration_s: Math.round(round.durationS), stars_new: result.newStars, outcome: result.outcome, daily_game: result.dailyGame });
       for (const up of result.levelUps) track('level_up', { level: up.level });
       for (const world of result.worldsUnlocked) if (world === 'arcade' || world === 'puzzle' || world === 'bubbles') track('world_unlock', { world });
       for (const challenge of result.challengesCompleted) track('daily_challenge_complete', { challenge });
@@ -153,7 +157,7 @@ export function GameStoreProvider({ sessionSeed, testUnlocked = false, children 
   );
 
   const reset = useCallback(async () => {
-    apply(ensureChallenges(resetProgress(saveRef.current), today(), sessionSeed ?? undefined));
+    apply(ensureDailyGame(ensureChallenges(resetProgress(saveRef.current), today(), sessionSeed ?? undefined), today(), sessionSeed ?? undefined));
     track('settings_change', { setting: 'reset', value: 'done' });
     await clearSave();
   }, [apply, sessionSeed]);
@@ -171,7 +175,7 @@ export function GameStoreProvider({ sessionSeed, testUnlocked = false, children 
   const resetTutorial = useCallback((game: GameId) => apply(resetTutorialRule(saveRef.current, game)), [apply]);
 
   const refreshDay = useCallback(() => {
-    const next = ensureChallenges(saveRef.current, today(), sessionSeed ?? undefined);
+    const next = ensureDailyGame(ensureChallenges(saveRef.current, today(), sessionSeed ?? undefined), today(), sessionSeed ?? undefined);
     if (next !== saveRef.current) apply(next);
   }, [apply, sessionSeed]);
 

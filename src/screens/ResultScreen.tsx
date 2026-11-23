@@ -97,6 +97,11 @@ export function ResultScreen({ game, result, onReplay, onUpgrade, onBack }: Prop
                 </Row>
                 <PixelText testID="result-xp">{t.result.xp(result.xp)}</PixelText>
               </Row>
+              {result.dailyGame && (
+                <PixelText size={10} color="accent" testID="result-daily-game">
+                  {t.result.dailyGame}
+                </PixelText>
+              )}
               {result.levelUps.map((up) => (
                 <PixelText key={up.level} size={10} color="accent" testID={`result-level-${up.level}`}>
                   {t.result.levelUp(up.level, up.coins)}

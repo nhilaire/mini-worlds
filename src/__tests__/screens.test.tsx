@@ -182,7 +182,8 @@ describe('result screen (AC-33)', () => {
   );
 
   it('shows new best, new stars, level-up, unlock and challenges only when applicable', async () => {
-    const { result } = settleRound(defaultSave(), { game: 'blocks', score: 2500, durationS: 60, combos: 0, outcome: 'ended', date: '2026-11-11' });
+    const plain = { ...defaultSave(), dailyGame: { date: '2026-11-11', gameId: 'tower' as const } }; // Pluie de Blocs is not the game of the day
+    const { result } = settleRound(plain, { game: 'blocks', score: 2500, durationS: 60, combos: 0, outcome: 'ended', date: '2026-11-11' });
     await render(wrap(<ResultScreen game="blocks" result={{ ...result, levelUps: [{ level: 2, coins: 50 }], worldsUnlocked: ['puzzle'] }} onReplay={() => {}} onUpgrade={() => {}} onBack={() => {}} />));
     expect(screen.getByTestId('result-new-best')).toBeTruthy();
     expect(screen.getAllByTestId('result-stars-on')).toHaveLength(2);
@@ -191,6 +192,14 @@ describe('result screen (AC-33)', () => {
     expect(screen.getByTestId('result-level-2')).toHaveTextContent(/Niveau 2.! \+50 pièces/);
     expect(screen.getByTestId('result-unlock-puzzle')).toHaveTextContent(/Monde débloqué.: Puzzle.!/);
     expect(screen.queryByTestId('result-short')).toBeNull();
+    expect(screen.queryByTestId('result-daily-game')).toBeNull();
+    await screen.unmount();
+
+    // AC-111: a round of the game of the day shows its doubled coins and the line.
+    const daily = settleRound(defaultSave(), { game: 'blocks', score: 2500, durationS: 60, combos: 0, outcome: 'ended', date: '2026-11-11' });
+    await render(wrap(<ResultScreen game="blocks" result={daily.result} onReplay={() => {}} onUpgrade={() => {}} onBack={() => {}} />));
+    expect(screen.getByTestId('result-coins')).toHaveTextContent(/\+320 pièces/); // (10 + 2500/25) × 2 + 2 × 50
+    expect(screen.getByTestId('result-daily-game')).toHaveTextContent(/Jeu du jour.: pièces ×2.!/);
     await screen.unmount();
 
     const again = settleRound(defaultSave(), { game: 'blocks', score: 100, durationS: 60, combos: 0, outcome: 'ended', date: '2026-11-11' });

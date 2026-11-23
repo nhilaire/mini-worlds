@@ -4,6 +4,8 @@ import { addXp, roundCoins, roundXp, spendCoins } from '../../game/core/progress
 import { defaultSave } from '../../game/core/save';
 
 const DATE = '2026-11-11';
+/** A fresh save whose game of the day is another game (Pluie de Blocs is the only playable game of a fresh save). */
+const plainSave = () => ({ ...defaultSave(), dailyGame: { date: DATE, gameId: 'tower' as const } });
 
 describe('round rewards (AC-06)', () => {
   it.each([
@@ -37,7 +39,7 @@ describe('round rewards (AC-06)', () => {
   });
 
   it('a 20 s round is settled', () => {
-    const { save, result } = settleRound(defaultSave(), { game: 'blocks', score: 0, durationS: 20, combos: 0, outcome: 'quit', date: DATE });
+    const { save, result } = settleRound(plainSave(), { game: 'blocks', score: 0, durationS: 20, combos: 0, outcome: 'quit', date: DATE });
     expect(result.short).toBe(false);
     expect(result.coins).toBe(10);
     expect(result.xp).toBe(10);
@@ -85,7 +87,7 @@ describe('levels (AC-07)', () => {
 
 describe('settled round summary', () => {
   it('reports new best, new stars, level-ups and achievements', () => {
-    const { save, result } = settleRound(defaultSave(), { game: 'blocks', score: 1500, durationS: 60, combos: 1, outcome: 'ended', date: DATE });
+    const { save, result } = settleRound(plainSave(), { game: 'blocks', score: 1500, durationS: 60, combos: 1, outcome: 'ended', date: DATE });
     expect(result.newBest).toBe(true);
     expect(result.bestScore).toBe(1500);
     expect(result.starsBefore).toBe(0);

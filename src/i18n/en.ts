@@ -29,6 +29,8 @@ export const en: Strings = {
     nextUnlock: 'Next unlock',
     allUnlocked: 'Every available world is unlocked',
     recent: 'Recent games',
+    dailyGame: 'Game of the day',
+    dailyGameBoost: 'Coins ×2 today',
   },
   worlds: {
     title: 'Worlds',
@@ -268,6 +270,7 @@ export const en: Strings = {
     unlock: (world: string) => `World unlocked: ${world}!`,
     newGame: (game: string) => `New game: ${game}!`,
     challengeDone: (challenge: string) => `Challenge done: ${challenge}`,
+    dailyGame: 'Game of the day: coins ×2!',
     replay: 'Replay',
     upgrade: 'Upgrade',
     back: 'Back',

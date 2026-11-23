@@ -9,10 +9,13 @@ export function roundXp(score: number, newStars: number): number {
   return Math.min(XP_PER_ROUND_CAP, 10 + Math.floor(score / 50)) + XP_PER_NEW_STAR * newStars;
 }
 
-/** Coins of a settled round: floor((10 + floor(score / 25)) × (1 + 0.1 × bonusLevel)) + 50 per new star. */
-export function roundCoins(score: number, newStars: number, coinsBonusLevel: number): number {
+/**
+ * Coins of a settled round: floor((10 + floor(score / 25)) × (1 + 0.1 × bonusLevel) × multiplier) + 50 per new star
+ * (multiplier 2 for the game of the day; the new-star coins are never multiplied).
+ */
+export function roundCoins(score: number, newStars: number, coinsBonusLevel: number, multiplier = 1): number {
   const base = 10 + Math.floor(score / 25);
-  return Math.floor(base * (1 + 0.1 * coinsBonusLevel)) + COINS_PER_NEW_STAR * newStars;
+  return Math.floor(base * (1 + 0.1 * coinsBonusLevel) * multiplier) + COINS_PER_NEW_STAR * newStars;
 }
 
 export type LevelUp = { level: number; coins: number };

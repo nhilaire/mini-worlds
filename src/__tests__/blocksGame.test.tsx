@@ -52,11 +52,12 @@ describe('Pluie de Blocs screen (AC-21, AC-39)', () => {
     await fireEvent.press(await screen.findByTestId('pause-quit'));
     expect(await screen.findByTestId('result-screen')).toBeTruthy();
     expect(screen.queryByTestId('result-short')).toBeNull();
-    expect(screen.getByTestId('result-coins')).toHaveTextContent(/\+10 pièces/);
+    expect(screen.getByTestId('result-coins')).toHaveTextContent(/\+20 pièces/); // 10 × 2: the game of the day of a fresh save
+    expect(screen.getByTestId('result-daily-game')).toBeTruthy();
     expect(screen.getByTestId('result-xp')).toHaveTextContent(/\+10 XP/);
     await fireEvent.press(screen.getByTestId('result-back'));
     expect(await screen.findByTestId('home-screen')).toBeTruthy();
-    expect(screen.getByTestId('home-coins')).toHaveTextContent(/35/); // 10 + « Première partie » 25
+    expect(screen.getByTestId('home-coins')).toHaveTextContent(/45/); // 20 (game of the day) + « Première partie » 25
     expect(screen.getByTestId('challenge-rounds3-progress')).toHaveTextContent(/1 \/ 3/);
   });
 

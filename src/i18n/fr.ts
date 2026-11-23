@@ -29,6 +29,8 @@ export const fr = {
     nextUnlock: 'Prochain déblocage',
     allUnlocked: 'Tous les mondes disponibles sont débloqués',
     recent: 'Derniers jeux',
+    dailyGame: 'Jeu du jour',
+    dailyGameBoost: 'Pièces ×2 aujourd\x27hui',
   },
   worlds: {
     title: 'Les mondes',
@@ -268,6 +270,7 @@ export const fr = {
     unlock: (world: string) => `Monde débloqué${NBSP}: ${world}${NBSP}!`,
     newGame: (game: string) => `Nouveau jeu${NBSP}: ${game}${NBSP}!`,
     challengeDone: (challenge: string) => `Défi réussi${NBSP}: ${challenge}`,
+    dailyGame: `Jeu du jour${NBSP}: pièces ×2${NBSP}!`,
     replay: 'Rejouer',
     upgrade: 'Améliorer',
     back: 'Retour',

@@ -6,7 +6,7 @@ import { applyConsent, track } from '../telemetry/telemetry';
 // The exact catalogue of docs/PRD.md "Telemetry events": names, params, enum values. Nothing else is sent.
 const SAMPLE: { [N in keyof TelemetryEvents]: TelemetryEvents[N] } = {
   round_start: { game: 'blocks' },
-  round_end: { game: 'garden', score: 1500, duration_s: 72, stars_new: 1, outcome: 'ended' },
+  round_end: { game: 'garden', score: 1500, duration_s: 72, stars_new: 1, outcome: 'ended', daily_game: true },
   tutorial_complete: { game: 'bubbles' },
   level_up: { level: 3 },
   world_unlock: { world: 'puzzle' },
@@ -28,7 +28,7 @@ describe('telemetry events (AC-40)', () => {
     expect(logEvent).toHaveBeenCalledTimes(1);
     const [, sentName, sentParams] = jest.mocked(logEvent).mock.calls[0];
     expect(sentName).toBe(name);
-    expect(sentParams).toEqual(SAMPLE[name]);
+    expect(sentParams).toEqual(sanitizeParams(SAMPLE[name] as Record<string, unknown>)); // booleans are sent as 0 / 1
     for (const value of Object.values(sentParams as Record<string, unknown>)) {
       expect(typeof value === 'number' || /^[a-z0-9_]{1,36}$/.test(String(value))).toBe(true);
     }

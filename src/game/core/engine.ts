@@ -4,6 +4,7 @@ import { AchievementId, ChallengeId, GameId, mergeStars, SHORT_ROUND_SECONDS, st
 import { checkAchievements } from './achievements';
 import { applyRoundToChallenges, ensureChallenges } from './challenges';
 import { collectDaily, DailyCollection } from './daily';
+import { DAILY_GAME_COINS_MULTIPLIER, dailyGameFor, ensureDailyGame } from './dailyGame';
 import { addCoins, addXp, LevelUp, roundCoins, roundXp } from './progression';
 import { defaultGameSave, gameSave, Save, upgradeLevel } from './save';
 import { checkUnlocks, newlyUnlockedGames } from './unlocks';
@@ -20,6 +21,8 @@ export type RoundInput = {
   outcome: RoundOutcome;
   /** Local date of the end of the round (YYYY-MM-DD). */
   date: string;
+  /** Local date of the start of the round (game of the day); defaults to `date`. */
+  startDate?: string;
   /** Session seed when the app was opened through the seed link (challenge draw). */
   sessionSeed?: number;
 };
@@ -43,6 +46,8 @@ export type RoundResult = {
   allChallengesBonus: boolean;
   achievementsUnlocked: AchievementId[];
   outcome: RoundOutcome | 'short';
+  /** A settled round of the game of the day (round coins doubled). */
+  dailyGame: boolean;
 };
 
 function recordDay(save: Save, date: string): Save {
@@ -76,12 +81,16 @@ export function settleRound(save: Save, round: RoundInput): { save: Save; result
     allChallengesBonus: false,
     achievementsUnlocked: [],
     outcome: round.outcome,
+    dailyGame: false,
   };
   if (round.durationS < SHORT_ROUND_SECONDS) {
     return { save: recordRecent(save, round.game), result: { ...base, short: true, outcome: 'short' } };
   }
 
+  // The game of the day is the one of the date the round started (saved before a later unlock can change the draw).
+  const dailyGame = dailyGameFor(save, round.startDate ?? round.date, round.sessionSeed) === round.game;
   let next = ensureChallenges(recordDay(recordRecent(save, round.game), round.date), round.date, round.sessionSeed);
+  next = ensureDailyGame(next, round.date, round.sessionSeed);
 
   // Stars and best score.
   const earned = starsForScore(round.game, round.score);
@@ -92,7 +101,7 @@ export function settleRound(save: Save, round: RoundInput): { save: Save; result
   next = { ...next, games: { ...next.games, [round.game]: game }, profile: { ...next.profile, roundsPlayed: next.profile.roundsPlayed + 1 } };
 
   // Coins and XP of the round.
-  const coins = roundCoins(round.score, newStars, upgradeLevel(next, round.game, 'coins'));
+  const coins = roundCoins(round.score, newStars, upgradeLevel(next, round.game, 'coins'), dailyGame ? DAILY_GAME_COINS_MULTIPLIER : 1);
   const xp = roundXp(round.score, newStars);
   next = { ...next, profile: addCoins(next.profile, coins) };
   const leveled = addXp(next.profile, xp);
@@ -123,6 +132,7 @@ export function settleRound(save: Save, round: RoundInput): { save: Save; result
       newStars,
       coins,
       xp,
+      dailyGame,
       levelUps: [...leveled.levelUps, ...challengeLevels.levelUps],
       worldsUnlocked: [...unlocks.unlocked, ...unlocksAfter.unlocked],
       gamesUnlocked: newlyUnlockedGames(save, next),

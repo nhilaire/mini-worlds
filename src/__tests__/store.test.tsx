@@ -71,7 +71,7 @@ describe('game store persistence (AC-15)', () => {
       const second = store?.settle({ game: 'blocks', score: 100, durationS: 30, combos: 0, outcome: 'ended' });
       coins = second?.coins ?? 0;
     });
-    expect(coins).toBe(14);
+    expect(coins).toBe(28); // (10 + 100/25) × 2: Pluie de Blocs is the game of the day of a fresh save (AC-111)
     expect(store?.save.profile.roundsPlayed).toBe(2);
     expect(store?.toasts).toEqual(['first_round']);
     await act(async () => store?.dismissToast());

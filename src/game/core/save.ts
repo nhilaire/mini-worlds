@@ -27,6 +27,9 @@ export type ChallengesSave = {
   gamesPlayed: GameId[];
 };
 
+/** Game of the day (v0.4.0 phone test): saved the first time it is computed on a local date. */
+export type DailyGameSave = { date: string | null; gameId: GameId | null };
+
 export type ThemeSetting = 'auto' | 'light' | 'dark';
 
 export type SettingsSave = {
@@ -52,6 +55,7 @@ export type Save = {
   games: Record<string, GameSave>; // keyed by game id; unknown ids are kept
   unlockedWorlds: WorldId[];
   dailyReward: DailyRewardSave;
+  dailyGame: DailyGameSave;
   challenges: ChallengesSave;
   achievements: AchievementId[];
   settings: SettingsSave;
@@ -80,6 +84,7 @@ export function defaultSave(): Save {
     games: Object.fromEntries(GAME_IDS.map((id) => [id, defaultGameSave()])),
     unlockedWorlds: ['arcade'],
     dailyReward: { lastCollectedDate: null, calendarDay: 0 },
+    dailyGame: { date: null, gameId: null },
     challenges: { date: null, ids: [], progress: {}, completed: [], allDoneBonus: false, gamesPlayed: [] },
     achievements: [],
     settings: { sound: true, vibrations: true, theme: 'auto' },

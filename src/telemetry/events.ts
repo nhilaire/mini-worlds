@@ -89,7 +89,7 @@ export type SettingId = 'sound' | 'vibrations' | 'theme' | 'language' | 'stats' 
 
 export type TelemetryEvents = {
   round_start: { game: GameId };
-  round_end: { game: GameId; score: number; duration_s: number; stars_new: number; outcome: RoundOutcome };
+  round_end: { game: GameId; score: number; duration_s: number; stars_new: number; outcome: RoundOutcome; daily_game: boolean };
   tutorial_complete: { game: GameId };
   level_up: { level: number };
   world_unlock: { world: WorldId };

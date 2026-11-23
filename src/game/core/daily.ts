@@ -31,8 +31,7 @@ export function nextCalendarDay(state: DailyRewardSave, date: string): number {
   if (state.lastCollectedDate === null || state.calendarDay === 0) return 1;
   const gap = daysBetween(state.lastCollectedDate, date);
   if (gap === 1) return (state.calendarDay % CALENDAR_DAYS) + 1; // consecutive day: advance (7 wraps to 1)
-  if (gap === 2) return state.calendarDay; // one missed day: same day again
-  return 1; // two or more missed days: reset
+  return 1; // any missed day resets the calendar (v0.4.0 phone test)
 }
 
 export type DailyCollection = { day: number; coins: number; xp: number };

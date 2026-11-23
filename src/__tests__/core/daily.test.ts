@@ -31,14 +31,16 @@ describe('daily reward (AC-11)', () => {
     expect(canCollectDaily(save.dailyReward, '2026-11-01')).toBe(false);
   });
 
-  it('one missed day keeps the calendar day, two missed days reset it', () => {
+  it('AC-11: any missed day resets the calendar to day 1', () => {
     let save = collect(defaultSave(), '2026-11-01').save;
     save = collect(save, '2026-11-02').save; // day 2
-    expect(nextCalendarDay(save.dailyReward, '2026-11-04')).toBe(2); // 11-03 missed
-    const kept = collect(save, '2026-11-04');
-    expect(kept.result.reward.day).toBe(2);
-    expect(nextCalendarDay(kept.save.dailyReward, '2026-11-07')).toBe(1); // 11-05 and 11-06 missed
-    expect(collect(kept.save, '2026-11-07').result.reward.day).toBe(1);
+    save = collect(save, '2026-11-03').save; // day 3
+    expect(nextCalendarDay(save.dailyReward, '2026-11-05')).toBe(1); // 11-04 missed
+    const reset = collect(save, '2026-11-05');
+    expect(reset.result.reward.day).toBe(1);
+    expect(reset.result.reward.coins).toBe(100);
+    expect(nextCalendarDay(reset.save.dailyReward, '2026-11-06')).toBe(2);
+    expect(nextCalendarDay(reset.save.dailyReward, '2026-11-09')).toBe(1); // 3 days missed
   });
 
   it('a device date earlier than the last collection counts as collected', () => {

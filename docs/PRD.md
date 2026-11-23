@@ -5,7 +5,8 @@ Project slug: mini-worlds
 Final app name: Bric-à-Jeux
 Android package: io.github.nhilaire.miniworlds
 Version target: 0.4.0
-Last updated: 2026-11-22 (v0.4.0: twelve more games, world Défis opens; replaces v0.3.0, never accepted on the phone)
+Last updated: 2026-11-23 (v0.4.0 phone test: daily reward reset, game of the day, Couleur Éclair, Fruits en Fusion,
+Plombier Express, Mini Défense and Bataille de Nombres reworked; v0.4.0: twelve more games, world Défis opens)
 
 > Written in English. Player-facing text is quoted in the "Player copy" section, in every language of the game
 > (`factory-app.json` "languages"; French is the reference).
@@ -68,7 +69,9 @@ Three bottom tabs: Accueil (Home), Jeux (Games), Profil (Profile). A game is at 
 - **Home** (tab): level badge and XP bar (« Niveau 4 · 120 / 400 XP »), coin balance, daily reward card when a
   reward is available (opens Daily reward), big « Jouer » button (opens the last played game, or Pluie de Blocs
   if none), the three daily challenges with progress (« 2 / 3 »), « Prochain déblocage » card (world name and
-  progress of each condition), « Derniers jeux » row (up to 3 game chips, tap opens the game sheet).
+  progress of each condition), « Derniers jeux » row (up to 3 game chips, tap opens the game sheet), « Jeu du jour » card under the daily
+  reward card (game icon and name, « Pièces ×2 aujourd'hui », « Jouer » starts that game at once; see Rules / Game
+  of the day).
 - **Worlds** (tab « Jeux »): vertical list of the 10 world cards: pixel icon, name, state (open / locked /
   coming soon), stars « 2 / 3 » (available stars = 3 × games present), games « 1 / 5 ». A locked world shows
   its condition(s) with progress; a coming-soon world shows « Bientôt » and its indicative condition. Tap on an
@@ -104,6 +107,7 @@ flowchart LR
   Consent --> Home
   Home -- Jouer --> Game
   Home -- daily card --> Daily
+  Home -- Jeu du jour --> Game
   Home -- tab --> Worlds --> WorldDetail --> GameSheet --> Game
   GameSheet --> Upgrades
   Game --> Pause --> Game
@@ -164,14 +168,14 @@ forever (a lower score later never removes one). 69 stars exist in v0.3.0.
 | Tour Bancale | 150 | 300 | 500 |
 | Saute-Lapin | 150 | 350 | 600 |
 | Lucioles | 500 | 750 | 950 |
-| Plombier Express | 700 | 1 100 | 1 400 |
+| Plombier Express | from the casual bot (v0.4.0 phone test) | | |
 | Raz-de-Couleurs | 800 | 2 000 | 3 500 |
 | Chaussettes Perdues | 800 | 1 600 | 2 800 |
 | Vingt-et-Un | 400 | 600 | 750 |
 | Bougies Folles | 200 | 450 | 800 |
 | Perroquet Copieur | 150 | 400 | 800 |
 | Champ de Taupes | 400 | 900 | 1 500 |
-| Fruits en Fusion | 3 550 | 4 400 | 7 850 |
+| Fruits en Fusion | from the casual bot (v0.4.0 phone test) | | |
 | Bloc Glissant | 500 | 900 | 1 300 |
 | Suite de Cartes | 500 | 750 | 950 |
 | Tri de Billes | 300 | 700 | 1 000 |
@@ -255,11 +259,26 @@ The v0.2.0, v0.3.0 and v0.4.0 games have two upgrades each: the one above and «
 - A day is identified by the device's local date (YYYY-MM-DD). The reward can be collected at most once per local
   date. The save keeps `lastCollectedDate` (none at first) and `calendarDay` (0 at first, then 1-7): without
   `lastCollectedDate`, the first collection is day 1.
-- Collecting on the day after `lastCollectedDate` advances `calendarDay` by one (8 wraps to 1). A gap of exactly
-  one missed day keeps `calendarDay` (the player collects the same day again). A gap of two or more missed days
-  resets `calendarDay` to 1. A device date earlier than `lastCollectedDate` counts as already collected.
+- Collecting on the day after `lastCollectedDate` advances `calendarDay` by one (8 wraps to 1). Any missed day (a
+  gap of one day or more) resets `calendarDay` to 1 (v0.4.0 phone test: « il faut revenir au début si on rate un
+  jour pour inciter à revenir tous les jours »). A device date earlier than `lastCollectedDate` counts as already collected.
 - The Home card appears when the reward is collectable; the reward is added when « Récupérer » is tapped (never
   silently).
+
+### Game of the day (v0.4.0 phone test)
+
+- Each local date has one game of the day, drawn among the playable games (world unlocked and game unlocked in its
+  world), listed in catalogue order: index = (hash of the date) mod (number of playable games), with the same date
+  hash as the daily challenges (or the session seed). It is identical for the same date and the same set of playable
+  games (players with different progress may get different games). The first time it is computed on a local date it
+  is saved as `dailyGame {date, gameId}`, so a game unlocked later that day does not change it before midnight.
+- Home shows the « Jeu du jour » card under the daily reward card: the game's icon and name, « Pièces ×2
+  aujourd'hui » and « Jouer », which starts a round of that game at once (its tutorial still runs on a first round).
+  Its game sheet shows the same « Pièces ×2 aujourd'hui » badge.
+- A settled round of the game of the day, started on that local date, has its round coins doubled: coins = floor((10
+  + floor(score / 25)) × « Bonus pièces » multiplier × 2); the 50 coins per new star are not doubled. A short round
+  still earns nothing. The Result screen shows « Jeu du jour : pièces ×2 ! » next to the coins. The doubled coins
+  count for the challenge « Gagner 200 pièces en jouant » and for the lifetime coins.
 
 ### Daily challenges
 
@@ -291,7 +310,7 @@ The v0.2.0, v0.3.0 and v0.4.0 games have two upgrades each: the one above and «
 | rounds10 | Dix parties | 10 rounds | 50 coins |
 | rounds100 | Cent parties | 100 rounds | 200 coins |
 | first_star | Première étoile | 1 star | 50 coins |
-| all_stars | Ciel étoilé | 69 stars | 500 coins |
+| all_stars | Ciel étoilé | every star of the version (105 in v0.4.0) | 500 coins |
 | explorer | Explorateur | 3 games played at least once | 100 coins |
 | globetrotter | Globe-trotteur | 10 different games played at least once | 200 coins |
 | first_upgrade | Bricoleur | 1 upgrade bought | 50 coins |
@@ -456,17 +475,23 @@ Common rules of the ten games:
 
 #### Plombier Express (world Puzzle, 3rd game) - turn based
 
-- Grid 5 × 5 of pipe pieces (straight or elbow). Water enters the left side of a seeded row and must leave by the
-  right side of a seeded row. Each grid holds one seeded self-avoiding path from entry to exit (pieces matching
-  the path); the other cells get random pieces; every cell is then turned a random number of quarter turns.
+- Grids of pipe pieces (straight or elbow) follow one another without end (v0.4.0 phone test: « la partie se
+  termine trop vite »): grids 1 to 3 are 4 × 4, grids 4 to 6 are 5 × 5, grid 7 and the next ones are 6 × 6. Water
+  enters the left side of a seeded row and must leave by the right side of a seeded row. Each grid holds one seeded
+  self-avoiding path from entry to exit (pieces matching the path); the other cells get random pieces; every cell
+  is then turned a random number of quarter turns.
 - Tap a piece: it turns a quarter turn clockwise. The grid is solved when the pieces connected from the entry
   reach the exit (any path counts). Pieces connected to the entry are drawn filled with water.
 - Par = the sum over the path cells of the quarter turns that bring them back (a straight piece needs 0 or 1).
-  Grid score: max(50, 300 − 15 × (taps beyond par)); a grid still unsolved after par + 20 taps is failed (0 points);
-  hints are not taps. A grid that is already solved after the random turns is turned again (par ≥ 1). A round is
-  5 grids (maximum 1 500 points).
+  Allowed taps of grid k: par + max(6, 21 − k) (par + 20 on grid 1, par + 6 from grid 15). Grid score: max(50, 300
+  − 15 × (taps beyond par)); hints are not taps. A grid that is already solved after the random turns is turned
+  again (par ≥ 1). Each grid also has a time limit of max(15, 63 − 3 × k) seconds (60 s on grid 1, 15 s from grid 16; the
+  clock is injectable and stops while the tutorial bubble, the pause or the solved grid of 1 s is shown). The round
+  ends at the first grid still unsolved when its allowed taps are used or its time is up (that grid scores 0), so
+  even a careful player ends (choice of the user after review).
 - « Indice »: 1 / 2 / 3 hints per round; a hint highlights a path cell that is not yet turned right.
-- Combo (challenges): a grid solved in at most par taps. HUD: grid k / 5, taps. Stars 700 / 1 100 / 1 400.
+- Combo (challenges): a grid solved in at most par taps. HUD: grid k, taps / allowed taps, seconds left. Stars from the casual
+  bot (rule of v0.4.0; bot: turns path cells right with a seeded error rate, capped at 60 grids in tests).
 - Tutorial bubble: « Touche un tuyau pour le tourner. Relie l'eau à la sortie ! » (dismissed by a tap).
 
 #### Raz-de-Couleurs (world Bubbles, 2nd game) - turn based
@@ -571,14 +596,17 @@ a world keep the rule 2 × (k − 1) stars in that world. 69 stars exist in v0.3
   cells (left-most on a tie); every fruit then falls (gravity), and every fruit that was created or moved is checked
   again, bottom-up then left to right, until nothing merges. Two pastèques that touch vanish.
 - Points: each merge scores 10 × 2^(index of the new fruit) (fraise 20 ... pastèque 1 280); pastèques vanishing 2 000.
-- A round is 40 fruits (HUD: fruits left). A tap on a full column is ignored. The round ends after the 40th drop and
-  its merges, or earlier when the next fruit fits in no column (amended while building: a player dropping on a matching
-  fruit never lost, so the round never ended). Stars are set from the casual bot (1 star ≈ its p25, 2 stars ≈ its p90,
-  3 stars ≈ twice its median, rounded to 50).
+- No fruit limit (v0.4.0 phone test: « on arrive à la fin trop vite », « il n'est pas assez long »): the round ends
+  when the jar overflows, that is when, after a drop and its merges, the next fruit fits in no column. A tap on a
+  full column is ignored; a column holding 7 fruits or more shows a red line at its top. Fruits 1 to 40 are drawn
+  among indexes 0-3, fruits 41 to 120 among indexes 0-4, from the 121st among indexes 0-5 (seeded), so the jar fills
+  faster and even a careful player overflows in the end. Stars are set from the casual
+  bot (1 star ≈ its p25, 2 stars ≈ its p90, 3 stars ≈ twice its median, rounded to 50); bot rounds are capped at 400
+  drops in tests.
 - Input guard: the drop and its merges play in 300 ms; taps are ignored meanwhile.
 - « Coup de balai »: 1 / 2 / 3 uses per round; a use clears the bottom row (no points), fruits above fall and merge.
-- Combo (challenges): a drop that chains 2 merges or more. HUD: next fruit, fruits left. Stars 3 550 / 4 400 / 7 850 (casual bot:
-  drops on the column whose top fruit matches, else the lowest column).
+- Combo (challenges): a drop that chains 2 merges or more. HUD: next fruit, fruits dropped. Casual bot: drops on the
+  column whose top fruit matches, else the lowest column.
 - Tutorial bubble: « Touche une colonne pour lâcher le fruit. Deux fruits pareils fusionnent ! »
 
 #### Bloc Glissant (world Puzzle, 4th game) - turn based
@@ -754,8 +782,11 @@ Game ids: dash, tiles, conquest, defense, hands, patience, darts, shot, pattern,
   streak grows, else one life is lost and the streak is reset. 3 lives.
 - After gates 4, 8, 12... the runner takes a new colour (seeded, different from the current one), shown from the
   start of the next approach.
-- Approach time of gate n (1-based): max(900, 2 200 − 30 × (n − 1)) ms. The approach does not run while the tutorial
-  bubble or the pause is shown. A round ends at the 3rd life lost or after gate 60.
+- Approach time of gate n (1-based): 2 200 − 30 × (n − 1) ms up to gate 44 (910 ms), then max(600, 910 − 5 × (n −
+  44)) ms (600 ms from gate 106). The approach does not run while the tutorial bubble or the pause is shown. The round
+  ends at the 3rd life lost, never after a number of gates (v0.4.0 phone test: « il faudrait jouer jusqu'à ce qu'on
+  perde »). Stars from the casual bot (rule of v0.4.0); the bot reaches the right lane only when the approach lasts
+  at least its seeded reaction time (700 to 1 100 ms per gate), else it stays in its lane.
 - « Bouclier » (id guard): 1 / 2 / 3 wrong doors per round cost no life (the streak is still reset).
 - Combo: every 5th door in a row. HUD: lives, gates passed, the runner's colour.
 - Tutorial bubble: « Touche à gauche, au milieu ou à droite : passe la porte de ta couleur ! »
@@ -778,37 +809,60 @@ Game ids: dash, tiles, conquest, defense, hands, patience, darts, shot, pattern,
 - Tutorial bubble: « Glisse pour pousser toutes les gemmes. Deux pareilles fusionnent ! »
 
 #### Bataille de Nombres (world Stratégie, 3rd game) - turn based
-- A map of territories joined by roads (3 fixed maps of 5, 6 and 7 territories, played in this order). Each
-  territory holds units; the player owns one (blue, 10 units), the enemy one (red, 10 units), the others are neutral
-  (grey, seeded 2 to 8 units). Owners are told by colour and by an emblem.
-- A turn: tap one of your territories with 2 units or more, then a territory joined to it: all its units but one
-  march. Onto your own territory they add up. Otherwise, if they outnumber the units there, the territory is taken
-  and holds the difference; else its units drop by the number sent (0 stays to its owner). Tapping the selected
-  territory again unselects it. « Passer » skips the turn.
+- A map of territories joined by roads: a training map of 3 territories in a line (player 10 units, neutral 3,
+  enemy 6), then 3 fixed maps of 5, 6 and 7 territories, played in this order (v0.4.0 phone test: « ça a l'air super
+  compliqué »). Each territory holds units; the player owns one (blue, 10 units), the enemy one (red, 10 units, 6 on
+  the training map), the others are neutral (grey, seeded 2 to 8 units). Owners are told by colour and by an emblem.
+- A turn: tap one of your territories with 2 units or more: it is selected, and each neighbour that is not yours
+  shows the outcome of an attack, « Pris · n » (taken, n units left there) or « Reste n » (not taken, n units left).
+  Then tap such a neighbour: all the units but one march; if they outnumber the units there, the territory is taken
+  and holds the difference; else its units drop by the number sent (0 stays to its owner). Units never move onto
+  one's own territory (simpler rule chosen after the phone test): tapping another of your territories selects it
+  instead. Tapping the selected territory again unselects it. « Passer » skips the turn.
 - Then the enemy plays one move with the same rules (the attack that takes a territory with the most units left;
-  else, if none, the move from its strongest territory onto its weakest neighbour it owns; else it passes), then
-  every territory owned by the player or the enemy gains 1 unit.
+  else it passes; on the training map it always passes), then every territory owned by the player or the enemy
+  gains 1 unit.
 - A battle ends when one side owns no territory, or after 15 turns. Battle score: 60 per territory owned + 200 if the
-  enemy owns none + 10 per turn not played after such a win. A lost battle (no territory) scores 0. A round is the 3
-  battles.
-- « Renforts » (id reinforce): the player's first territory starts with +2 / +4 / +6 units.
+  enemy owns none + 10 per turn not played after such a win. A lost battle (no territory) scores 0. A round is the 4
+  battles (training map included).
+- « Renforts » (id reinforce): the player's first territory starts with +2 / +4 / +6 units, in each battle.
 - Input guard: a move and the enemy's answer play in 600 ms; taps are ignored meanwhile.
-- Combo: a battle won. HUD: battle k / 3, turns left.
-- Tutorial bubble: « Touche ton territoire puis un voisin : tes unités attaquent si elles sont plus nombreuses ! »
+- Combo: a battle won. HUD: battle k / 4, turns left. Stars from the casual bot (rule of v0.4.0).
+- Tutorial: three bubbles in order on the training map: « Touche ton territoire bleu, puis un voisin : tes unités
+  attaquent ! » (dismissed by the first move), then « Ensuite, l'ennemi rouge joue à son tour. » (dismissed by a tap),
+  then « À chaque tour, tes territoires gagnent 1 unité. Prends-les tous ! » (dismissed by a tap). The flag
+  `tutorialDone` is saved after the third.
 
 #### Mini Défense (world Stratégie, 4th game) - turn based planning, real-time waves
-- A fixed winding path of 20 cells and 6 turret slots beside it. A turret hits the enemies on the path cells within
-  2 cells of its slot (Chebyshev distance). 5 lives, 120 gold at the start, 6 waves.
-- Between waves: tap an empty slot to build a turret (50 gold, level 1), tap a turret to upgrade it (level 2: 40
-  gold, level 3: 80 gold). Level 1 / 2 / 3: 1 / 2 / 3 damage per shot, one shot every 600 ms at the enemy furthest
-  along the path within range. « Lancer la vague » starts the wave; nothing can be built during a wave.
-- Wave w (1 to 6): 4 + 2w enemies, one every 700 ms, each with 2 + w health points, walking one cell every
-  max(250, 500 − 40 × (w − 1)) ms. The simulation advances in ticks of 50 ms of the injectable clock.
-- An enemy killed: +10 points and +8 gold. An enemy that leaves the path: −1 life. A wave without any leak: +100.
-  The round ends after wave 6 (+30 per life left) or when no life is left.
+- A fixed winding path of 20 cells on a 6 × 9 grid and 6 turret slots beside it (covering 4, 6, 4, 6, 5 and 2 path
+  cells within 2 cells, Chebyshev distance). 5 lives, 100 gold at the start. Waves follow one another without end;
+  the round ends when no life is left (v0.4.0 phone test: « ça manque de stratégie », « ça s'arrête trop vite »).
+- Between waves, tap an empty slot: a picker shows the three turrets (name, cost, effect; unaffordable ones
+  disabled). Every turret shoots the enemy furthest along the path within 2 cells of its slot.
+
+  | Turret (id) | Cost | Damage per shot | One shot every | Effect |
+  |---|---|---|---|---|
+  | Rapide (rapid) | 40 | 1 | 400 ms | one target |
+  | Canon (cannon) | 70 | 3 | 1 500 ms | also hits every enemy on the path cells just before and after the target |
+  | Givre (frost) | 50 | 1 | 1 000 ms | the target walks twice slower for 1 500 ms, even a blindé whose armour cancels the damage |
+
+  Tap a turret to upgrade it: level 2 costs 40 gold, level 3 costs 80 gold; level L multiplies its damage by L.
+  « Lancer la vague » starts the wave; nothing can be built during a wave.
+- Wave w (1, 2, 3...): min(30, 4 + 2w) enemies, one every 700 ms. H(w) = round(3 × 1.25^(w − 1)) and S(w) = max(250,
+  500 − 40 × (w − 1)) ms. Three enemies, each with its own shape: normal (H(w) health, one cell every S(w)), rapide
+  (ceil(H(w) / 2) health, one cell every 0.6 × S(w) rounded to 10 ms), blindé (2 × H(w) health, one cell every
+  1.4 × S(w) rounded to 10 ms, armour: each hit loses 1 damage, so a hit of 1 does nothing). Waves 1 and 2 are only
+  normal; from wave 3 each enemy draws u in [0, 1) (seeded): rapide when u < pR = min(0.4, 0.1 × (w − 2)), blindé
+  when u < pR + pB with pB = min(0.3, 0.1 × (w − 3)) from wave 4, else normal. The simulation advances in ticks of 50
+  ms of the injectable clock.
+- A normal or rapide enemy killed: +10 points and +6 gold; a blindé: +20 points and +12 gold. An enemy that leaves
+  the path: −1 life. A wave without any leak: +100 points and +20 gold.
 - « Arsenal » (id arsenal): +20 / +40 / +60 gold at the start.
-- Combo: a wave without any leak. HUD: lives, gold, wave k / 6.
-- Tutorial bubble: « Pose des tourelles près du chemin, puis lance la vague ! »
+- Combo: a wave without any leak. HUD: lives, gold, wave k. Stars from the casual bot (rule of v0.4.0; bot: before
+  each wave, builds in the free slot covering most path cells the turret of the rotation Rapide, Canon, Givre when
+  affordable, else upgrades the turret covering most cells; capped at 60 waves in tests).
+- Tutorial bubble: « Touche un emplacement et choisis une tourelle : le Canon perce les blindés, le Givre
+  ralentit ! »
 
 #### Mains de Cartes (world Cartes, 4th game) - turn based
 - Each hand: a fresh seeded shuffle of the 52 cards, 5 cards dealt. Tap the cards to keep (tap again to release),
@@ -927,10 +981,10 @@ round or far above every simulated score, it was lowered by hand):
 
 | Game | Bot p25 / median / p90 | Stars |
 |---|---|---|
-| Couleur Éclair | 160 / 210 / 310 | 150 / 300 / 400 |
+| Couleur Éclair | recomputed (v0.4.0 phone test) | from the casual bot |
 | Glisse-Fusion | 3 720 / 4 190 / 4 660 | 3 700 / 4 650 / 8 400 |
-| Bataille de Nombres | 500 / 590 / 1 090 | 500 / 1 100 / 1 200 |
-| Mini Défense | 950 / 1 270 / 1 410 | 950 / 1 250 / 1 400 |
+| Bataille de Nombres | recomputed (v0.4.0 phone test) | from the casual bot |
+| Mini Défense | recomputed (v0.4.0 phone test) | from the casual bot |
 | Mains de Cartes | 130 / 180 / 290 | 150 / 250 / 350 |
 | Réussite Express | 270 / 330 / 445 | 250 / 450 / 650 |
 | Lancer de Cible | 350 / 390 / 540 | 350 / 550 / 800 |
@@ -942,7 +996,7 @@ round or far above every simulated score, it was lowered by hand):
 
 Readings fixed while building (each is in the header of its engine): Couleur Éclair starts in the middle lane with
 a seeded colour; Glisse-Fusion: a diamant merges with nothing and « Annuler » does not rewind the seeded draw;
-Bataille de Nombres: « Renforts » applies to each of the 3 battles and a finished battle stays 900 ms; Mini Défense:
+Bataille de Nombres: « Renforts » applies to each of the 4 battles (training map included) and a finished battle stays 900 ms; Mini Défense:
 6 × 9 grid, slots covering 4, 6, 4, 6, 5 and 2 path cells; Mains de Cartes: a hand scores at the end of its exchange
 and stays 900 ms, the next one is dealt by itself; Réussite Express: an armed joker is only spent on a card that is
 not a neighbour, a deal is not stuck while a joker is left; Lancer de Cible: a bounced dart is not consumed, exactly
@@ -950,12 +1004,28 @@ not a neighbour, a deal is not stuck while a joker is left; Lancer de Cible: a b
 target to the next (start 45° and 5); Suite Logique: a number question is kept only when no other simple rule fits
 its 4 terms; Chaîne de Nombres: a tap that cannot extend the chain cancels it.
 
-Balance notes for the phone test (not blocking): Mini Défense is decided in waves 1 and 2 (afterwards gold outruns
-the waves); a random player of Glisse-Fusion comes close to 1 star; level 8 of Lancer de Cible forgives very little.
+Balance notes for the phone test (not blocking; Mini Défense was reworked after it): a random player of Glisse-Fusion comes close to 1 star; level 8 of Lancer de Cible forgives very little.
 
 Upgrades of v0.4.0: Bouclier (guard), Annuler (undo), Renforts (reinforce), Arsenal (arsenal), Seconde donne
 (redraw), Joker (wild), Main sûre (steady), Viseur (sight), Sablier (extra_time: +5 s for Suite Logique), Mélange
 (shuffle), Indice (hint, shared: Miroirs et Laser, Duo Synchro).
+
+#### v0.4.0 phone test changes
+
+First phone test of v0.4.0 (2026-11-23, Android 11 phone), decisions of the user; each rule is written in its own
+section above, and the version stays 0.4.0 (never accepted yet):
+
+- Daily reward: any missed day resets the calendar to day 1.
+- New: the game of the day, with coins ×2 on its rounds all day, started from a Home card.
+- Couleur Éclair, Fruits en Fusion, Plombier Express and Mini Défense are played until the player loses (no fixed
+  number of gates, fruits, grids or waves); Plombier grids grow from 4 × 4 to 6 × 6; Mini Défense gains three
+  turrets and three enemies with less gold.
+- Bataille de Nombres: outcome preview before an attack, a training map with a passive enemy, a 3-bubble tutorial,
+  and no move onto one's own territory.
+- The stars of these five games are recomputed from their casual bot (1 star ≈ its p25, 2 stars ≈ its p90, 3 stars
+  ≈ twice its median, rounded to 50) while building and written in the Stars tables and the catalogue; every bot
+  round ends (caps stated in each section).
+- The other games keep their fixed end for now (the user will report them later).
 
 ### Tutorial (guided first round)
 
@@ -968,7 +1038,7 @@ clears it. Real-time games pause their timers while a bubble is shown.
 - One local save (AsyncStorage, key `save`), JSON with `schemaVersion: 1`, written after every change
   (debounced 300 ms) and read at start. Content: profile (xp, level, coins, lifetimeCoins, roundsPlayed,
   daysPlayed, lastPlayedDate, lastPlayedGame), per-game data keyed by game id (bestScore, stars, rounds,
-  upgrades levels, tutorialDone), unlockedWorlds, daily reward state, daily challenges state (date, ids,
+  upgrades levels, tutorialDone), unlockedWorlds, daily reward state, game of the day (date, gameId), daily challenges state (date, ids,
   progress, completed), achievements unlocked, settings (sound, vibrations, theme, language, consent).
 - Unknown game ids and unknown fields are preserved, not dropped; a missing field takes its default. A save with
   a higher schemaVersion than the app knows is kept untouched: the app starts with defaults in memory and
@@ -997,12 +1067,12 @@ clears it. Real-time games pause their timers while a bubble is shown.
 ## Telemetry events
 
 Only events listed here may be sent (after consent). Params: numbers, booleans or short enums. No identifiers.
-`game` ∈ {blocks, garden, bubbles, tower, hop, lights, pipes, flood, socks, twentyone, candles, parrot, moles, fruit, slide, cardline, marbles, quicksum, army, merge, maze, trail, treasure, dash, tiles, conquest, defense, hands, patience, darts, shot, pattern, chain, laser, twins}; `world` ∈ {arcade, puzzle, strategy, cards, bubbles, skill, exploration, memory}; `outcome` ∈ {ended, quit, short}.
+`game` ∈ {blocks, garden, bubbles, tower, hop, lights, pipes, flood, socks, twentyone, candles, parrot, moles, fruit, slide, cardline, marbles, quicksum, army, merge, maze, trail, treasure, dash, tiles, conquest, defense, hands, patience, darts, shot, pattern, chain, laser, twins}; `world` ∈ {arcade, puzzle, strategy, cards, bubbles, skill, exploration, memory, challenges}; `outcome` ∈ {ended, quit, short}.
 
 | Event | When | Params | Feeds KPI |
 |---|---|---|---|
 | round_start | a round starts | game | Rounds per session, Rounds per game |
-| round_end | a round ends (end or quit) | game, score, duration_s, stars_new, outcome | Score distribution, Rounds per game |
+| round_end | a round ends (end or quit) | game, score, duration_s, stars_new, outcome, daily_game (boolean: game of the day) | Score distribution, Rounds per game, Game of the day rate |
 | tutorial_complete | last help bubble dismissed | game | Tutorial completion |
 | level_up | the level increases | level | Level funnel |
 | world_unlock | a world unlocks | world | World unlock rate |
@@ -1031,6 +1101,7 @@ Business and technical indicators followed in Firebase (free Spark plan). Detail
 | Level funnel | business | ≥ 50 % of users reach level 3, ≥ 20 % level 10 | `level_up` by `level` / users |
 | Score distribution | business | tracked (median per game, used to rebalance star thresholds) | `round_end` metric `score` by `game` |
 | Achievement progress | business | tracked (users with ≥ 3 achievements) | `achievement_unlock` / users |
+| Game of the day rate | business | tracked (share of `round_end` with `daily_game` true) | `round_end` by `daily_game` |
 | Settings usage | business | tracked (share of users changing language or theme) | `settings_change` by `setting` |
 | Consent rate | business | tracked (approximation: users with events vs installs; refusals send nothing) | Analytics users vs Play installs |
 | Crash-free users | technical | ≥ 99 % | Crashlytics |
@@ -1087,7 +1158,7 @@ Core engine
   1 200.
 - AC-11 [unit] Given the daily reward state, when the player collects on consecutive local dates, then the first
   collection is day 1 and the calendar advances 1 → 2 → ... → 7 → 1 with rewards 100 / 150 / 200 / 250 / 300 / 400 / 600 (+100 XP on day
-  7); a second collection on the same date is refused; a one-day gap keeps the calendar day; a two-day gap resets
+  7); a second collection on the same date is refused; any missed day (a gap of one day or more) resets
   it to 1; a device date earlier than the last collection is treated as collected.
 - AC-12 [unit] Given a date and the unlocked games, when the three daily challenges are drawn, then the first is
   « Jouer 3 parties », the two others are distinct challenges from the pool, only referring to unlocked games
@@ -1245,7 +1316,9 @@ Telemetry and technical
   a hint always points at a cell of a remaining solution.
 - AC-62 [unit] Plombier Express: a tap turns a piece clockwise; every generated grid has a path whose pieces
   connect entry to exit once turned right; par is the sum of the minimal turns; solved detection follows any
-  connected path; no grid starts solved (par ≥ 1); scoring, failure after par + 20 and hints follow the rules.
+  connected path; no grid starts solved (par ≥ 1); grids 1-3 are 4 × 4, 4-6 are 5 × 5, then 6 × 6; scoring and hints follow the
+  rules; the round ends only at the first grid of rank k still unsolved after par + max(6, 21 − k) taps or after max(15,
+  63 − 3 × k) s (the clock stops during the tutorial bubble, the pause and the solved grid).
 - AC-63 [unit] Raz-de-Couleurs: a colour tap absorbs the adjacent cells of that colour, the tide's own colour is
   refused; moves per board follow 20 − (n − 1) (minimum 12, + upgrade); a full board scores 500 + 100 × moves left,
   an exhausted board scores 3 × tide cells and ends the round.
@@ -1281,8 +1354,8 @@ Telemetry and technical
   + level 8; a v0.2.0 save loads without loss; score challenges exist for every game; Ciel étoilé needs 69 stars.
 - AC-76 [unit] Fruits en Fusion: a fruit falls to the lowest empty cell, merges with every touching fruit of its kind
   into the next index in the lowest merged cell, gravity then re-checks created or moved fruits bottom-up, two
-  pastèques vanish for 2 000, points follow 10 × 2^index, a tap on a full column is ignored and the round ends after
-  40 fruits or when no column fits, « Coup de balai » clears the bottom row; a chain of 2+ merges is a combo.
+  pastèques vanish for 2 000, points follow 10 × 2^index, a tap on a full column is ignored, there is no fruit limit and
+  the round ends only when no column fits, fruits 1-40 are drawn among 0-3, 41-120 among 0-4 and the next ones among 0-5, « Coup de balai » clears the bottom row; a chain of 2+ merges is a combo.
 - AC-77 [unit] Bloc Glissant: blocks move one cell along their axis into free cells only; every generated puzzle is
   solvable with its par in [3 + 2k, 7 + 2k] or the closest attempt (bounded generator); solved at columns 4-5;
   scoring 300 − 15 per extra move, failure after par + 25 and hints (next move of a shortest solution) follow the
@@ -1357,21 +1430,25 @@ v0.4.0: twelve more games
   game has its upgrade and « Bonus pièces », and a v0.3.0 save loads with its stars, coins and upgrades unchanged.
 - AC-96 [unit] Couleur Éclair: a gate holds the 3 colours once each; the door of the runner's lane with its colour
   scores 10, a wrong door costs a life (or a shield) and resets the streak; the colour changes after every 4th gate
-  to another colour; the approach time follows max(900, 2 200 − 30 × (n − 1)); the round ends at the 3rd life lost
-  or after gate 60.
+  to another colour; the approach time follows 2 200 − 30 × (n − 1) up to gate 44, then max(600, 910 − 5 × (n − 44)); the round
+  ends at the 3rd life lost and never after a number of gates (a run past gate 200 goes on).
 - AC-97 [unit] Glisse-Fusion: a swipe slides every gem and merges equal neighbours once per move from the side they
   slide to, scoring 2^L × 5; a move that changes nothing is ignored; a new gem (level 1 or 2) appears after each
   move and a joker every 10th move, which merges with any gem; « Annuler » restores the previous board, score and
   move count once; the round ends after 80 moves or when no move is possible.
-- AC-98 [unit] Bataille de Nombres: a move sends all units but one; it adds up on an own territory, takes a weaker
-  one with the difference, else lowers it; the enemy answers with its rule, then owned territories gain 1; a battle
-  ends when a side owns nothing or after 15 turns and scores 60 per territory, +200 and +10 per turn left for a
-  win, 0 when lost; the round is the 3 maps of 5, 6 and 7 territories.
-- AC-99 [unit] Mini Défense: turrets cost 50 and their levels 40 and 80, deal 1 / 2 / 3 per shot every 600 ms to the
-  enemy furthest along the path within 2 cells; wave w sends 4 + 2w enemies of 2 + w health every 700 ms at one
-  cell per max(250, 500 − 40 × (w − 1)) ms; a kill gives 10 points and 8 gold, a leak costs a life, a clean wave
-  gives 100; nothing is built during a wave; the round ends after wave 6 (+30 per life) or without lives; the same
-  seed, builds and ticks give the same result whatever the tick grouping.
+- AC-98 [unit] Bataille de Nombres: a move sends all units but one onto a neighbour that is not one's own (a move
+  onto one's own territory is refused); it takes a weaker one with the difference, else lowers it; the outcome
+  preview of each neighbour equals the result of that move; the enemy answers with its rule (it passes when no
+  attack takes a territory, and always on the training map), then owned territories gain 1; a battle ends when a side
+  owns nothing or after 15 turns and scores 60 per territory, +200 and +10 per turn left for a win, 0 when lost; the
+  round is the 4 maps of 3, 5, 6 and 7 territories.
+- AC-99 [unit] Mini Défense: the three turrets cost 40 / 70 / 50 and their levels 40 and 80, shoot as their table
+  says (Rapide 1 every 400 ms, Canon 3 every 1 500 ms on the target and its two path neighbours, Givre 1 every 1 000
+  ms and slows to half speed for 1 500 ms, a blindé too although its armour cancels the damage) at the enemy furthest along the path within 2 cells, damage × level;
+  wave w sends min(30, 4 + 2w) enemies every 700 ms with H(w) and S(w), rapide and blindé as drawn (none before wave
+  3 and 4), a blindé's armour removes 1 damage per hit; kills give 10 / 20 points and 6 / 12 gold, a leak costs a
+  life, a clean wave gives 100 points and 20 gold; nothing is built during a wave; the round ends only without lives
+  (wave 7 starts after wave 6); the same seed, builds and ticks give the same result whatever the tick grouping.
 - AC-100 [unit] Mains de Cartes: each hand deals 5 cards of a fresh 52-card shuffle; one exchange replaces the cards
   not kept (a second one only with « Seconde donne »); every combination is recognised and scored (paire 20, deux
   paires 40, brelan 70, suite 110 with the ace low or high, couleur 130, full 170, carré 260, quinte flush 500); a
@@ -1411,6 +1488,30 @@ v0.4.0: twelve more games
   then its screen shows (one capture per game) and Pause → Quitter reaches the Result.
 - AC-110 [manual] Given the release APK on the user's phone, when the twelve v0.4.0 games are played, then each is
   understandable from its bubble, smooth and fair.
+
+v0.4.0 phone test changes
+- AC-111 [unit] Given a date and the playable games, then the game of the day is one of them, identical for the same
+  date and set (or session seed), never a locked game; a settled round of it started that date earns floor((10 +
+  floor(score / 25)) × bonus × 2) round coins plus 50 per new star (not doubled), a round of another game or started
+  on another date is not doubled, a short round earns nothing, the doubled coins count for « Gagner 200 pièces en jouant » and the lifetime coins, a
+  game unlocked later that day does not change the saved game of the day, `round_end` carries `daily_game`; the Result screen
+  shows « Jeu du jour : pièces ×2 ! » only on such a round.
+- AC-112 [e2e] Given Home (seed deep link /unlocked), then the « Jeu du jour » card shows a game name and « Pièces ×2
+  aujourd'hui », and that game's sheet shows the same badge; tapping the card's « Jouer » opens that game's screen, and Pause → Quitter reaches the Result.
+- AC-113 [unit] Given the Bataille de Nombres screen on a first round, then the training map is shown with the three
+  tutorial bubbles in order (first move, then a tap, then a tap); selecting a territory shows « Pris · n » or « Reste
+  n » on each neighbour that is not one's own, as the engine predicts; tapping another own territory selects it.
+- AC-114 [unit] Given the Mini Défense screen between waves, then tapping an empty slot shows the picker with Rapide
+  40, Canon 70 and Givre 50 (unaffordable ones disabled), picking one builds it and lowers the gold, and the HUD shows
+  « Vague k » without a total.
+- AC-115 [unit] Given each of the five reworked engines (Couleur Éclair, Fruits en Fusion, Plombier Express, Mini
+  Défense, Bataille de Nombres), then over 50 seeds every casual bot round ends within its cap, its median score
+  reaches the 1-star threshold and stays below the 3-star threshold, and its stars are the recomputed ones of the
+  catalogue.
+- AC-116 [manual] Given the release APK on the user's phone, then Couleur Éclair, Fruits en Fusion, Plombier Express
+  and Mini Défense last until the player loses and give stars that follow skill, Mini Défense asks real choices
+  (turret type and place), Bataille de Nombres is understood from its training map, and the game of the day card
+  starts its game with coins ×2 on the Result.
 
 ## Player copy
 
@@ -1608,7 +1709,7 @@ no spoken audio). French tone: tu.
 | challenge.score_<game> | Marquer {target} points à {game} | Score {target} at {game} |
 | achievement.globetrotter | Globe-trotteur | Globetrotter |
 | achievementHint.globetrotter | Joue à 10 jeux différents | Play 10 different games |
-| achievementHint.explorer / all_stars | Joue à 3 jeux différents / Gagne les 69 étoiles | Play 3 different games / Earn all 69 stars |
+| achievementHint.explorer / all_stars | Joue à 3 jeux différents / Gagne toutes les étoiles | Play 3 different games / Earn every star |
 | tutorial.tower | Touche pour lâcher le bloc | Tap to drop the block |
 | tutorial.hop | Touche pour sauter | Tap to jump |
 | tutorial.lights | Touche une luciole : elle et ses voisines changent. Éteins tout ! | Tap a firefly: it and its neighbours switch. Turn them all off! |
@@ -1659,8 +1760,8 @@ no spoken audio). French tone: tu.
 | game.twins.desc | Deux personnages, une seule commande : amène-les à leur sortie. | Two characters, one control: bring them to their exits. |
 | tutorial.dash | Touche à gauche, au milieu ou à droite : passe la porte de ta couleur ! | Tap left, middle or right: go through the door of your colour! |
 | tutorial.tiles | Glisse pour pousser toutes les gemmes. Deux pareilles fusionnent ! | Swipe to push all the gems. Two of a kind merge! |
-| tutorial.conquest | Touche ton territoire puis un voisin : tes unités attaquent si elles sont plus nombreuses ! | Tap your territory, then a neighbour: your units attack if they outnumber it! |
-| tutorial.defense | Pose des tourelles près du chemin, puis lance la vague ! | Build turrets near the path, then start the wave! |
+| tutorial.conquest (3 bubbles) | Touche ton territoire bleu, puis un voisin : tes unités attaquent ! · Ensuite, l'ennemi rouge joue à son tour. · À chaque tour, tes territoires gagnent 1 unité. Prends-les tous ! | Tap your blue territory, then a neighbour: your units attack! · Then the red enemy takes its turn. · Each turn, your territories gain 1 unit. Take them all! |
+| tutorial.defense | Touche un emplacement et choisis une tourelle : le Canon perce les blindés, le Givre ralentit ! | Tap a slot and pick a turret: the Cannon breaks armour, the Frost slows down! |
 | tutorial.hands | Garde tes meilleures cartes, échange les autres : vise la plus belle combinaison ! | Keep your best cards, swap the others: aim for the best combination! |
 | tutorial.patience | Pose une carte qui suit ou précède celle de la pile. Sinon, pioche ! | Play a card one above or one below the pile. Otherwise, draw! |
 | tutorial.darts | Touche pour lancer. Ne touche pas une fléchette déjà plantée ! | Tap to throw. Do not hit a dart already stuck! |
@@ -1671,12 +1772,17 @@ no spoken audio). French tone: tu.
 | tutorial.twins | Les deux bougent ensemble : amène chacun sur sa sortie ! | Both move together: bring each one to its exit! |
 | upgrade.guard / undo / reinforce / arsenal / redraw / wild / steady / sight / shuffle (name / desc) | Bouclier / {n} erreur(s) sans perdre de vie · Annuler / {n} retour(s) en arrière par partie · Renforts / +{n} unités au départ · Arsenal / +{n} pièces d'or au départ · Seconde donne / {n} second(s) échange(s) par partie · Joker / {n} carte(s) libre(s) par partie · Main sûre / fléchettes plus serrées · Viseur / début de la trajectoire affiché · Mélange / {n} mélange(s) par partie | Shield / {n} mistake(s) without losing a life · Undo / {n} step(s) back per round · Reinforcements / +{n} starting units · Arsenal / +{n} starting gold · Second deal / {n} second swap(s) per round · Joker / {n} free card(s) per round · Steady hand / darts may land closer · Sight / start of the trajectory shown · Shuffle / {n} shuffle(s) per round |
 | hud / play (v0.4.0) | Vies / Portes / Coups / Bataille / Tours / Or / Vague / Main / Donne / Pioche / Niveau / Fléchettes / Cible / Tirs / Vent / Chaînes / Bascules ; Passer / Lancer la vague / Échanger / Garder / Tirer / Angle / Puissance / Annuler ({n}) / Joker ({n}) / Mélange ({n}) ; Paire / Deux paires / Brelan / Suite / Couleur / Full / Carré / Quinte flush / Rien | Lives / Gates / Moves / Battle / Turns / Gold / Wave / Hand / Deal / Stock / Level / Darts / Target / Shots / Wind / Chains / Flips ; Pass / Start the wave / Swap / Keep / Shoot / Angle / Power / Undo ({n}) / Joker ({n}) / Shuffle ({n}) ; Pair / Two pairs / Three of a kind / Straight / Flush / Full house / Four of a kind / Straight flush / Nothing |
+| home.dailyGame / home.dailyGameBoost / result.dailyGame (v0.4.0 phone test) | Jeu du jour / Pièces ×2 aujourd'hui / Jeu du jour : pièces ×2 ! | Game of the day / Coins ×2 today / Game of the day: coins ×2! |
+| defense.pick / defense.cost | Choisis une tourelle / {n} or | Pick a turret / {n} gold |
+| defense.rapid / cannon / frost (name / desc) | Rapide / Tire vite, petits dégâts · Canon / Gros dégâts, touche les voisins · Givre / Ralentit l'ennemi | Rapid / Fast shots, small damage · Cannon / Big damage, hits the neighbours · Frost / Slows the enemy |
+| conquest.take / conquest.left | Pris · {n} / Reste {n} | Taken · {n} / {n} left |
+| hud (v0.4.0 phone test) | Grille {k} · Touches {n} / {max} · {s} s (Plombier) ; Fruits {n} (Fruits en Fusion) ; Bataille {k} / 4 ; Vague {k} | Grid {k} · Taps {n} / {max} · {s} s (Pipe Rush) ; Fruits {n} (Fruit Fusion) ; Battle {k} / 4 ; Wave {k} |
 
 ## Out of scope
 
 - The 15 other mini-games of the brief (including Coin Miner and the other idle games of world 7), world 7
   content; replays as detailed as the first three games and three upgrades for the v0.2.0, v0.3.0 and v0.4.0 games.
-- Shop, cosmetics, themes to buy, avatars, boosters; crystals; weekly challenges; passive / idle production;
+- Shop, cosmetics, themes to buy, avatars, boosters (the free coins ×2 of the game of the day is not one); crystals; weekly challenges; passive / idle production;
   events, seasonal content, limited-time games; leaderboards (local or online) and multi-profile.
 - Selectable difficulty tiers (Débutant / Normal / Avancé / Expert).
 - Music; images or audio to translate.

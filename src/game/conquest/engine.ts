@@ -1,10 +1,11 @@
 // « Bataille de Nombres » (docs/PRD.md "Bataille de Nombres", AC-98): a map of territories joined by roads. The player
 // (blue) and the enemy (red) start with one territory of 10 units each, the others are neutral (seeded 2 to 8 units).
-// A turn: tap one of your territories with 2 units or more, then a territory joined to it: all its units but one
-// march (they add up on an own territory, take a weaker one with the difference, else lower it), or « Passer ». Then
-// the enemy plays one move with its rule and every owned territory gains 1 unit. Pure reducer on an immutable state
-// (src/game/contract.ts); time comes in through `tick` (elapsed ms), randomness (the neutral units) through the seeded
-// generator kept in the state. A round is the 3 fixed maps of 5, 6 and 7 territories.
+// A turn: tap one of your territories with 2 units or more, then a joined territory that is not yours: all its units
+// but one march (they take a weaker territory with the difference, else lower it), or « Passer ». Units never move onto
+// one's own territory (v0.4.0 phone test). Then the enemy plays one move with its rule and every owned territory gains
+// 1 unit. Pure reducer on an immutable state (src/game/contract.ts); time comes in through `tick` (elapsed ms),
+// randomness (the neutral units) through the seeded generator kept in the state. A round is 4 battles: a training map
+// of 3 territories with a passive enemy, then the 3 fixed maps of 5, 6 and 7 territories (v0.4.0 phone test).
 //
 // Input guard: a move and the enemy's answer play in MOVE_GUARD_MS; taps are ignored meanwhile. The player's move is
 // applied at once, the enemy answers (and the territories grow) when ANSWER_AT_MS of the guard have run.
@@ -13,15 +14,16 @@
 //   which ends the battle at once (no answer, no growth); that turn counts as played;
 // - the enemy's attack « with the most units left » is the one leaving the most units on the taken territory; ties go
 //   to the lowest source index, then the lowest target index;
-// - without such an attack the enemy moves from its strongest territory among those able to move (2 units or more
-//   and a neighbour it owns) onto the weakest of these neighbours; ties go to the lowest index;
-// - with a territory selected, a tap on a joined territory always marches (also onto an own one); a tap on another
-//   own territory that is not joined selects it instead; any other tap changes nothing;
+// - without such an attack the enemy passes (it never moves onto its own territories either); on the training map it
+//   always passes;
+// - with a territory selected, a tap on a joined territory that is not one's own marches; a tap on another own
+//   territory with 2 units or more selects it instead; any other tap changes nothing;
 // - a finished battle stays on screen for BATTLE_SHOW_MS (taps ignored), then the next map comes.
 import type { RoundState, UpgradeLevels } from '../contract';
 import { createRng } from '../rng';
 
-export const CONQUEST_BATTLES = 3;
+/** Battles of a round: the training map, then the 3 fixed maps. */
+export const CONQUEST_BATTLES = 4;
 export const START_UNITS = 10;
 export const NEUTRAL_MIN_UNITS = 2;
 export const NEUTRAL_MAX_UNITS = 8;
@@ -54,10 +56,36 @@ export type ConquestMap = {
   /** Start territory of the player and of the enemy. */
   player: number;
   enemy: number;
+  /** Units of the enemy at the start (START_UNITS when absent). */
+  enemyUnits?: number;
+  /** Fixed units of every neutral territory (seeded 2 to 8 when absent). */
+  neutralUnits?: number;
+  /** The enemy never moves (training map). */
+  passive?: boolean;
 };
 
-/** The 3 fixed maps (5, 6 and 7 territories), played in this order. The two camps start at opposite ends. */
+/** The training map (battle 1): 3 territories in a line, a neutral of 3 between the player and a passive enemy of 6. */
+export const TRAINING_MAP: ConquestMap = {
+  spots: [
+    { x: 0.1, y: 0.5 },
+    { x: 0.5, y: 0.5 },
+    { x: 0.9, y: 0.5 },
+  ],
+  roads: [
+    [0, 1],
+    [1, 2],
+  ],
+  player: 0,
+  enemy: 2,
+  enemyUnits: 6,
+  neutralUnits: 3,
+  passive: true,
+};
+
+/** The maps of a round, played in this order: the training map, then the 3 fixed maps (5, 6 and 7 territories). The
+ * two camps start at opposite ends. */
 export const CONQUEST_MAPS: readonly ConquestMap[] = [
+  TRAINING_MAP,
   // A square with a centre: the camps on opposite corners, two roads apart.
   {
     spots: [
@@ -146,7 +174,7 @@ export type ConquestEvent =
   | { kind: 'ignored' };
 
 export type ConquestState = RoundState<ConquestEvent> & {
-  /** Current battle, 1..3 (its map is CONQUEST_MAPS[battle - 1]). */
+  /** Current battle, 1..4 (its map is CONQUEST_MAPS[battle - 1]; battle 1 is the training map). */
   battle: number;
   territories: readonly Territory[];
   selected: number | null;
@@ -202,13 +230,29 @@ export function march(territories: readonly Territory[], from: number, to: numbe
   return { territories: out, sent, taken: false };
 }
 
-/** Every move `owner` may play: from one of its territories with 2 units or more onto a joined territory. */
+/** Every move `owner` may play: from one of its territories with 2 units or more onto a joined territory not its own. */
 export function legalMoves(map: ConquestMap, territories: readonly Territory[], owner: Owner): Move[] {
   const out: Move[] = [];
   territories.forEach((t, from) => {
     if (t.owner !== owner || t.units < MIN_MARCH_UNITS) return;
-    for (const to of neighboursOf(map, from)) out.push({ from, to });
+    for (const to of neighboursOf(map, from)) if (territories[to].owner !== owner) out.push({ from, to });
   });
+  return out;
+}
+
+/** Outcome of an attack shown before it is played: `taken` with `left` units there, else `left` units stay to its owner. */
+export function attackPreview(territories: readonly Territory[], move: Move): { taken: boolean; left: number } {
+  const result = march(territories, move.from, move.to);
+  return { taken: result.taken, left: result.territories[move.to].units };
+}
+
+/** Outcomes of every attack from the selected territory (joined territories that are not the player's), by target. */
+export function previewsOf(state: Pick<ConquestState, 'battle' | 'territories' | 'selected'>): Map<number, { taken: boolean; left: number }> {
+  const out = new Map<number, { taken: boolean; left: number }>();
+  if (state.selected === null) return out;
+  for (const to of neighboursOf(mapOf(state.battle), state.selected)) {
+    if (state.territories[to].owner !== 'player') out.set(to, attackPreview(state.territories, { from: state.selected, to }));
+  }
   return out;
 }
 
@@ -221,10 +265,11 @@ export function unitsLeftAfterTaking(territories: readonly Territory[], move: Mo
 }
 
 /**
- * The enemy's rule: the attack that takes a territory with the most units left; else the move from its strongest
- * territory onto its weakest neighbour it owns; else null (it passes). Deterministic: ties go to the lowest index.
+ * The enemy's rule: the attack that takes a territory with the most units left; else null (it passes). On the training
+ * map it always passes. Deterministic: ties go to the lowest index.
  */
 export function enemyMove(map: ConquestMap, territories: readonly Territory[]): Move | null {
+  if (map.passive) return null;
   const moves = legalMoves(map, territories, 'enemy');
   let attack: Move | null = null;
   let most = 0;
@@ -235,15 +280,7 @@ export function enemyMove(map: ConquestMap, territories: readonly Territory[]): 
       attack = move;
     }
   }
-  if (attack) return attack;
-
-  let transfer: Move | null = null;
-  for (const move of moves) {
-    if (territories[move.to].owner !== 'enemy') continue;
-    if (transfer === null || territories[move.from].units > territories[transfer.from].units) transfer = move;
-    else if (move.from === transfer.from && territories[move.to].units < territories[transfer.to].units) transfer = move;
-  }
-  return transfer;
+  return attack;
 }
 
 /** 60 per territory owned, +200 and +10 per turn not played when the enemy owns none; 0 when the player owns none. */
@@ -262,8 +299,8 @@ function startBattle(state: Carried, battle: number): ConquestState {
   const rng = createRng(state.rngState);
   const territories = map.spots.map((_, i): Territory => {
     if (i === map.player) return { owner: 'player', units: START_UNITS + REINFORCE_UNITS * state.reinforce };
-    if (i === map.enemy) return { owner: 'enemy', units: START_UNITS };
-    return { owner: 'neutral', units: NEUTRAL_MIN_UNITS + rng.int(NEUTRAL_MAX_UNITS - NEUTRAL_MIN_UNITS + 1) };
+    if (i === map.enemy) return { owner: 'enemy', units: map.enemyUnits ?? START_UNITS };
+    return { owner: 'neutral', units: map.neutralUnits ?? NEUTRAL_MIN_UNITS + rng.int(NEUTRAL_MAX_UNITS - NEUTRAL_MIN_UNITS + 1) };
   });
   return {
     score: state.score,
@@ -347,8 +384,8 @@ function tap(state: ConquestState, territory: number): ConquestState {
   if (!Number.isInteger(territory) || territory < 0 || territory >= territories.length) return { ...state, events: [] };
   if (!acceptsInput(state)) return { ...state, events: [{ kind: 'ignored' }] };
   if (selected === territory) return { ...state, selected: null, events: [{ kind: 'select', territory: null }] };
-  if (selected !== null && joined(mapOf(state.battle), selected, territory)) return playerTurn(state, { from: selected, to: territory });
   const target = territories[territory];
+  if (selected !== null && target.owner !== 'player' && joined(mapOf(state.battle), selected, territory)) return playerTurn(state, { from: selected, to: territory });
   if (target.owner === 'player' && target.units >= MIN_MARCH_UNITS) return { ...state, selected: territory, events: [{ kind: 'select', territory }] };
   return { ...state, events: [] };
 }

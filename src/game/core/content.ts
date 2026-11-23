@@ -365,7 +365,7 @@ export const GAMES: readonly Game[] = [
   {
     id: 'conquest',
     world: 'strategy',
-    stars: [500, 1100, 1200],
+    stars: [550, 1400, 1700], // v0.4.0 phone test: training map + no own moves, from the casual bot (p25 540, p90 1 390, median 860)
     upgrades: [{ id: 'reinforce', maxLevel: UPGRADE_MAX_LEVEL }, coinsUpgrade],
     realTime: false,
   },
@@ -510,7 +510,7 @@ export const CHALLENGES: readonly ChallengeDef[] = [
   { id: 'score_treasure', kind: 'score', target: 400, game: 'treasure', reward: { coins: 50 }, minGames: 1 },
   { id: 'score_dash', kind: 'score', target: 450, game: 'dash', reward: { coins: 50 }, minGames: 1 },
   { id: 'score_tiles', kind: 'score', target: 3700, game: 'tiles', reward: { coins: 50 }, minGames: 1 },
-  { id: 'score_conquest', kind: 'score', target: 500, game: 'conquest', reward: { coins: 50 }, minGames: 1 },
+  { id: 'score_conquest', kind: 'score', target: 550, game: 'conquest', reward: { coins: 50 }, minGames: 1 },
   { id: 'score_defense', kind: 'score', target: 950, game: 'defense', reward: { coins: 50 }, minGames: 1 },
   { id: 'score_hands', kind: 'score', target: 150, game: 'hands', reward: { coins: 50 }, minGames: 1 },
   { id: 'score_patience', kind: 'score', target: 250, game: 'patience', reward: { coins: 50 }, minGames: 1 },

@@ -1,6 +1,8 @@
 // « Bataille de Nombres » screen: the pure engine (src/game/conquest) on a map of Pressable territories joined by
 // roads (thin rotated Views). Turn-based: tap one of your territories (highlighted, as are the roads and territories
-// it can march onto), then a joined territory; « Passer » skips the turn. Owners are told by colour AND by shape and
+// it can march onto, each showing the outcome of the attack: « Pris · n » or « Reste n »), then such a territory;
+// « Passer » skips the turn. The first round starts on the training map with three bubbles: the first goes with the
+// first move, the next two with a tap anywhere (an overlay catches it; the enemy answers once they are gone). Owners are told by colour AND by shape and
 // emblem (the player: blue circle with a star, the enemy: red square with crossed swords, neutral: grey rounded
 // square with a ring), each territory shows its units. The engine guards the move and the enemy's answer (600 ms)
 // and keeps a finished battle shown 900 ms; a frame loop ticks it with the injectable clock only while one of these
@@ -11,7 +13,7 @@ import { Pressable, StyleSheet, useWindowDimensions, View } from 'react-native';
 import { OWNER_COLORS, OWNER_EMBLEMS } from '../../art/games/conquest';
 import { PALETTE } from '../../art/palette';
 import { now } from '../../game/clock';
-import { acceptsInput, CONQUEST_BATTLES, ConquestAction, ConquestState, createConquest, mapOf, MIN_MARCH_UNITS, neighboursOf, Owner, reduceConquest, TURNS } from '../../game/conquest/engine';
+import { acceptsInput, CONQUEST_BATTLES, ConquestAction, ConquestState, createConquest, mapOf, MIN_MARCH_UNITS, Owner, previewsOf, reduceConquest, TURNS } from '../../game/conquest/engine';
 import { upgradeLevels } from '../../game/core/upgrades';
 import { useI18n } from '../../i18n/I18nProvider';
 import { useGameStore } from '../../state/GameStore';
@@ -55,9 +57,18 @@ export function ConquestGame({ seed, onFinish }: { seed: number; onFinish: OnFin
   const [state, setState] = useState(() => createConquest(seed, upgradeLevels(save, 'conquest')));
   const stateRef = useRef(state);
   const [last, setLast] = useState<BattleResult | null>(null);
-  const steps = useMemo(() => [{ key: 'attack', text: t.tutorial.conquest.attack }], [t]);
+  const steps = useMemo(
+    () => [
+      { key: 'attack', text: t.tutorial.conquest.attack },
+      { key: 'enemy', text: t.tutorial.conquest.enemy },
+      { key: 'grow', text: t.tutorial.conquest.grow },
+    ],
+    [t],
+  );
   const frame = useRoundFrame({ game: 'conquest', tutorialSteps: steps, onFinish, score: () => stateRef.current.score });
-  const { paused, active, advanceTutorial, finish, setCombos } = frame;
+  const { paused, active, advanceTutorial, finish, setCombos, tutorialStep } = frame;
+  /** The 2nd and 3rd bubbles go with a tap anywhere. */
+  const tapToContinue = tutorialStep !== null && tutorialStep.key !== 'attack';
   const feedback = useMemo(() => feedbackOf(state.events), [state.events]);
   useGameFeedback(feedback);
 
@@ -76,8 +87,8 @@ export function ConquestGame({ seed, onFinish }: { seed: number; onFinish: OnFin
         next.status !== previous.status;
       if (redraw) setState(next);
       for (const e of next.events) {
-        // The bubble goes with the player's first turn (a march or a pass): the enemy's answer needs the clock.
-        if ((e.kind === 'move' || e.kind === 'pass') && e.by === 'player') advanceTutorial('attack');
+        // The first bubble goes with the player's first move: the enemy's answer needs the clock.
+        if (e.kind === 'move' && e.by === 'player') advanceTutorial('attack');
         else if (e.kind === 'battle') setLast({ battle: e.battle, won: e.won, lost: e.lost, points: e.points });
       }
       if (next.status === 'over') finish(next.score, next.combos);
@@ -123,7 +134,7 @@ export function ConquestGame({ seed, onFinish }: { seed: number; onFinish: OnFin
   const map = mapOf(state.battle);
   const locked = paused || state.status !== 'playing';
   const finished = state.doneMs > 0;
-  const targets = state.selected === null ? [] : neighboursOf(map, state.selected);
+  const previews = previewsOf(state);
   const answer = state.answer !== null && state.answer !== 'pass' ? state.answer : null;
   // Centre of a territory on the board (the spots of the map are on a 0..1 square).
   const centre = (i: number) => ({ x: node / 2 + map.spots[i].x * (board - node), y: node / 2 + map.spots[i].y * (board - node) });
@@ -175,7 +186,8 @@ export function ConquestGame({ seed, onFinish }: { seed: number; onFinish: OnFin
           })}
           {state.territories.map((territory, i) => {
             const selected = state.selected === i;
-            const target = targets.includes(i);
+            const preview = previews.get(i);
+            const target = preview !== undefined;
             const at = centre(i);
             const dim = territory.owner === 'player' && territory.units < MIN_MARCH_UNITS;
             return (
@@ -208,6 +220,13 @@ export function ConquestGame({ seed, onFinish }: { seed: number; onFinish: OnFin
                 <PixelText testID={`conquest-units-${i}`} size={9} bold style={styles.units}>
                   {String(territory.units)}
                 </PixelText>
+                {preview && (
+                  <View pointerEvents="none" style={[styles.preview, { top: node - 4, backgroundColor: preview.taken ? colors.success : colors.surface, borderColor: PALETTE.outline }]}>
+                    <PixelText testID={`conquest-preview-${i}`} size={8} bold style={{ color: preview.taken ? PALETTE.white : colors.text }}>
+                      {preview.taken ? t.play.taken(preview.left) : t.play.unitsLeft(preview.left)}
+                    </PixelText>
+                  </View>
+                )}
               </Pressable>
             );
           })}
@@ -238,8 +257,11 @@ export function ConquestGame({ seed, onFinish }: { seed: number; onFinish: OnFin
         </View>
 
         <View style={styles.pass}>
-          <Button label={t.play.pass} onPress={onPass} variant="secondary" compact disabled={locked || !acceptsInput(state)} testID="conquest-pass" />
+          <Button label={t.play.pass} onPress={onPass} variant="secondary" compact disabled={locked || !acceptsInput(state) || tutorialStep !== null} testID="conquest-pass" />
         </View>
+        {tapToContinue && tutorialStep && (
+          <Pressable testID="tutorial-next" accessibilityRole="button" accessibilityLabel={tutorialStep.text} onPress={() => advanceTutorial(tutorialStep.key)} style={StyleSheet.absoluteFill} />
+        )}
       </View>
     </GameFrame>
   );
@@ -254,5 +276,6 @@ const styles = StyleSheet.create({
   legend: { flexDirection: 'row', alignItems: 'center', gap: spacing.sm },
   legendSwatch: { width: 22, height: 22, borderRadius: 11, borderWidth: 1, borderColor: PALETTE.outline, alignItems: 'center', justifyContent: 'center' },
   pass: { width: 200 },
+  preview: { position: 'absolute', paddingHorizontal: 4, paddingVertical: 1, borderRadius: 4, borderWidth: 1 },
   hudItem: { gap: 2 },
 });

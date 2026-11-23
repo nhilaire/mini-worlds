@@ -5,6 +5,7 @@ import { BOT_ERROR_RATE, casualConquestMove, exposedAfter, playConquestBot } fro
 import {
   acceptsInput,
   ANSWER_AT_MS,
+  attackPreview,
   BATTLE_SHOW_MS,
   battleScore,
   CONQUEST_BATTLES,
@@ -23,11 +24,13 @@ import {
   NEUTRAL_MIN_UNITS,
   Owner,
   ownedBy,
+  previewsOf,
   reduceConquest,
   REINFORCE_UNITS,
   START_UNITS,
   TERRITORY_POINTS,
   Territory,
+  TRAINING_MAP,
   TURN_LEFT_POINTS,
   TURNS,
   WIN_POINTS,
@@ -40,8 +43,8 @@ const OWNERS: Readonly<Record<string, Owner>> = { p: 'player', e: 'enemy', n: 'n
 const lands = (specs: string[]): Territory[] => specs.map((s) => ({ owner: OWNERS[s[0]], units: Number(s.slice(1)) }));
 const show = (s: Pick<ConquestState, 'territories'>) => s.territories.map((t) => `${t.owner[0]}${t.units}`);
 
-/** A battle (1..3) with the given territories. Map 1 roads: 0-1 0-2 0-3 1-2 1-4 2-3 2-4 3-4. */
-function battle(specs: string[], extra: Partial<ConquestState> = {}, number = 1): ConquestState {
+/** A battle (2..4) with the given territories; battle 2 is the map of 5 (roads: 0-1 0-2 0-3 1-2 1-4 2-3 2-4 3-4). */
+function battle(specs: string[], extra: Partial<ConquestState> = {}, number = 2): ConquestState {
   return { ...createConquest(1), battle: number, territories: lands(specs), ...extra };
 }
 
@@ -49,6 +52,8 @@ const tap = (s: ConquestState, territory: number) => reduceConquest(s, { type: '
 const pass = (s: ConquestState) => reduceConquest(s, { type: 'pass' });
 const tick = (s: ConquestState, dt: number) => reduceConquest(s, { type: 'tick', dt });
 const settle = (s: ConquestState) => tick(s, MOVE_GUARD_MS);
+/** Ends the current battle after its last turn and lets its pause run: the next map is on the board. */
+const nextMap = (s: ConquestState) => tick(settle(pass({ ...s, turn: TURNS - 1 })), BATTLE_SHOW_MS);
 const median = (values: number[]) => {
   const s = values.slice().sort((a, b) => a - b);
   return (s[Math.floor((s.length - 1) / 2)] + s[Math.ceil((s.length - 1) / 2)]) / 2;
@@ -70,9 +75,10 @@ function roadsBetween(map: ConquestMap, from: number, to: number): number {
 }
 
 describe('Bataille de Nombres engine (AC-98)', () => {
-  it('AC-98: the 3 fixed maps have 5, 6 and 7 territories, are connected, and the two camps start far apart', () => {
-    expect(CONQUEST_MAPS.map((m) => m.spots.length)).toEqual([5, 6, 7]);
-    expect(CONQUEST_BATTLES).toBe(3);
+  it('AC-98: the round is the training map of 3 then the 3 fixed maps of 5, 6 and 7 territories, connected, the two camps far apart', () => {
+    expect(CONQUEST_MAPS.map((m) => m.spots.length)).toEqual([3, 5, 6, 7]);
+    expect(CONQUEST_MAPS[0]).toBe(TRAINING_MAP);
+    expect(CONQUEST_BATTLES).toBe(4);
     for (const map of CONQUEST_MAPS) {
       const n = map.spots.length;
       for (const spot of map.spots) {
@@ -97,13 +103,21 @@ describe('Bataille de Nombres engine (AC-98)', () => {
     }
   });
 
-  it('AC-98: a battle starts with 10 blue units, 10 red units and neutrals of 2 to 8 seeded units, for every seed (200 seeds)', () => {
+  it('AC-98: the training map starts with 10 blue units, a neutral of 3 and a passive enemy of 6', () => {
+    const s = createConquest(5);
+    expect(s.battle).toBe(1);
+    expect(show(s)).toEqual(['p10', 'n3', 'e6']);
+    expect(neighboursOf(TRAINING_MAP, 1)).toEqual([0, 2]);
+    expect(TRAINING_MAP.passive).toBe(true);
+  });
+
+  it('AC-98: a fixed map starts with 10 blue units, 10 red units and neutrals of 2 to 8 seeded units, for every seed (200 seeds)', () => {
     const seen = new Set<number>();
     for (let seed = 0; seed < 200; seed++) {
-      const s = createConquest(seed * 104729 + 11);
-      const map = CONQUEST_MAPS[0];
+      const s = nextMap(createConquest(seed * 104729 + 11));
+      const map = CONQUEST_MAPS[1];
       expect(s.status).toBe('playing');
-      expect(s.battle).toBe(1);
+      expect(s.battle).toBe(2);
       expect(s.turn).toBe(0);
       expect(s.territories).toHaveLength(5);
       s.territories.forEach((t, i) => {
@@ -120,8 +134,8 @@ describe('Bataille de Nombres engine (AC-98)', () => {
     }
     expect([START_UNITS, NEUTRAL_MIN_UNITS, NEUTRAL_MAX_UNITS]).toEqual([10, 2, 8]);
     expect([...seen].sort()).toEqual([2, 3, 4, 5, 6, 7, 8]);
-    expect(createConquest(5)).toEqual(createConquest(5));
-    expect(show(createConquest(5))).not.toEqual(show(createConquest(6)));
+    expect(nextMap(createConquest(5))).toEqual(nextMap(createConquest(5)));
+    expect(show(nextMap(createConquest(5)))).not.toEqual(show(nextMap(createConquest(6))));
   });
 
   it('AC-98: « Renforts » gives the player\'s first territory +2 / +4 / +6 units, in every battle', () => {
@@ -132,22 +146,41 @@ describe('Bataille de Nombres engine (AC-98)', () => {
         const map = CONQUEST_MAPS[k - 1];
         expect(s.battle).toBe(k);
         expect(s.territories[map.player]).toEqual({ owner: 'player', units: 10 + 2 * level });
-        expect(s.territories[map.enemy]).toEqual({ owner: 'enemy', units: 10 });
-        s = tick(settle(pass({ ...s, turn: TURNS - 1 })), BATTLE_SHOW_MS);
+        expect(s.territories[map.enemy]).toEqual({ owner: 'enemy', units: map.enemyUnits ?? 10 });
+        s = nextMap(s);
       }
     }
   });
 
-  it('AC-98: a move sends all units but one; onto an own territory they add up', () => {
+  it('AC-98: a move sends all units but one; a joined own territory is never marched onto: tapping it selects it', () => {
     const s0 = battle(['p10', 'n3', 'n5', 'p4', 'e10']);
     const s1 = tap(s0, 0);
     expect(s1.selected).toBe(0);
     expect(s1.events).toEqual([{ kind: 'select', territory: 0 }]);
     const s2 = tap(s1, 3);
-    expect(show(s2)).toEqual(['p1', 'n3', 'n5', 'p13', 'e10']);
-    expect(s2.selected).toBeNull();
-    expect(s2.events).toEqual([{ kind: 'move', by: 'player', from: 0, to: 3, sent: 9, taken: false }]);
-    expect(march(lands(['p2', 'p1']), 0, 1)).toEqual({ territories: lands(['p1', 'p2']), sent: 1, taken: false });
+    expect(s2.territories).toBe(s0.territories);
+    expect(s2.selected).toBe(3);
+    expect(s2.events).toEqual([{ kind: 'select', territory: 3 }]);
+    expect(s2.busyMs).toBe(0);
+    const s3 = tap(s1, 1);
+    expect(show(s3)).toEqual(['p1', 'p6', 'n5', 'p4', 'e10']);
+    expect(s3.events).toEqual([{ kind: 'move', by: 'player', from: 0, to: 1, sent: 9, taken: true }]);
+  });
+
+  it('AC-98: the outcome preview of each neighbour that is not one\'s own equals the result of that move', () => {
+    const s0 = battle(['p10', 'n3', 'n12', 'p4', 'e10']);
+    expect(previewsOf(s0).size).toBe(0);
+    const s1 = tap(s0, 0);
+    const previews = previewsOf(s1);
+    expect([...previews.keys()].sort()).toEqual([1, 2]); // 3 is own: no preview
+    expect(previews.get(1)).toEqual({ taken: true, left: 6 });
+    expect(previews.get(2)).toEqual({ taken: false, left: 3 });
+    for (const [to, preview] of previews) {
+      const played = tap(s1, to);
+      expect(played.territories[to].units).toBe(preview.left);
+      expect(played.territories[to].owner === 'player').toBe(preview.taken);
+    }
+    expect(attackPreview(lands(['p5', 'e4']), { from: 0, to: 1 })).toEqual({ taken: false, left: 0 });
   });
 
   it('AC-98: units that outnumber the units there take the territory, which holds the difference; else its units drop by the number sent (0 stays to its owner)', () => {
@@ -186,18 +219,16 @@ describe('Bataille de Nombres engine (AC-98)', () => {
     expect(tap(tap(other, 1), 3).territories).toBe(other.territories);
     // Out of range or not an index: nothing.
     for (const bad of [-1, 5, 1.5, NaN]) expect(tap(s1, bad)).toEqual({ ...s1, events: [] });
-    expect(legalMoves(CONQUEST_MAPS[0], s0.territories, 'player')).toEqual([
-      { from: 0, to: 1 },
+    // Moves never target one's own territories.
+    expect(legalMoves(CONQUEST_MAPS[1], s0.territories, 'player')).toEqual([
       { from: 0, to: 2 },
-      { from: 0, to: 3 },
-      { from: 3, to: 0 },
       { from: 3, to: 2 },
       { from: 3, to: 4 },
     ]);
   });
 
   it('AC-98: the enemy plays the attack that takes a territory with the most units left', () => {
-    const map = CONQUEST_MAPS[0];
+    const map = CONQUEST_MAPS[1];
     // 9 units march from 4: they would leave 6 on 1, 4 on 2, 7 on 3.
     expect(enemyMove(map, lands(['p10', 'n3', 'n5', 'n2', 'e10']))).toEqual({ from: 4, to: 3 });
     // A tie goes to the lowest index.
@@ -210,16 +241,17 @@ describe('Bataille de Nombres engine (AC-98)', () => {
     expect(enemyMove(map, lands(['p10', 'n3', 'n5', 'n2', 'e10']))).toEqual(enemyMove(map, lands(['p10', 'n3', 'n5', 'n2', 'e10'])));
   });
 
-  it('AC-98: without such an attack the enemy moves from its strongest territory onto its weakest neighbour it owns, else it passes', () => {
-    const map = CONQUEST_MAPS[0];
-    // 4 (9 units) is the strongest; it owns the neighbours 1 (3 units) and 3 (5 units).
-    expect(enemyMove(map, lands(['p20', 'e3', 'p20', 'e5', 'e9']))).toEqual({ from: 4, to: 1 });
-    expect(enemyMove(map, lands(['p20', 'e3', 'p20', 'e7', 'e5']))).toEqual({ from: 3, to: 4 });
-    // Nothing to take, no neighbour it owns, or a single unit: it passes.
+  it('AC-98: without such an attack the enemy passes (it never moves onto its own territories), and on the training map it always passes', () => {
+    const map = CONQUEST_MAPS[1];
+    expect(enemyMove(map, lands(['p20', 'e3', 'p20', 'e5', 'e9']))).toBeNull();
     expect(enemyMove(map, lands(['p20', 'n20', 'n20', 'n20', 'e10']))).toBeNull();
     expect(enemyMove(map, lands(['p20', 'n20', 'e1', 'n20', 'e1']))).toBeNull();
-    // Reading: the strongest territory among those that own a neighbour (5 has none on the hexagon map).
-    expect(enemyMove(CONQUEST_MAPS[1], lands(['p30', 'e3', 'e4', 'n20', 'n20', 'e9']))).toEqual({ from: 2, to: 1 });
+    expect(legalMoves(map, lands(['p20', 'e3', 'p20', 'e5', 'e9']), 'enemy').every((m) => m.to === 0 || m.to === 2)).toBe(true);
+    // The training map: a passive enemy, even when it could take the player's territory.
+    expect(enemyMove(TRAINING_MAP, lands(['p1', 'n0', 'e30']))).toBeNull();
+    const s = settle(pass(createConquest(3)));
+    expect(s.answer).toBe('pass');
+    expect(show(s)).toEqual(['p11', 'n3', 'e7']);
   });
 
   it('AC-98: the enemy answers the move (or the pass), then every territory owned by the player or the enemy gains 1 unit', () => {
@@ -256,7 +288,7 @@ describe('Bataille de Nombres engine (AC-98)', () => {
     expect(s.combos).toBe(1);
     expect(s.events).toEqual([
       { kind: 'move', by: 'player', from: 2, to: 4, sent: 9, taken: true },
-      { kind: 'battle', battle: 1, won: true, lost: false, points: 480 },
+      { kind: 'battle', battle: 2, won: true, lost: false, points: 480 },
       { kind: 'score', points: 480 },
       { kind: 'combo' },
     ]);
@@ -279,7 +311,7 @@ describe('Bataille de Nombres engine (AC-98)', () => {
     expect(s.score).toBe(120);
     expect(s.combos).toBe(0);
     expect(s.events.slice(-2)).toEqual([
-      { kind: 'battle', battle: 1, won: false, lost: false, points: 120 },
+      { kind: 'battle', battle: 2, won: false, lost: false, points: 120 },
       { kind: 'score', points: 120 },
     ]);
     expect(battleScore(lands(['p1', 'n1', 'e1']), 15)).toBe(60);
@@ -292,13 +324,13 @@ describe('Bataille de Nombres engine (AC-98)', () => {
     expect(lost.events).toEqual([
       { kind: 'move', by: 'enemy', from: 1, to: 0, sent: 9, taken: true },
       { kind: 'grow' },
-      { kind: 'battle', battle: 1, won: false, lost: true, points: 0 },
+      { kind: 'battle', battle: 2, won: false, lost: true, points: 0 },
     ]);
     expect(lost.doneMs).toBe(BATTLE_SHOW_MS);
     expect(battleScore(lands(['e1', 'n1', 'e1']), 4)).toBe(0);
   });
 
-  it('AC-98: a finished battle stays shown 900 ms (taps ignored), then the next map comes; the round is the 3 maps of 5, 6 and 7 territories', () => {
+  it('AC-98: a finished battle stays shown 900 ms (taps ignored), then the next map comes; the round is the 4 maps of 3, 5, 6 and 7 territories', () => {
     expect(BATTLE_SHOW_MS).toBe(900);
     let s = createConquest(77);
     const sizes: number[] = [];
@@ -320,7 +352,7 @@ describe('Bataille de Nombres engine (AC-98)', () => {
       expect(s.score).toBe(score);
       if (k < CONQUEST_BATTLES) expect(s.events).toEqual([{ kind: 'map', battle: k + 1 }]);
     }
-    expect(sizes).toEqual([5, 6, 7]);
+    expect(sizes).toEqual([3, 5, 6, 7]);
     expect(s.status).toBe('over');
     expect(s.events).toEqual([{ kind: 'over', score: s.score }]);
     expect(s.score).toBeGreaterThan(0);
@@ -371,7 +403,7 @@ describe('Bataille de Nombres casual bot (AC-108)', () => {
   describe('balance over 50 seeds', () => {
     const finals = Array.from({ length: 50 }, (_, i) => playConquestBot(i + 1));
 
-    it('AC-108: every seed starts and finishes a round of 3 battles', () => {
+    it('AC-115: every seed starts and finishes a round of 4 battles', () => {
       for (const s of finals) {
         expect(s.status).toBe('over');
         expect(s.battle).toBe(CONQUEST_BATTLES);
@@ -384,6 +416,11 @@ describe('Bataille de Nombres casual bot (AC-108)', () => {
       const stars = gameById('conquest').stars;
       expect(m).toBeGreaterThanOrEqual(stars[0]);
       expect(m).toBeLessThan(stars[2]);
+    });
+
+    it('AC-115 (measured, reported): bot min / p25 / median / p90 / max over seeds 1-50', () => {
+      const scores = finals.map((s) => s.score).sort((x, y) => x - y);
+      expect({ min: scores[0], p25: scores[12], median: (scores[24] + scores[25]) / 2, p90: scores[45], max: scores[49] }).toEqual({ min: 240, p25: 540, median: 860, p90: 1390, max: 1870 });
     });
 
     it('AC-108: an input during the input guard changes nothing, for every seed', () => {

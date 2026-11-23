@@ -1,4 +1,4 @@
-import { FRUITS } from '../art/games/fruit';
+import { FRUITS, STONE_SPRITE } from '../art/games/fruit';
 import { ICON } from '../art/icons/fruit';
 import { spriteSize, validateSprite } from '../art/sprites';
 import {
@@ -9,12 +9,16 @@ import {
   FRUIT_COLS,
   FRUIT_GUARD_MS,
   FRUIT_KINDS,
-  FRUIT_ROUND,
+  FRUIT_BOT_CAP,
+  columnInDanger,
+  isStonePiece,
+  STONE,
   FRUIT_ROWS,
   FRUIT_STARS,
   FruitState,
   mergePoints,
   NEXT_MAX,
+  nextMaxFor,
   playCasualFruit,
   reduceFruit,
   VANISH_POINTS,
@@ -145,23 +149,54 @@ describe('Fruits en Fusion engine (AC-76)', () => {
     expect(drop(board({ ...almost, '5,0': 0, '4,0': 1 }, 0), 4).status).toBe('playing');
   });
 
-  it('AC-76: a round is 40 fruits: it ends after the 40th drop and its merges', () => {
-    expect(FRUIT_ROUND).toBe(40);
+  it('AC-76: there is no fruit limit: the round goes on after the 40th fruit and ends only when the jar overflows', () => {
+    // The 41st drop of a round: still playing, it scores its merge and draws the next fruit.
+    const s40 = drop(board({ '0,7': 2 }, 2, { drops: 40, score: 100 }), 0);
+    expect(s40.status).toBe('playing');
+    expect(s40.drops).toBe(41);
+    expect(s40.score).toBe(100 + mergePoints(3));
+    // A long round: 300 drops on a mostly empty jar still play (no limit).
     let s = createFruit(31);
-    expect(s.fruitsLeft).toBe(40);
-    for (let i = 0; i < 39; i++) {
-      s = drop(s, casualFruitMove(s));
+    for (let i = 0; i < 300 && s.status === 'playing'; i++) {
+      s = drop({ ...s, cells: new Array<Cell>(FRUIT_COLS * FRUIT_ROWS).fill(null) }, i % FRUIT_COLS);
       s = reduceFruit(s, { type: 'tick', dt: s.busyMs });
     }
     expect(s.status).toBe('playing');
-    expect(s.fruitsLeft).toBe(1);
-    // The 40th drop merges on a matching top, scores, then ends the round.
-    const last = drop(board({ '0,7': s.next }, s.next, { fruitsLeft: 1, score: 100 }), 0);
-    expect(last.fruitsLeft).toBe(0);
-    expect(last.score).toBe(100 + mergePoints(s.next + 1));
-    expect(last.status).toBe('over');
-    expect(last.events.at(-1)).toEqual({ kind: 'over', score: last.score });
-    expect(playCasualFruit(31).drops).toBeLessThanOrEqual(FRUIT_ROUND);
+    expect(s.drops).toBe(300);
+  });
+
+  it('AC-76: fruits 1-40 are drawn among 0-3, fruits 41-120 among 0-4, the next ones among 0-5', () => {
+    expect([1, 40, 41, 120, 121, 500].map(nextMaxFor)).toEqual([3, 3, 4, 4, 5, 5]);
+    const drawnAfter = (drops: number) => Array.from({ length: 300 }, (_, seed) => drop({ ...createFruit(seed), drops }, 0).next);
+    expect(Math.max(...drawnAfter(38))).toBe(3); // the 40th fruit
+    expect(Math.max(...drawnAfter(39))).toBe(4); // the 41st fruit
+    expect(Math.max(...drawnAfter(117))).toBe(4); // the 119th fruit (the 120th is a stone)
+    expect(Math.max(...drawnAfter(119))).toBe(5); // the 121st fruit
+    expect(Math.min(...drawnAfter(119))).toBe(0);
+  });
+
+  it('AC-76: from the 41st piece every 5th piece is a stone: it never merges, scores nothing, « Coup de balai » removes it', () => {
+    expect([40, 41, 44, 45, 50, 55, 121, 125].map(isStonePiece)).toEqual([false, false, false, true, true, true, false, true]);
+    expect(Array.from({ length: 50 }, (_, seed) => drop({ ...createFruit(seed), drops: 43 }, 0).next).every((n) => n === STONE)).toBe(true);
+    expect(drop({ ...createFruit(3), drops: 42 }, 0).next).not.toBe(STONE);
+    // Two stones side by side never merge and score nothing.
+    const s1 = drop(board({ '0,7': STONE }, STONE), 1);
+    expect([at(s1, 0, 7), at(s1, 1, 7)]).toEqual([STONE, STONE]);
+    expect(s1.score).toBe(0);
+    // A stone between two cerises: the cerises do not merge across it; a cerise dropped on top of another merges.
+    const s2 = drop(board({ '0,7': 0, '1,7': STONE }, 0), 2);
+    expect([at(s2, 0, 7), at(s2, 1, 7), at(s2, 2, 7)]).toEqual([0, STONE, 0]);
+    // « Coup de balai » clears the bottom row, stones included.
+    const swept = reduceFruit(board({ '0,7': STONE, '0,6': 1 }, 0, { sweepsLeft: 1 }), { type: 'sweep' });
+    expect([at(swept, 0, 7), count(swept)]).toEqual([1, 1]);
+  });
+
+  it('a column holding 7 fruits or more is in danger (red line at its top)', () => {
+    const six: Record<string, number> = {};
+    for (let row = 2; row < FRUIT_ROWS; row++) six[`0,${row}`] = row % 2;
+    expect(columnInDanger(board(six, 0).cells, 0)).toBe(false);
+    expect(columnInDanger(board({ ...six, '0,1': 3 }, 0).cells, 0)).toBe(true);
+    expect(columnInDanger(board({}, 0).cells, 1)).toBe(false);
   });
 
   it('AC-76: « Coup de balai » clears the bottom row without points, fruits above fall and merge; 1 / 2 / 3 uses', () => {
@@ -204,7 +239,7 @@ describe('Fruits en Fusion engine (AC-76)', () => {
     expect(reduceFruit(s, { type: 'tick', dt: 50 })).toBe(s);
   });
 
-  it('AC-86: every seed starts a round (200 seeds), and next fruits are always cerise..orange', () => {
+  it('AC-86: every seed starts a round (200 seeds), and the first 40 fruits are always cerise..orange', () => {
     for (let seed = 0; seed < 200; seed++) {
       let s = createFruit(seed * 7919 + 3);
       expect(s.status).toBe('playing');
@@ -229,6 +264,20 @@ describe('Fruits en Fusion engine (AC-76)', () => {
     expect(casualFruitMove(board(crowded, 0))).toBe(4);
   });
 
+  it('AC-115: every bot round ends with an overflow within its cap of 400 drops', () => {
+    expect(FRUIT_BOT_CAP).toBe(400);
+    for (let seed = 1; seed <= 50; seed++) {
+      const s = playCasualFruit(seed);
+      expect(s.status).toBe('over');
+      expect(s.drops).toBeLessThan(FRUIT_BOT_CAP);
+    }
+  });
+
+  it('AC-115 (measured, reported): bot p25 / median / p90 over seeds 1-50', () => {
+    const scores = Array.from({ length: 50 }, (_, i) => playCasualFruit(i + 1).score).sort((x, y) => x - y);
+    expect({ p25: scores[12], median: (scores[24] + scores[25]) / 2, p90: scores[45] }).toEqual({ p25: 16260, median: 19230, p90: 24600 });
+  });
+
   it('AC-86: over 50 seeds the casual bot median reaches the 1-star threshold and stays below the 3-star threshold', () => {
     const m = median(Array.from({ length: 50 }, (_, i) => playCasualFruit(i + 1).score));
     expect(m).toBeGreaterThanOrEqual(FRUIT_STARS[0]);
@@ -238,6 +287,12 @@ describe('Fruits en Fusion engine (AC-76)', () => {
 });
 
 describe('Fruits en Fusion sprites', () => {
+  it('the stone has its own sprite, unlike every fruit', () => {
+    expect(validateSprite(STONE_SPRITE)).toEqual([]);
+    const shape = (rows: readonly string[]) => rows.map((r) => r.replace(/[^.]/g, '#')).join('\n');
+    for (const fruit of FRUITS) expect(shape(fruit.rows)).not.toBe(shape(STONE_SPRITE.rows));
+  });
+
   it('8 distinct fruit sprites (shape, not only colour) and a 12×12 icon', () => {
     expect(FRUITS).toHaveLength(FRUIT_KINDS);
     const shapes = new Set(FRUITS.map((s) => s.rows.map((r) => r.replace(/[^.]/g, '#')).join('\n')));

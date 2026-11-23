@@ -56,7 +56,7 @@ function expectBoard(state: FruitState) {
   }
   expect(screen.getByTestId('hud-next').props.accessibilityLabel).toBe(String(state.next));
   expect(screen.getByTestId('hud-score')).toHaveTextContent(new RegExp(`^${state.score}$`));
-  expect(screen.getByTestId('hud-fruits')).toHaveTextContent(new RegExp(`^${state.fruitsLeft}$`));
+  expect(screen.getByTestId('hud-fruits')).toHaveTextContent(new RegExp(`^${state.drops}$`));
 }
 
 describe('Fruits en Fusion screen (AC-86, AC-91)', () => {

@@ -42,5 +42,11 @@ const WATERMELON: Sprite = {
   rows: ['..kkkkkk..', '.kgGgGgGk.', 'kgGgGgGgGk', 'kgGgGgGgGk', 'kgGgGgGgGk', 'kgGgGgGgGk', 'kgGgGgGgGk', 'kgGgGgGgGk', '.kgGgGgGk.', '..kkkkkk..'],
 };
 
+/** A stone (Fruits en Fusion, v0.4.0 phone test): never merges; a rough grey block, unlike any fruit. */
+export const STONE_SPRITE: Sprite = {
+  legend: { k: 'outline', g: 'grey', G: 'darkGrey', w: 'light' },
+  rows: ['..........', '..kkkkk...', '.kwggggk..', 'kwggGgggk.', 'kgggggGgkk', 'kgGgggggGk', 'kggggGgggk', '.kgGggggGk', '..kkkkkkk.', '..........'],
+};
+
 /** Fruit sprites by index (0 cerise ... 7 pastèque). */
 export const FRUITS: readonly Sprite[] = [CHERRY, STRAWBERRY, GRAPES, ORANGE, APPLE, PEAR, PINEAPPLE, WATERMELON];

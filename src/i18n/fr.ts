@@ -314,7 +314,7 @@ export const fr = {
     score_candles: `Marquer 200 points à Bougies Folles`,
     score_parrot: `Marquer 150 points à Perroquet Copieur`,
     score_moles: `Marquer 400 points à Champ de Taupes`,
-    score_fruit: `Marquer 3550 points à Fruits en Fusion`,
+    score_fruit: `Marquer 16250 points à Fruits en Fusion`,
     score_slide: `Marquer 500 points à Bloc Glissant`,
     score_cardline: `Marquer 500 points à Suite de Cartes`,
     score_marbles: `Marquer 300 points à Tri de Billes`,

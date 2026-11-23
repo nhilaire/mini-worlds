@@ -11,16 +11,28 @@
 //   bottom-up then left to right, that touches a fruit of its kind; a checked cell without a match leaves the list;
 // - merges started by a sweep score as usual but a combo counts only for a drop (PRD: « a drop that chains 2 merges »);
 // - a sweep on an empty grid is refused (it would waste a use);
-// - a round is 40 fruits (PRD amendment): it ends after the 40th drop and its merges, or earlier when every column
-//   is full.
+// - no fruit limit (v0.4.0 phone test): the round ends when the jar overflows, that is when, after a drop and its
+//   merges, every column is full; fruits 1-40 are drawn among 0-3, 41-120 among 0-4, the next ones among 0-5;
+// - from the 41st piece, every 5th piece is a stone (user decision after measuring: without it a careful player, and
+//   the casual bot, never overflowed): it is dropped like a fruit, never merges, scores nothing, and only « Coup de
+//   balai » removes it from the bottom row.
 import type { BaseEvent, RoundState, UpgradeLevels } from '../contract';
 import { createRng } from '../rng';
 
 export const FRUIT_COLS = 6;
 export const FRUIT_ROWS = 8;
 export const FRUIT_KINDS = 8;
-/** The next fruit is drawn among indexes 0..NEXT_MAX. */
+/** The first 40 fruits are drawn among indexes 0..NEXT_MAX; later ones among a wider range (nextMaxFor). */
 export const NEXT_MAX = 3;
+/** A stone: dropped like a fruit, it never merges (every 5th piece from the 41st). */
+export const STONE = FRUIT_KINDS;
+/** From this piece on, every STONE_EVERY-th piece is a stone. */
+export const STONES_FROM = 41;
+export const STONE_EVERY = 5;
+/** A column holding this many fruits or more shows a red line at its top. */
+export const DANGER_HEIGHT = 7;
+/** Safety cap of a bot round (drops); every bot round overflows long before. */
+export const FRUIT_BOT_CAP = 400;
 export const WATERMELON = FRUIT_KINDS - 1;
 export const VANISH_POINTS = 2000;
 /** The drop plays in this time; taps are ignored meanwhile (input guard). */
@@ -30,13 +42,12 @@ export const MERGE_STEP_MS = 680;
 
 /** Input guard of a drop or a sweep: the drop, then every merge step of its replay (AC-91). */
 export const guardFor = (steps: number): number => FRUIT_GUARD_MS + MERGE_STEP_MS * steps;
-/** Fruits in a round (PRD amendment after the balance measurement: an endless round for a careful player). */
-export const FRUIT_ROUND = 40;
 /**
  * Star thresholds measured with the casual bot over 50 seeds (1 star ≈ p25, 2 stars ≈ p90, 3 stars ≈ 2 × median,
- * multiples of 50); to copy into src/game/core/content.ts.
+ * multiples of 50); to copy into src/game/core/content.ts. v0.4.0 phone test (no fruit limit, stones): p25 16 260,
+ * median 19 230, p90 24 600.
  */
-export const FRUIT_STARS = [3550, 4400, 7850] as const;
+export const FRUIT_STARS = [16250, 24600, 38450] as const;
 
 export type Cell = number | null;
 
@@ -59,8 +70,6 @@ export type FruitState = RoundState<FruitEvent> & {
   busyMs: number;
   /** Drops so far (also keys the screen animations). */
   drops: number;
-  /** Fruits left to drop in the round (40 at the start). */
-  fruitsLeft: number;
   rngState: number;
 };
 
@@ -90,6 +99,8 @@ export function height(cells: readonly Cell[], col: number): number {
 }
 
 export const columnFull = (cells: readonly Cell[], col: number): boolean => cells[cellOf(col, 0)] !== null;
+/** A column holding DANGER_HEIGHT fruits or more (red line at its top). */
+export const columnInDanger = (cells: readonly Cell[], col: number): boolean => cells[cellOf(col, FRUIT_ROWS - DANGER_HEIGHT)] !== null;
 export const boardFull = (cells: readonly Cell[]): boolean => Array.from({ length: FRUIT_COLS }, (_, c) => c).every((c) => columnFull(cells, c));
 
 /** Lowest empty row of a column, or -1 when full. */
@@ -136,7 +147,7 @@ export function resolve(start: readonly Cell[], toCheck: Iterable<number>): Reso
     const cell = order[0];
     pending.delete(cell);
     const fruit = cells[cell];
-    if (fruit === null) continue;
+    if (fruit === null || fruit === STONE) continue; // a stone never merges
     const mates = neighbours(cell).filter((n) => cells[n] === fruit);
     if (mates.length === 0) continue;
     const group = [cell, ...mates];
@@ -170,14 +181,26 @@ export function resolve(start: readonly Cell[], toCheck: Iterable<number>): Reso
   return { cells, events, points, merges };
 }
 
-function drawNext(rngState: number): { next: number; rngState: number } {
+/** Highest index of the n-th fruit of a round (1-based): 3 up to the 40th, 4 up to the 120th, then 5. */
+export function nextMaxFor(fruitNumber: number): number {
+  if (fruitNumber <= 40) return NEXT_MAX;
+  return fruitNumber <= 120 ? NEXT_MAX + 1 : NEXT_MAX + 2;
+}
+
+/** True when the n-th piece of a round (1-based) is a stone: the 45th, 50th, 55th... */
+export function isStonePiece(pieceNumber: number): boolean {
+  return pieceNumber >= STONES_FROM && pieceNumber % STONE_EVERY === 0;
+}
+
+function drawNext(rngState: number, fruitNumber: number): { next: number; rngState: number } {
   const rng = createRng(rngState);
-  const next = rng.int(NEXT_MAX + 1);
+  const drawn = rng.int(nextMaxFor(fruitNumber) + 1);
+  const next = isStonePiece(fruitNumber) ? STONE : drawn;
   return { next, rngState: rng.state() };
 }
 
 export function createFruit(seed: number, upgrades: UpgradeLevels = {}): FruitState {
-  const first = drawNext(seed >>> 0);
+  const first = drawNext(seed >>> 0, 1);
   return {
     score: 0,
     combos: 0,
@@ -188,7 +211,6 @@ export function createFruit(seed: number, upgrades: UpgradeLevels = {}): FruitSt
     sweepsLeft: upgrades.sweep ?? 0,
     busyMs: 0,
     drops: 0,
-    fruitsLeft: FRUIT_ROUND,
     rngState: first.rngState,
   };
 }
@@ -210,10 +232,10 @@ function drop(state: FruitState, col: number): FruitState {
     events.push({ kind: 'combo' });
   }
   const score = state.score + result.points;
-  const drawn = drawNext(state.rngState);
-  const next: FruitState = { ...state, cells: result.cells, score, combos, next: drawn.next, rngState: drawn.rngState, busyMs: guardFor(result.merges), drops: state.drops + 1, fruitsLeft: state.fruitsLeft - 1, events };
-  // The round ends after the 40th drop and its merges, or when the next fruit fits in no column (all columns full).
-  if (next.fruitsLeft <= 0 || boardFull(result.cells)) return { ...next, status: 'over', events: [...events, { kind: 'over', score }] };
+  const drawn = drawNext(state.rngState, state.drops + 2); // the fruit after this drop
+  const next: FruitState = { ...state, cells: result.cells, score, combos, next: drawn.next, rngState: drawn.rngState, busyMs: guardFor(result.merges), drops: state.drops + 1, events };
+  // The round ends when the jar overflows: after the drop and its merges, the next fruit fits in no column.
+  if (boardFull(result.cells)) return { ...next, status: 'over', events: [...events, { kind: 'over', score }] };
   return next;
 }
 
@@ -277,7 +299,7 @@ export function casualFruitMove(state: Pick<FruitState, 'cells' | 'next'>): numb
 }
 
 /** Plays a whole round with the casual bot (ticks past the guard between drops); returns the final state. */
-export function playCasualFruit(seed: number, upgrades: UpgradeLevels = {}, maxDrops = 5000): FruitState {
+export function playCasualFruit(seed: number, upgrades: UpgradeLevels = {}, maxDrops = FRUIT_BOT_CAP): FruitState {
   let state = createFruit(seed, upgrades);
   for (let i = 0; i < maxDrops && state.status === 'playing'; i++) {
     state = reduceFruit(state, { type: 'drop', col: casualFruitMove(state) });

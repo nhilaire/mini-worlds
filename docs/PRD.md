@@ -175,7 +175,7 @@ forever (a lower score later never removes one). 69 stars exist in v0.3.0.
 | Bougies Folles | 200 | 450 | 800 |
 | Perroquet Copieur | 150 | 400 | 800 |
 | Champ de Taupes | 400 | 900 | 1 500 |
-| Fruits en Fusion | from the casual bot (v0.4.0 phone test) | | |
+| Fruits en Fusion | 16 250 | 24 600 | 38 450 |
 | Bloc Glissant | 500 | 900 | 1 300 |
 | Suite de Cartes | 500 | 750 | 950 |
 | Tri de Billes | 300 | 700 | 1 000 |
@@ -600,7 +600,10 @@ a world keep the rule 2 × (k − 1) stars in that world. 69 stars exist in v0.3
   when the jar overflows, that is when, after a drop and its merges, the next fruit fits in no column. A tap on a
   full column is ignored; a column holding 7 fruits or more shows a red line at its top. Fruits 1 to 40 are drawn
   among indexes 0-3, fruits 41 to 120 among indexes 0-4, from the 121st among indexes 0-5 (seeded), so the jar fills
-  faster and even a careful player overflows in the end. Stars are set from the casual
+  faster. From the 41st piece, every 5th piece (the 45th, 50th...) is a stone (decided by the user on 2026-11-23,
+  after the measure showed that the bigger fruits alone never made a careful player overflow): it is dropped like a
+  fruit, never merges, scores nothing, and only « Coup de balai » removes it from the bottom row; it has its own grey
+  block sprite. Even a careful player overflows in the end. Stars are set from the casual
   bot (1 star ≈ its p25, 2 stars ≈ its p90, 3 stars ≈ twice its median, rounded to 50); bot rounds are capped at 400
   drops in tests.
 - Input guard: the drop and its merges play in 300 ms; taps are ignored meanwhile.
@@ -1018,7 +1021,8 @@ section above, and the version stays 0.4.0 (never accepted yet):
 - Daily reward: any missed day resets the calendar to day 1.
 - New: the game of the day, with coins ×2 on its rounds all day, started from a Home card.
 - Couleur Éclair, Fruits en Fusion, Plombier Express and Mini Défense are played until the player loses (no fixed
-  number of gates, fruits, grids or waves); Plombier grids grow from 4 × 4 to 6 × 6; Mini Défense gains three
+  number of gates, fruits, grids or waves); Fruits en Fusion gets a stone every 5th piece from the 41st (user decision
+  after the measure); Couleur Éclair stars lowered to 250 / 450 / 800 for families (user decision); Plombier grids grow from 4 × 4 to 6 × 6; Mini Défense gains three
   turrets and three enemies with less gold.
 - Bataille de Nombres: outcome preview before an attack, a training map with a passive enemy, a 3-bubble tutorial,
   and no move onto one's own territory.
@@ -1355,7 +1359,8 @@ Telemetry and technical
 - AC-76 [unit] Fruits en Fusion: a fruit falls to the lowest empty cell, merges with every touching fruit of its kind
   into the next index in the lowest merged cell, gravity then re-checks created or moved fruits bottom-up, two
   pastèques vanish for 2 000, points follow 10 × 2^index, a tap on a full column is ignored, there is no fruit limit and
-  the round ends only when no column fits, fruits 1-40 are drawn among 0-3, 41-120 among 0-4 and the next ones among 0-5, « Coup de balai » clears the bottom row; a chain of 2+ merges is a combo.
+  the round ends only when no column fits, fruits 1-40 are drawn among 0-3, 41-120 among 0-4 and the next ones among 0-5, every 5th piece from the 41st is a
+  stone that never merges and that only « Coup de balai » clears, « Coup de balai » clears the bottom row; a chain of 2+ merges is a combo.
 - AC-77 [unit] Bloc Glissant: blocks move one cell along their axis into free cells only; every generated puzzle is
   solvable with its par in [3 + 2k, 7 + 2k] or the closest attempt (bounded generator); solved at columns 4-5;
   scoring 300 − 15 per extra move, failure after par + 25 and hints (next move of a shortest solution) follow the

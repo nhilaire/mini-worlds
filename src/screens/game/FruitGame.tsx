@@ -8,11 +8,11 @@ import { useCallback, useEffect, useMemo, useRef, useState } from 'react';
 import { Pressable, StyleSheet, useWindowDimensions, View } from 'react-native';
 import Animated, { ZoomIn, ZoomOut } from 'react-native-reanimated';
 
-import { FRUITS } from '../../art/games/fruit';
+import { FRUITS, STONE_SPRITE } from '../../art/games/fruit';
 import { PALETTE } from '../../art/palette';
 import { now } from '../../game/clock';
 import { upgradeLevels } from '../../game/core/upgrades';
-import { Cell, cellOf, colOf, createFruit, FRUIT_COLS, FRUIT_ROWS, FruitAction, FruitState, reduceFruit, rowOf } from '../../game/fruit/engine';
+import { Cell, cellOf, colOf, columnInDanger, createFruit, FRUIT_COLS, FRUIT_ROWS, FruitAction, FruitState, reduceFruit, rowOf, STONE } from '../../game/fruit/engine';
 import { buildFruitReplay, FruitPhase, fruitReplayDuration, phaseIndexAt } from '../../game/fruit/replay';
 import { useI18n } from '../../i18n/I18nProvider';
 import { useGameStore } from '../../state/GameStore';
@@ -45,6 +45,9 @@ function feedbackOf(events: FruitState['events']): { kind: string }[] {
 
 /** What React draws: the engine state, the replay of the last move and the phase on show (`phases.length`: over). */
 type Shown = { game: FruitState; phases: readonly FruitPhase[]; phase: number };
+
+/** Sprite of a board piece: a fruit, or the stone. */
+const spriteOf = (piece: number) => (piece === STONE ? STONE_SPRITE : FRUITS[piece]);
 
 export function FruitGame({ seed, onFinish }: { seed: number; onFinish: OnFinish }) {
   const { t } = useI18n();
@@ -143,14 +146,14 @@ export function FruitGame({ seed, onFinish }: { seed: number; onFinish: OnFinish
         <PixelText size={8} color="muted">
           {t.hud.moves}
         </PixelText>
-        <PixelText testID="hud-fruits">{String(state.fruitsLeft)}</PixelText>
+        <PixelText testID="hud-fruits">{String(state.drops)}</PixelText>
       </View>
       <View style={styles.hudItem}>
         <PixelText size={8} color="muted">
           {t.hud.next}
         </PixelText>
         <View testID="hud-next" accessibilityLabel={String(state.next)}>
-          <PixelSprite sprite={FRUITS[state.next]} scale={2} />
+          <PixelSprite sprite={spriteOf(state.next)} scale={2} />
         </View>
       </View>
     </>
@@ -169,6 +172,8 @@ export function FruitGame({ seed, onFinish }: { seed: number; onFinish: OnFinish
               onPress={() => onColumn(col)}
               style={({ pressed }) => [styles.col, { borderColor: colors.border }, pressed && { backgroundColor: colors.surfaceAlt }]}
             >
+              {/* A column holding 7 pieces or more shows a red line at its top: the jar is about to overflow there. */}
+              {columnInDanger(shown, col) && <View testID={`fruit-danger-${col}`} pointerEvents="none" style={styles.danger} />}
               {Array.from({ length: FRUIT_ROWS }, (__, row) => {
                 const i = cellOf(col, row);
                 const fruit = shown[i];
@@ -189,7 +194,7 @@ export function FruitGame({ seed, onFinish }: { seed: number; onFinish: OnFinish
                         entering={enter ? ZoomIn.duration(enter.ms) : undefined}
                         exiting={flash && current?.kind === 'flash' && i !== current.at ? ZoomOut.duration(current.ms) : undefined}
                       >
-                        <PixelSprite sprite={FRUITS[fruit]} scale={spriteScale} />
+                        <PixelSprite sprite={spriteOf(fruit)} scale={spriteScale} />
                       </Animated.View>
                     )}
                   </View>
@@ -215,6 +220,7 @@ const styles = StyleSheet.create({
   col: { borderLeftWidth: StyleSheet.hairlineWidth },
   cell: { alignItems: 'center', justifyContent: 'center', borderWidth: 2, borderColor: 'transparent', borderRadius: 4 },
   flash: { borderColor: PALETTE.orange, backgroundColor: PALETTE.yellow },
+  danger: { position: 'absolute', left: 0, right: 0, top: 0, height: 4, backgroundColor: PALETTE.red, zIndex: 1 },
   pop: { position: 'absolute', alignItems: 'center', overflow: 'visible' },
   popText: { color: PALETTE.darkOrange, textAlign: 'center' },
   hudItem: { gap: 2, alignItems: 'center' },

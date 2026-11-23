@@ -1,8 +1,10 @@
 // « Mini Défense » screen: the winding path on its grid, the 6 turret slots beside it and « Lancer la vague » below.
-// Between waves a tap on a slot builds or upgrades (the slot shows the cost of its next action); during a wave a
+// Between waves a tap on an empty slot opens the picker of the three turrets (Rapide, Canon, Givre: name, cost,
+// effect; the unaffordable ones disabled), a tap on a turret upgrades it (the slot shows its cost); during a wave a
 // frame loop reads the injectable clock and ticks the engine while the round is active (not behind the tutorial
-// bubble nor the pause). A turret tells its level by its number of barrels, an enemy carries a small health bar, a
-// shot is a short flash on the turret and on its target.
+// bubble nor the pause). A turret tells its kind by its shape (Rapide: thin barrels, Canon: one wide barrel, Givre: a
+// round base) and its level by its number of barrels; an enemy tells its kind by its shape (normal: round, rapide:
+// small diamond, blindé: square with a thick rim) and carries a small health bar; a shot is a short flash.
 //
 // Performance (same rule as Saute-Lapin): a tick never re-renders React by itself. The enemy positions, their health
 // bars and the shot flashes are Animated values set from the engine state; React re-renders only when something
@@ -20,18 +22,18 @@ import {
   DefenseState,
   GRID_COLS,
   GRID_ROWS,
+  EnemyKind,
   MAX_LEVEL,
   MAX_WAVE_ENEMIES,
-  nextCost,
   PATH,
   PATH_LENGTH,
   reduceDefense,
-  SHOT_INTERVAL_MS,
   SLOT_COUNT,
   SLOTS,
-  stepTime,
-  waveHealth,
-  WAVES,
+  TURRET_KINDS,
+  TurretKind,
+  TURRETS,
+  upgradeCost,
 } from '../../game/defense/engine';
 import { useI18n } from '../../i18n/I18nProvider';
 import { useGameStore } from '../../state/GameStore';
@@ -82,19 +84,30 @@ export function enemyPosition(cell: number, progress: number): [col: number, row
   return [col + (nextCol - col) * progress, row + (nextRow - row) * progress];
 }
 
-/** A turret: a base and one barrel per level (the shape tells the level, not the colour). */
-function Turret({ level, size }: { level: number; size: number }) {
-  const barrel = Math.max(3, Math.floor(size / 7));
+/** Colour of each turret base (the shape tells the kind as well). */
+const TURRET_COLORS: Readonly<Record<TurretKind, string>> = { rapid: PALETTE.blue, cannon: PALETTE.darkPurple, frost: PALETTE.sky };
+
+/** A turret: a base and one barrel per level; Rapide has thin barrels, Canon one wide barrel per level, Givre a round base. */
+function Turret({ kind, level, size }: { kind: TurretKind; level: number; size: number }) {
+  const barrel = Math.max(3, Math.floor(size / (kind === 'cannon' ? 4 : 7)));
+  const base = Math.floor(size * 0.6);
   return (
-    <View style={styles.turret}>
+    <View style={styles.turret} testID={`defense-turret-${kind}`}>
       <View style={styles.barrels}>
         {Array.from({ length: level }, (_, i) => (
-          <View key={i} style={[styles.barrel, { width: barrel, height: Math.floor(size * 0.3) }]} />
+          <View key={i} style={[styles.barrel, { width: barrel, height: Math.floor(size * (kind === 'cannon' ? 0.22 : 0.3)) }]} />
         ))}
       </View>
-      <View style={[styles.turretBase, { width: Math.floor(size * 0.6), height: Math.floor(size * 0.3) }]} />
+      <View style={[styles.turretBase, { width: base, height: Math.floor(size * 0.3), backgroundColor: TURRET_COLORS[kind], borderRadius: kind === 'frost' ? base / 2 : 3 }]} />
     </View>
   );
+}
+
+/** Body of an enemy: its shape and colour tell its kind. */
+function enemyBodyStyle(kind: EnemyKind, body: number) {
+  if (kind === 'fast') return { width: body * 0.75, height: body * 0.75, borderRadius: 2, backgroundColor: PALETTE.yellow, transform: [{ rotate: '45deg' }] };
+  if (kind === 'armoured') return { width: body, height: body, borderRadius: 3, borderWidth: 4, backgroundColor: PALETTE.grey };
+  return { width: body, height: body, borderRadius: body / 2, backgroundColor: PALETTE.red };
 }
 
 export function DefenseGame({ seed, onFinish }: { seed: number; onFinish: OnFinish }) {
@@ -115,6 +128,8 @@ export function DefenseGame({ seed, onFinish }: { seed: number; onFinish: OnFini
   const [impactCol] = useState(() => Array.from({ length: SLOT_COUNT }, () => new Animated.Value(0)));
   const [impactRow] = useState(() => Array.from({ length: SLOT_COUNT }, () => new Animated.Value(0)));
   const steps = useMemo(() => [{ key: 'build', text: t.tutorial.defense.build }], [t]);
+  /** Empty slot whose turret picker is open, null when closed. */
+  const [picking, setPicking] = useState<number | null>(null);
   const frame = useRoundFrame({ game: 'defense', tutorialSteps: steps, onFinish, score: () => stateRef.current.score });
   const { paused, active, advanceTutorial, finish, setCombos } = frame;
   const feedback = useMemo(() => feedbackOf(state.events), [state.events]);
@@ -126,20 +141,21 @@ export function DefenseGame({ seed, onFinish }: { seed: number; onFinish: OnFini
       if (previous.status !== 'playing') return;
       const next = reduceDefense(previous, action);
       stateRef.current = next;
-      const stepMs = stepTime(next.wave);
-      const health = waveHealth(next.wave);
       for (const enemy of next.enemies) {
-        const [col, row] = enemyPosition(enemy.cell, enemy.moveMs / stepMs);
+        const [col, row] = enemyPosition(enemy.cell, enemy.moveMs / enemy.stepMs);
         enemyCol[enemy.id].setValue(col);
         enemyRow[enemy.id].setValue(row);
-        enemyHealth[enemy.id].setValue(enemy.hp / health);
+        enemyHealth[enemy.id].setValue(enemy.hp / enemy.maxHp);
       }
       for (const event of next.events) {
         if (event.kind !== 'shot') continue;
         impactCol[event.slot].setValue(PATH[event.cell][0]);
         impactRow[event.slot].setValue(PATH[event.cell][1]);
       }
-      next.cooldowns.forEach((ms, slot) => flash[slot].setValue(next.phase === 'wave' && next.turrets[slot] > 0 && ms > SHOT_INTERVAL_MS - FLASH_MS ? 1 : 0));
+      next.cooldowns.forEach((ms, slot) => {
+        const turret = next.turrets[slot];
+        flash[slot].setValue(next.phase === 'wave' && turret !== null && ms > TURRETS[turret.kind].intervalMs - FLASH_MS ? 1 : 0);
+      });
       if (needsRender(previous, next) || (action.type !== 'tick' && next.events.length > 0)) setState(next);
       if (next.status === 'over') finish(next.score, next.combos);
       else setCombos(next.combos);
@@ -174,13 +190,24 @@ export function DefenseGame({ seed, onFinish }: { seed: number; onFinish: OnFini
   const onSlot = useCallback(
     (slot: number) => {
       if (paused) return;
-      dispatch({ type: 'tapSlot', slot });
+      // An empty slot opens the picker; a turret is upgraded at once.
+      if (stateRef.current.turrets[slot] === null) setPicking(slot);
+      else dispatch({ type: 'tapSlot', slot });
+    },
+    [dispatch, paused],
+  );
+  const onPick = useCallback(
+    (turret: TurretKind) => {
+      if (paused || picking === null) return;
+      dispatch({ type: 'build', slot: picking, turret });
+      setPicking(null);
       advanceTutorial('build');
     },
-    [advanceTutorial, dispatch, paused],
+    [advanceTutorial, dispatch, paused, picking],
   );
   const onStart = useCallback(() => {
     if (paused) return;
+    setPicking(null);
     dispatch({ type: 'startWave' });
     // A player who launches the first wave without any turret has still read the bubble: the wave must run.
     advanceTutorial('build');
@@ -204,7 +231,7 @@ export function DefenseGame({ seed, onFinish }: { seed: number; onFinish: OnFini
         <PixelText size={8} color="muted">
           {t.hud.wave}
         </PixelText>
-        <PixelText testID="hud-wave">{t.hud.of(state.wave, WAVES)}</PixelText>
+        <PixelText testID="hud-wave">{String(state.wave)}</PixelText>
       </View>
     </>
   );
@@ -226,22 +253,23 @@ export function DefenseGame({ seed, onFinish }: { seed: number; onFinish: OnFini
           ))}
 
           {SLOTS.map(([col, row], slot) => {
-            const level = state.turrets[slot];
-            const cost = nextCost(level);
-            const affordable = cost !== null && state.gold >= cost;
+            const turret = state.turrets[slot];
+            const level = turret?.level ?? 0;
+            const cost = turret ? upgradeCost(turret.level) : null;
+            const affordable = turret ? cost !== null && state.gold >= cost : TURRET_KINDS.some((kind) => state.gold >= TURRETS[kind].cost);
             return (
               <Pressable
                 key={slot}
                 testID={`defense-slot-${slot}`}
                 accessibilityRole="button"
-                accessibilityLabel={cost === null ? t.hud.of(level, MAX_LEVEL) : level === 0 ? t.play.buildCost(cost) : t.play.upgradeCost(cost)}
+                accessibilityLabel={!turret ? t.play.pickTurret : cost === null ? t.hud.of(level, MAX_LEVEL) : t.play.upgradeCost(cost)}
                 accessibilityValue={{ text: String(level) }}
                 accessibilityState={{ disabled: !planning }}
                 disabled={!planning}
                 onPress={() => onSlot(slot)}
                 style={[styles.slot, { left: col * cell, top: row * cell, width: cell, height: cell, borderColor: planning && affordable ? colors.accent : colors.border }, level === 0 && styles.slotEmpty]}
               >
-                {level > 0 && <Turret level={level} size={cell} />}
+                {turret && <Turret kind={turret.kind} level={turret.level} size={cell} />}
                 {cost !== null && (
                   <PixelText size={8} color={affordable ? 'text' : 'muted'} testID={`defense-cost-${slot}`}>
                     {String(cost)}
@@ -262,7 +290,7 @@ export function DefenseGame({ seed, onFinish }: { seed: number; onFinish: OnFini
               <View style={[styles.healthBar, { width: barWidth }]}>
                 <Animated.View style={[styles.health, { width: Animated.multiply(enemyHealth[enemy.id], barWidth - 2) }]} />
               </View>
-              <View style={[styles.enemyBody, { width: body, height: body, borderRadius: body / 2 }]}>
+              <View testID={`defense-enemy-kind-${enemy.kind}`} style={[styles.enemyBody, enemyBodyStyle(enemy.kind, body)]}>
                 <View style={styles.enemyEye} />
                 <View style={styles.enemyEye} />
               </View>
@@ -291,6 +319,45 @@ export function DefenseGame({ seed, onFinish }: { seed: number; onFinish: OnFini
         <View style={{ width: GRID_COLS * cell }}>
           <Button label={t.play.startWave} onPress={onStart} disabled={!planning} testID="defense-start" />
         </View>
+
+        {picking !== null && planning && (
+          <View style={[styles.picker, { backgroundColor: colors.surface, borderColor: colors.border }]} testID="defense-picker">
+            <PixelText size={10} color="muted">
+              {t.play.pickTurret}
+            </PixelText>
+            {TURRET_KINDS.map((kind) => {
+              const def = TURRETS[kind];
+              const copy = t.play.turrets[kind];
+              const canPay = state.gold >= def.cost;
+              return (
+                <Pressable
+                  key={kind}
+                  testID={`defense-pick-${kind}`}
+                  accessibilityRole="button"
+                  accessibilityLabel={`${copy.name}, ${t.play.goldCost(def.cost)}`}
+                  accessibilityState={{ disabled: !canPay }}
+                  disabled={!canPay}
+                  onPress={() => onPick(kind)}
+                  style={[styles.pickRow, { borderColor: colors.border, opacity: canPay ? 1 : 0.45 }]}
+                >
+                  <View style={[styles.pickIcon, { width: cell, height: cell }]}>
+                    <Turret kind={kind} level={1} size={cell} />
+                  </View>
+                  <View style={styles.pickText}>
+                    <PixelText>{copy.name}</PixelText>
+                    <PixelText size={8} color="muted">
+                      {copy.desc}
+                    </PixelText>
+                  </View>
+                  <PixelText testID={`defense-pick-${kind}-cost`} color={canPay ? 'accent' : 'muted'}>
+                    {t.play.goldCost(def.cost)}
+                  </PixelText>
+                </Pressable>
+              );
+            })}
+            <Button label={t.play.close} onPress={() => setPicking(null)} variant="secondary" compact testID="defense-pick-close" />
+          </View>
+        )}
       </View>
     </GameFrame>
   );
@@ -305,13 +372,17 @@ const styles = StyleSheet.create({
   turret: { alignItems: 'center' },
   barrels: { flexDirection: 'row', gap: 2 },
   barrel: { backgroundColor: PALETTE.grey, borderWidth: 1, borderColor: PALETTE.outline },
-  turretBase: { backgroundColor: PALETTE.blue, borderWidth: 2, borderColor: PALETTE.outline, borderRadius: 3 },
+  turretBase: { borderWidth: 2, borderColor: PALETTE.outline },
   muzzle: { position: 'absolute', left: 0, right: 0, top: 0, bottom: 0, borderRadius: 4, borderWidth: 3, borderColor: PALETTE.yellow },
   enemy: { position: 'absolute', left: 0, top: 0, alignItems: 'center', justifyContent: 'center', gap: 2 },
   healthBar: { height: 5, backgroundColor: PALETTE.outline, borderWidth: 1, borderColor: PALETTE.outline },
   health: { height: 3, backgroundColor: PALETTE.lime },
-  enemyBody: { backgroundColor: PALETTE.red, borderWidth: 2, borderColor: PALETTE.outline, flexDirection: 'row', alignItems: 'center', justifyContent: 'center', gap: 3 },
+  enemyBody: { borderWidth: 2, borderColor: PALETTE.outline, flexDirection: 'row', alignItems: 'center', justifyContent: 'center', gap: 3 },
   enemyEye: { width: 3, height: 3, backgroundColor: PALETTE.white },
   impact: { position: 'absolute', backgroundColor: PALETTE.yellow, borderWidth: 1, borderColor: PALETTE.outline },
   hudItem: { gap: 2 },
+  picker: { position: 'absolute', left: spacing.md, right: spacing.md, top: spacing.lg, borderWidth: 2, borderRadius: 8, padding: spacing.md, gap: spacing.sm },
+  pickRow: { flexDirection: 'row', alignItems: 'center', gap: spacing.sm, borderWidth: 1, borderRadius: 6, padding: spacing.sm },
+  pickIcon: { alignItems: 'center', justifyContent: 'center' },
+  pickText: { flex: 1, gap: 2 },
 });

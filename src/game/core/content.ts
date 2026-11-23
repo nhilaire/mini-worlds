@@ -372,7 +372,7 @@ export const GAMES: readonly Game[] = [
   {
     id: 'defense',
     world: 'strategy',
-    stars: [950, 1250, 1400],
+    stars: [1400, 2150, 3200], // v0.4.0 phone test: 3 turrets, 3 enemies, endless waves, from the casual bot (p25 1 400, p90 2 170, median 1 600)
     upgrades: [{ id: 'arsenal', maxLevel: UPGRADE_MAX_LEVEL }, coinsUpgrade],
     realTime: true,
   },
@@ -511,7 +511,7 @@ export const CHALLENGES: readonly ChallengeDef[] = [
   { id: 'score_dash', kind: 'score', target: 450, game: 'dash', reward: { coins: 50 }, minGames: 1 },
   { id: 'score_tiles', kind: 'score', target: 3700, game: 'tiles', reward: { coins: 50 }, minGames: 1 },
   { id: 'score_conquest', kind: 'score', target: 550, game: 'conquest', reward: { coins: 50 }, minGames: 1 },
-  { id: 'score_defense', kind: 'score', target: 950, game: 'defense', reward: { coins: 50 }, minGames: 1 },
+  { id: 'score_defense', kind: 'score', target: 1400, game: 'defense', reward: { coins: 50 }, minGames: 1 },
   { id: 'score_hands', kind: 'score', target: 150, game: 'hands', reward: { coins: 50 }, minGames: 1 },
   { id: 'score_patience', kind: 'score', target: 250, game: 'patience', reward: { coins: 50 }, minGames: 1 },
   { id: 'score_darts', kind: 'score', target: 350, game: 'darts', reward: { coins: 50 }, minGames: 1 },

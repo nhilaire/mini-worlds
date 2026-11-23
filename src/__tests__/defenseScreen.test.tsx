@@ -2,7 +2,7 @@ import AsyncStorage from '@react-native-async-storage/async-storage';
 import { act, fireEvent, render, screen } from '@testing-library/react-native';
 
 import { setClock } from '../game/clock';
-import { createDefense, DefenseState, PATH, reduceDefense, SIM_STEP_MS, SLOT_COUNT } from '../game/defense/engine';
+import { createDefense, DefenseState, PATH, reduceDefense, SIM_STEP_MS, SLOT_COUNT, TurretKind } from '../game/defense/engine';
 import { I18nProvider } from '../i18n/I18nProvider';
 import { DefenseGame, enemyPosition, needsRender } from '../screens/game/DefenseGame';
 import { GameStoreProvider } from '../state/GameStore';
@@ -30,6 +30,13 @@ function ticks(state: DefenseState, count: number): DefenseState {
   for (let i = 0; i < count; i++) s = reduceDefense(s, { type: 'tick', dt: SIM_STEP_MS });
   return s;
 }
+
+/** Opens the picker of an empty slot and picks a turret, as the player does. */
+async function pick(slot: number, kind: TurretKind) {
+  await fireEvent.press(screen.getByTestId(`defense-slot-${slot}`));
+  await fireEvent.press(screen.getByTestId(`defense-pick-${kind}`));
+}
+const built = (state: DefenseState, slot: number, turret: TurretKind) => reduceDefense(state, { type: 'build', slot, turret });
 
 async function renderDefense(onFinish = jest.fn()) {
   await render(
@@ -68,54 +75,64 @@ describe('Mini Défense screen (AC-108)', () => {
     globalThis.cancelAnimationFrame = caf;
   });
 
-  it('AC-108: the first round shows the tutorial bubble, the path, the 6 empty slots with their cost, lives, gold and wave', async () => {
+  it('AC-108: the first round shows the tutorial bubble, the path, the 6 empty slots, lives, gold and « Vague 1 » without a total', async () => {
     await renderDefense();
-    expect(screen.getByTestId('tutorial-build')).toHaveTextContent(/Pose des tourelles près du chemin, puis lance la vague/);
+    expect(screen.getByTestId('tutorial-build')).toHaveTextContent(/Touche un emplacement et choisis une tourelle/);
     expect(screen.getByTestId('hud-lives')).toHaveTextContent(/^5$/);
-    expect(screen.getByTestId('hud-gold')).toHaveTextContent(/^120$/);
-    expect(screen.getByTestId('hud-wave')).toHaveTextContent(/^1 \/ 6$/);
+    expect(screen.getByTestId('hud-gold')).toHaveTextContent(/^100$/);
+    expect(screen.getByTestId('hud-wave')).toHaveTextContent(/^1$/);
     expect(screen.getByTestId('hud-score')).toHaveTextContent(/^0$/);
     expect(screen.getAllByTestId(/^defense-path-\d+$/)).toHaveLength(PATH.length);
     for (let slot = 0; slot < SLOT_COUNT; slot++) {
       const view = screen.getByTestId(`defense-slot-${slot}`);
-      expect(view.props.accessibilityLabel).toBe('Construire (50)');
+      expect(view.props.accessibilityLabel).toBe('Choisis une tourelle');
       expect(view.props.accessibilityValue).toEqual({ text: '0' });
-      expect(screen.getByTestId(`defense-cost-${slot}`)).toHaveTextContent(/^50$/);
+      expect(screen.queryByTestId(`defense-cost-${slot}`)).toBeNull();
     }
     expect(screen.getByTestId('defense-start')).toHaveTextContent(/^Lancer la vague$/);
   });
 
-  it('AC-108: building and upgrading update the gold, the level and the next cost as the engine predicts', async () => {
+  it('AC-114: an empty slot opens the picker (Rapide 40, Canon 70, Givre 50, the unaffordable ones disabled); a pick builds and lowers the gold', async () => {
     await renderDefense();
-    let expected = reduceDefense(createDefense(SEED, {}), { type: 'tapSlot', slot: 1 });
     await fireEvent.press(screen.getByTestId('defense-slot-1'));
+    expect(screen.getByTestId('defense-picker')).toHaveTextContent(/Choisis une tourelle/);
+    expect(screen.getByTestId('defense-pick-rapid-cost')).toHaveTextContent(/^40 or$/);
+    expect(screen.getByTestId('defense-pick-cannon-cost')).toHaveTextContent(/^70 or$/);
+    expect(screen.getByTestId('defense-pick-frost-cost')).toHaveTextContent(/^50 or$/);
+    expect(screen.getByTestId('defense-pick-cannon')).toHaveTextContent(/Gros dégâts, touche les voisins/);
+    for (const kind of ['rapid', 'cannon', 'frost']) expect(screen.getByTestId(`defense-pick-${kind}`).props.accessibilityState).toEqual(expect.objectContaining({ disabled: false }));
+    expect(screen.getByTestId('tutorial-build')).toBeTruthy(); // the bubble goes with the first turret built
+
+    await fireEvent.press(screen.getByTestId('defense-pick-cannon'));
+    let expected = built(createDefense(SEED, {}), 1, 'cannon');
+    expect(expected.gold).toBe(30);
+    expect(screen.queryByTestId('defense-picker')).toBeNull();
     expect(screen.queryByTestId('tutorial-bubble')).toBeNull();
-    expect(expected.gold).toBe(70);
-    expect(screen.getByTestId('hud-gold')).toHaveTextContent(/^70$/);
+    expect(screen.getByTestId('hud-gold')).toHaveTextContent(/^30$/);
     expect(screen.getByTestId('defense-slot-1').props.accessibilityValue).toEqual({ text: '1' });
     expect(screen.getByTestId('defense-slot-1').props.accessibilityLabel).toBe('Améliorer (40)');
     expect(screen.getByTestId('defense-cost-1')).toHaveTextContent(/^40$/);
+    expect(screen.getByTestId('defense-turret-cannon')).toBeTruthy();
 
+    // 30 gold: every turret is disabled in the picker; the upgrade (40) is refused too.
+    await fireEvent.press(screen.getByTestId('defense-slot-0'));
+    for (const kind of ['rapid', 'cannon', 'frost']) expect(screen.getByTestId(`defense-pick-${kind}`).props.accessibilityState).toEqual(expect.objectContaining({ disabled: true }));
+    await fireEvent.press(screen.getByTestId('defense-pick-rapid'));
+    expect(screen.getByTestId('defense-slot-0').props.accessibilityValue).toEqual({ text: '0' });
+    await fireEvent.press(screen.getByTestId('defense-pick-close'));
+    expect(screen.queryByTestId('defense-picker')).toBeNull();
     expected = reduceDefense(expected, { type: 'tapSlot', slot: 1 });
     await fireEvent.press(screen.getByTestId('defense-slot-1'));
     expect(screen.getByTestId('hud-gold')).toHaveTextContent(new RegExp(`^${expected.gold}$`));
-    expect(screen.getByTestId('defense-slot-1').props.accessibilityValue).toEqual({ text: '2' });
-    expect(screen.getByTestId('defense-cost-1')).toHaveTextContent(/^80$/);
-
-    // 30 gold left: neither a build (50) nor the level 3 (80) goes through.
-    await fireEvent.press(screen.getByTestId('defense-slot-0'));
-    await fireEvent.press(screen.getByTestId('defense-slot-1'));
-    expect(screen.getByTestId('hud-gold')).toHaveTextContent(/^30$/);
-    expect(screen.getByTestId('defense-slot-0').props.accessibilityValue).toEqual({ text: '0' });
-    expect(screen.getByTestId('defense-slot-1').props.accessibilityValue).toEqual({ text: '2' });
+    expect(screen.getByTestId('defense-slot-1').props.accessibilityValue).toEqual({ text: '1' });
   });
 
   it('AC-108: a wave driven frame by frame through the injectable clock changes the score, the gold and the lives as the engine predicts', async () => {
     await renderDefense();
     let expected = createDefense(SEED, {});
     for (const slot of [1, 3]) {
-      expected = reduceDefense(expected, { type: 'tapSlot', slot });
-      await fireEvent.press(screen.getByTestId(`defense-slot-${slot}`));
+      expected = built(expected, slot, 'rapid');
+      await pick(slot, 'rapid');
     }
     // Planning: time does not count, whatever the frames.
     await runFrames(40, 50);
@@ -150,7 +167,7 @@ describe('Mini Défense screen (AC-108)', () => {
       expected = ticks(expected, 20);
     }
     expect(expected.phase).toBe('plan');
-    expect(screen.getByTestId('hud-wave')).toHaveTextContent(/^2 \/ 6$/);
+    expect(screen.getByTestId('hud-wave')).toHaveTextContent(/^2$/);
     expect(screen.getByTestId('hud-score')).toHaveTextContent(new RegExp(`^${expected.score}$`));
     expect(screen.getByTestId('hud-gold')).toHaveTextContent(new RegExp(`^${expected.gold}$`));
     expect(screen.getByTestId('hud-lives')).toHaveTextContent(new RegExp(`^${expected.lives}$`));
@@ -160,8 +177,8 @@ describe('Mini Défense screen (AC-108)', () => {
 
   it('AC-108: the wave waits behind the pause and goes on after it; frames longer than 50 ms count for 50 ms', async () => {
     await renderDefense();
-    let expected = reduceDefense(reduceDefense(createDefense(SEED, {}), { type: 'tapSlot', slot: 1 }), { type: 'startWave' });
-    await fireEvent.press(screen.getByTestId('defense-slot-1'));
+    let expected = reduceDefense(built(createDefense(SEED, {}), 1, 'rapid'), { type: 'startWave' });
+    await pick(1, 'rapid');
     await fireEvent.press(screen.getByTestId('defense-start'));
     await runFrames(30, 50);
     expected = ticks(expected, 30);
@@ -209,7 +226,7 @@ describe('Mini Défense screen (AC-108)', () => {
 describe('Mini Défense rendering (AC-108)', () => {
   it('re-renders on a small fraction of the frames of a wave', () => {
     let s = createDefense(3);
-    for (const slot of [1, 3]) s = reduceDefense(s, { type: 'tapSlot', slot });
+    for (const slot of [1, 3]) s = built(s, slot, 'rapid');
     s = reduceDefense(s, { type: 'startWave' });
     let frameCount = 0;
     let renders = 0;
@@ -226,7 +243,7 @@ describe('Mini Défense rendering (AC-108)', () => {
   });
 
   it('a tick that only moves or hurts enemies needs no render; a spawn, a kill, a leak or the end of the round does', () => {
-    const wave = reduceDefense(reduceDefense(createDefense(3), { type: 'tapSlot', slot: 1 }), { type: 'startWave' });
+    const wave = reduceDefense(built(createDefense(3), 1, 'rapid'), { type: 'startWave' });
     const first = reduceDefense(wave, { type: 'tick', dt: 50 });
     expect(needsRender(wave, first)).toBe(true); // the first enemy entered
     const walked = reduceDefense(first, { type: 'tick', dt: 50 });

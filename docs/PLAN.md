@@ -143,7 +143,7 @@ v0.4.0 phone test changes (PRD amendment 4e3bbd3, approved 2026-11-23)
 - [x] T-95 Daily reward: any missed day resets the calendar to day 1 (AC-11) - proof: unit
 - [x] T-96 Game of the day core: draw among playable games, saved {date, gameId}, coins x2 at settlement, round_end daily_game, Result line (AC-111, AC-40) - proof: unit
 - [x] T-97 Home « Jeu du jour » card and game sheet badge, Maestro flow (AC-112) - proof: unit + e2e
-- [ ] T-98 Couleur Éclair endless: approach formula past gate 44, no gate limit, bot reaction time, stars recomputed (AC-96, AC-115) - proof: unit
+- [x] T-98 Couleur Éclair endless: approach formula past gate 44, no gate limit, bot reaction time, stars recomputed (AC-96, AC-115) - proof: unit
 - [ ] T-99 Fruits en Fusion until overflow: draws 0-3 / 0-4 / 0-5, red line, HUD fruits dropped, stars recomputed (AC-76, AC-91, AC-115) - proof: unit
 - [ ] T-100 Plombier Express endless: growing grids, allowed taps and timer per grid, HUD, stars recomputed (AC-62, AC-88, AC-115) - proof: unit
 - [ ] T-101 Bataille de Nombres engine: training map, no move onto own territory, enemy rule, outcome preview, 4 battles, stars recomputed (AC-98, AC-115) - proof: unit

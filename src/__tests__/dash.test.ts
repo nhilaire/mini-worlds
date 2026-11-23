@@ -2,7 +2,7 @@ import { validateSprite } from '../art/sprites';
 import { SHAPES } from '../art/games/dash';
 import { ICON } from '../art/icons/dash';
 import { gameById } from '../game/core/content';
-import { BOT_ERROR_FAST, BOT_ERROR_SLOW, botErrorChance, botLane, playDashBot } from '../game/dash/bot';
+import { BOT_GATE_CAP, BOT_REACTION_MAX_MS, BOT_REACTION_MIN_MS, botLane, playDashBot } from '../game/dash/bot';
 import {
   approachTime,
   Colour,
@@ -16,8 +16,6 @@ import {
   Lane,
   LANES,
   LIVES,
-  MAX_GATES,
-  MAX_SCORE,
   reduceDash,
 } from '../game/dash/engine';
 
@@ -108,7 +106,7 @@ describe('Couleur Éclair engine (AC-96)', () => {
   it('AC-96: the colour changes after every 4th gate to another colour, shown from the next approach, and only then', () => {
     for (let seed = 1; seed <= 40; seed++) {
       let s = createDash(seed);
-      while (s.status === 'playing') {
+      while (s.status === 'playing' && s.passed < 80) {
         const before = s.colour;
         // Right and wrong doors alike: the change follows the gates passed, not the score.
         s = (s.passed + seed) % 9 === 0 && s.lives > 1 ? wrong(s) : right(s);
@@ -121,17 +119,17 @@ describe('Couleur Éclair engine (AC-96)', () => {
           expect(s.events.some((e) => e.kind === 'colour')).toBe(false);
         }
       }
-      expect(s.passed).toBe(MAX_GATES);
+      expect(s.passed).toBe(80);
     }
     for (const colour of COLOURS) for (let seed = 0; seed < 50; seed++) expect(drawColour(colour, seed).colour).not.toBe(colour);
     expect(new Set(Array.from({ length: 50 }, (_, seed) => drawColour('red', seed).colour))).toEqual(new Set(['blue', 'yellow']));
   });
 
-  it('AC-96: the approach time of gate n follows max(900, 2 200 − 30 × (n − 1))', () => {
-    expect([1, 2, 3, 10, 44, 45, 46, 60].map(approachTime)).toEqual([2200, 2170, 2140, 1930, 910, 900, 900, 900]);
-    for (let n = 1; n <= MAX_GATES; n++) expect(approachTime(n)).toBe(Math.max(900, 2200 - 30 * (n - 1)));
+  it('AC-96: the approach time follows 2 200 − 30 × (n − 1) up to gate 44, then max(600, 910 − 5 × (n − 44))', () => {
+    expect([1, 2, 3, 10, 44, 45, 46, 60, 105, 106, 200].map(approachTime)).toEqual([2200, 2170, 2140, 1930, 910, 905, 900, 830, 605, 600, 600]);
+    for (let n = 1; n <= 300; n++) expect(approachTime(n)).toBe(n <= 44 ? 2200 - 30 * (n - 1) : Math.max(600, 910 - 5 * (n - 44)));
     let s = createDash(4);
-    while (s.status === 'playing') {
+    while (s.status === 'playing' && s.passed < 120) {
       expect(s.approachMs).toBe(approachTime(s.passed + 1));
       s = right(s);
     }
@@ -181,21 +179,18 @@ describe('Couleur Éclair engine (AC-96)', () => {
     expect(reduceDash(s, { type: 'steer', lane: 'left' })).toBe(s);
   });
 
-  it('AC-96: the round ends after gate 60, at most 600 points and 12 combos', () => {
-    let s = rightDoors(createDash(7), MAX_GATES - 1);
+  it('AC-96: the round never ends after a number of gates, only at the 3rd life lost', () => {
+    let s = rightDoors(createDash(7), 200);
     expect(s.status).toBe('playing');
-    expect(s.passed).toBe(59);
-    s = right(s);
-    expect(s.status).toBe('over');
-    expect(s.passed).toBe(MAX_GATES);
-    expect(s.score).toBe(MAX_SCORE);
-    expect(MAX_SCORE).toBe(600);
-    expect(s.combos).toBe(12);
+    expect(s.passed).toBe(200);
+    expect(s.score).toBe(2000);
+    expect(s.combos).toBe(40);
     expect(s.lives).toBe(3);
-    expect(s.events).toContainEqual({ kind: 'over', score: 600 });
-    // A wrong last door ends the round too, with lives left.
-    const missed = wrong(rightDoors(createDash(7), MAX_GATES - 1));
-    expect(missed).toMatchObject({ status: 'over', score: 590, lives: 2 });
+    s = wrong(wrong(s));
+    expect(s).toMatchObject({ status: 'playing', lives: 1 });
+    s = wrong(s);
+    expect(s).toMatchObject({ status: 'over', lives: 0, score: 2000 });
+    expect(s.events).toContainEqual({ kind: 'over', score: 2000 });
   });
 
   it('AC-96: « Bouclier » pays 1 / 2 / 3 wrong doors per round instead of a life; the streak is still reset', () => {
@@ -242,11 +237,11 @@ describe('Couleur Éclair balance and guards (AC-108)', () => {
     }
   });
 
-  it('AC-108: every seed finishes: 3 lives lost or gate 60, the score within the maximum', () => {
+  it('AC-115: every bot round ends with its 3 lives lost, well within its cap of gates', () => {
     for (const s of rounds) {
       expect(s.status).toBe('over');
-      expect(s.lives === 0 || s.passed === MAX_GATES).toBe(true);
-      expect(s.score).toBeLessThanOrEqual(MAX_SCORE);
+      expect(s.lives).toBe(0);
+      expect(s.passed).toBeLessThan(BOT_GATE_CAP);
       expect(s.score % 10).toBe(0);
     }
   });
@@ -264,15 +259,12 @@ describe('Couleur Éclair balance and guards (AC-108)', () => {
     for (const lane of LANES) expect(reduceDash(over, { type: 'steer', lane })).toBe(over);
   });
 
-  it('AC-108: the casual bot is deterministic per seed and errs more as the gates come faster', () => {
+  it('AC-115: the casual bot is deterministic per seed and reaches the right lane only when the approach lasts its reaction time', () => {
     expect(playDashBot(7)).toEqual(playDashBot(7));
-    expect(botErrorChance(1)).toBe(BOT_ERROR_SLOW);
-    expect(botErrorChance(45)).toBe(BOT_ERROR_FAST);
-    expect(botErrorChance(60)).toBe(BOT_ERROR_FAST);
+    expect([BOT_REACTION_MIN_MS, BOT_REACTION_MAX_MS]).toEqual([700, 1100]);
     const state = createDash(7);
-    expect(botLane(state, 0.99, 0)).toBe(colourLane(state));
-    expect(botLane(state, 0, 0)).not.toBe(colourLane(state));
-    expect(botLane(state, 0, 0.99)).not.toBe(botLane(state, 0, 0));
+    expect(botLane(state, 700)).toBe(colourLane(state)); // 2 200 ms approach: time to react
+    expect(botLane({ ...state, approachMs: 699 }, 700)).toBe(state.lane); // too fast: it stays in its lane
   });
 
   it('AC-108: over 50 seeds the casual bot has a median ≥ the 1-star threshold and < the 3-star one', () => {
@@ -281,6 +273,6 @@ describe('Couleur Éclair balance and guards (AC-108)', () => {
   });
 
   it('AC-108 (measured, reported): bot min / p25 / median / p90 / max over seeds 1-50', () => {
-    expect({ min: scores[0], p25: scores[12], median, p90: scores[45], max: scores[49] }).toEqual({ min: 70, p25: 160, median: 210, p90: 310, max: 420 });
+    expect({ min: scores[0], p25: scores[12], median, p90: scores[45], max: scores[49] }).toEqual({ min: 390, p25: 430, median: 470, p90: 550, max: 570 });
   });
 });

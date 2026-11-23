@@ -314,7 +314,7 @@ export const en: Strings = {
     score_maze: `Score 300 at Maze Dash`,
     score_trail: `Score 600 at Gem Trail`,
     score_treasure: `Score 400 at Treasure Dig`,
-    score_dash: `Score 150 at Colour Dash`,
+    score_dash: `Score 450 at Colour Dash`,
     score_tiles: `Score 3700 at Slide and Merge`,
     score_conquest: `Score 500 at Number Battle`,
     score_defense: `Score 950 at Mini Defence`,

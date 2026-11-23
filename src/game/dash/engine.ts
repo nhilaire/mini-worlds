@@ -2,23 +2,23 @@
 // one after another, each with 3 doors holding the 3 colours in a seeded order. When a gate reaches the runner
 // (`approachMs`, advanced by `tick`), the door of its lane must have its colour: +10 and the streak grows, else a
 // life (or a « Bouclier » shield) is lost and the streak is reset. A `steer` sets the lane, any number of times.
-// After gates 4, 8, 12... the runner takes another colour. Pure reducer; randomness comes from the seeded generator.
+// After gates 4, 8, 12... the runner takes another colour. The round ends only at the 3rd life lost (v0.4.0 phone
+// test: no gate limit). Pure reducer; randomness comes from the seeded generator.
 import type { BaseEvent, RoundState, UpgradeLevels } from '../contract';
 import { createRng } from '../rng';
 
 export const LIVES = 3;
-export const MAX_GATES = 60;
 export const DOOR_POINTS = 10;
 /** A combo every 5th right door in a row. */
 export const COMBO_EVERY = 5;
 /** The runner takes a new colour after every 4th gate. */
 export const COLOUR_EVERY = 4;
-/** Approach time of gate n (1-based): max(900, 2 200 − 30 × (n − 1)) ms. */
+/** Approach time of gate n (1-based): 2 200 − 30 × (n − 1) ms up to gate 44, then max(600, 910 − 5 × (n − 44)) ms. */
 export const APPROACH_FIRST_MS = 2200;
 export const APPROACH_STEP_MS = 30;
-export const APPROACH_MIN_MS = 900;
-/** Highest score of a round: 60 right doors. */
-export const MAX_SCORE = MAX_GATES * DOOR_POINTS;
+export const APPROACH_SLOW_UNTIL = 44;
+export const APPROACH_LATE_STEP_MS = 5;
+export const APPROACH_MIN_MS = 600;
 
 export const LANES = ['left', 'middle', 'right'] as const;
 export type Lane = (typeof LANES)[number];
@@ -45,7 +45,7 @@ export type DashState = RoundState<DashEvent> & {
   lives: number;
   /** Wrong doors that still cost no life (« Bouclier »: 1 / 2 / 3 per round). */
   shields: number;
-  /** Gates passed so far, 0-60; the gate on its way is gate `passed + 1`. */
+  /** Gates passed so far; the gate on its way is gate `passed + 1`. */
   passed: number;
   /** Lane of the runner, kept from gate to gate. */
   lane: Lane;
@@ -63,9 +63,13 @@ export type DashState = RoundState<DashEvent> & {
 
 export type DashAction = { type: 'steer'; lane: Lane } | { type: 'tick'; dt: number };
 
-/** Approach time of gate n (1-based): 2 200 ms at gate 1, 30 ms less per gate, never below 900 ms (gate 45 on). */
+/** Approach time of gate n (1-based): 2 200 ms at gate 1, 30 ms less per gate up to gate 44 (910 ms), then 5 ms less
+ * per gate, never below 600 ms (gate 106 on). */
 export function approachTime(gate: number): number {
-  return Math.max(APPROACH_MIN_MS, APPROACH_FIRST_MS - APPROACH_STEP_MS * (Math.max(1, gate) - 1));
+  const n = Math.max(1, gate);
+  if (n <= APPROACH_SLOW_UNTIL) return APPROACH_FIRST_MS - APPROACH_STEP_MS * (n - 1);
+  const atSlowEnd = APPROACH_FIRST_MS - APPROACH_STEP_MS * (APPROACH_SLOW_UNTIL - 1);
+  return Math.max(APPROACH_MIN_MS, atSlowEnd - APPROACH_LATE_STEP_MS * (n - APPROACH_SLOW_UNTIL));
 }
 
 /** Doors of one gate: the 3 colours in a seeded order. */
@@ -132,7 +136,7 @@ function passDoor(state: DashState): DashState {
   else lives -= 1;
 
   const after = { ...state, score, combos, lives, shields, streak, passed: gate, last: result };
-  if (lives <= 0 || gate >= MAX_GATES) {
+  if (lives <= 0) {
     return { ...after, approachMs: 0, status: 'over', events: [...events, { kind: 'over', score }] };
   }
 

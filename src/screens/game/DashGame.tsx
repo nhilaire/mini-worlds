@@ -11,7 +11,7 @@ import { PALETTE } from '../../art/palette';
 import { UI_SPRITES } from '../../art/sprites';
 import { now } from '../../game/clock';
 import { upgradeLevels } from '../../game/core/upgrades';
-import { approachTime, createDash, DashAction, DashEvent, DOOR_POINTS, Lane, LANES, MAX_GATES, reduceDash } from '../../game/dash/engine';
+import { approachTime, createDash, DashAction, DashEvent, DOOR_POINTS, Lane, LANES, reduceDash } from '../../game/dash/engine';
 import { useI18n } from '../../i18n/I18nProvider';
 import { useGameStore } from '../../state/GameStore';
 import { PixelSprite } from '../../ui/PixelSprite';
@@ -123,7 +123,7 @@ export function DashGame({ seed, onFinish }: { seed: number; onFinish: OnFinish 
         <PixelText size={8} color="muted">
           {t.hud.gates}
         </PixelText>
-        <PixelText testID="hud-gates">{t.hud.of(state.passed, MAX_GATES)}</PixelText>
+        <PixelText testID="hud-gates">{String(state.passed)}</PixelText>
       </View>
       <View style={styles.hudItem}>
         <PixelText size={8} color="muted">

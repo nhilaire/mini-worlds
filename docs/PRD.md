@@ -981,7 +981,7 @@ round or far above every simulated score, it was lowered by hand):
 
 | Game | Bot p25 / median / p90 | Stars |
 |---|---|---|
-| Couleur Éclair | recomputed (v0.4.0 phone test) | from the casual bot |
+| Couleur Éclair | 430 / 470 / 550 (endless, reaction bot) | 450 / 550 / 950 |
 | Glisse-Fusion | 3 720 / 4 190 / 4 660 | 3 700 / 4 650 / 8 400 |
 | Bataille de Nombres | recomputed (v0.4.0 phone test) | from the casual bot |
 | Mini Défense | recomputed (v0.4.0 phone test) | from the casual bot |

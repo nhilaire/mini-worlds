@@ -69,7 +69,7 @@ describe('Couleur Éclair screen (AC-108)', () => {
     await renderDash();
     expect(screen.getByTestId('tutorial-lane')).toHaveTextContent(/Touche à gauche, au milieu ou à droite/);
     expect(screen.getByTestId('hud-lives')).toHaveTextContent(/^3$/);
-    expect(screen.getByTestId('hud-gates')).toHaveTextContent(/^0 \/ 60$/);
+    expect(screen.getByTestId('hud-gates')).toHaveTextContent(/^0$/);
     expect(screen.getByTestId('hud-score')).toHaveTextContent(/^0$/);
     // Each colour has its own shape: the HUD, the runner and each door show the shape of their colour.
     expect(screen.getByTestId(`hud-colour-${engine.colour}`)).toBeTruthy();
@@ -82,7 +82,7 @@ describe('Couleur Éclair screen (AC-108)', () => {
     await renderDash();
     // The bubble freezes the round: no approach.
     await runFrames(80, 50);
-    expect(screen.getByTestId('hud-gates')).toHaveTextContent(/^0 \/ 60$/);
+    expect(screen.getByTestId('hud-gates')).toHaveTextContent(/^0$/);
 
     // A tap on the lane of the runner's colour: the runner goes there, nothing is passed yet.
     let expected = createDash(SEED, {});
@@ -95,12 +95,12 @@ describe('Couleur Éclair screen (AC-108)', () => {
 
     // 2 150 ms: still coming; at 2 200 ms the gate reaches the runner: +10.
     await runFrames(43, 50);
-    expect(screen.getByTestId('hud-gates')).toHaveTextContent(/^0 \/ 60$/);
+    expect(screen.getByTestId('hud-gates')).toHaveTextContent(/^0$/);
     await runFrames(1, 50);
     expected = reduceDash(expected, { type: 'tick', dt: approachTime(1) });
     expect(expected.score).toBe(10);
     expect(screen.getByTestId('hud-score')).toHaveTextContent(/^10$/);
-    expect(screen.getByTestId('hud-gates')).toHaveTextContent(/^1 \/ 60$/);
+    expect(screen.getByTestId('hud-gates')).toHaveTextContent(/^1$/);
     expect(screen.getByTestId('hud-lives')).toHaveTextContent(/^3$/);
     expect(screen.getByTestId('dash-streak')).toHaveTextContent(/^1$/);
     expect(screen.getByTestId('dash-result-ok')).toHaveTextContent(/^\+10$/);
@@ -112,12 +112,12 @@ describe('Couleur Éclair screen (AC-108)', () => {
     await fireEvent.press(screen.getByTestId(`dash-lane-${bad}`));
     expected = reduceDash(expected, { type: 'steer', lane: bad });
     await runFrames(43, 50);
-    expect(screen.getByTestId('hud-gates')).toHaveTextContent(/^1 \/ 60$/);
+    expect(screen.getByTestId('hud-gates')).toHaveTextContent(/^1$/);
     await runFrames(1, 50);
     expected = reduceDash(expected, { type: 'tick', dt: approachTime(2) });
     expect(expected.lives).toBe(2);
     expect(screen.getByTestId('hud-lives')).toHaveTextContent(/^2$/);
-    expect(screen.getByTestId('hud-gates')).toHaveTextContent(/^2 \/ 60$/);
+    expect(screen.getByTestId('hud-gates')).toHaveTextContent(/^2$/);
     expect(screen.getByTestId('hud-score')).toHaveTextContent(/^10$/);
     expect(screen.getByTestId('dash-streak')).toHaveTextContent(/^0$/);
     expect(screen.getByTestId('dash-result-wrong')).toBeTruthy();
@@ -130,13 +130,13 @@ describe('Couleur Éclair screen (AC-108)', () => {
     await fireEvent.press(screen.getByTestId('game-pause'));
     expect(await screen.findByTestId('pause-overlay')).toBeTruthy();
     await runFrames(100, 50);
-    expect(screen.getByTestId('hud-gates')).toHaveTextContent(/^0 \/ 60$/);
+    expect(screen.getByTestId('hud-gates')).toHaveTextContent(/^0$/);
     // After the pause the gate needs the rest of its 2 200 ms: 1 000 ms done, 1 200 ms to go.
     await fireEvent.press(screen.getByTestId('pause-resume'));
     await runFrames(23, 50);
-    expect(screen.getByTestId('hud-gates')).toHaveTextContent(/^0 \/ 60$/);
+    expect(screen.getByTestId('hud-gates')).toHaveTextContent(/^0$/);
     await runFrames(1, 50);
-    expect(screen.getByTestId('hud-gates')).toHaveTextContent(/^1 \/ 60$/);
+    expect(screen.getByTestId('hud-gates')).toHaveTextContent(/^1$/);
   });
 
   it('AC-108: three wrong doors end the round with the score of the engine', async () => {

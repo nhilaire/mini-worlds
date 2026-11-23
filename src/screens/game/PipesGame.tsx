@@ -1,10 +1,11 @@
-// « Plombier Express » screen: the pipe engine (src/game/pipes) on a 5 × 5 grid of Pressable cells. Turn-based: a
+// « Plombier Express » screen: the pipe engine (src/game/pipes) on a grid of Pressable cells (4 × 4 to 6 × 6). Turn-based: a
 // tap settles at once (HUD, score); the turned piece replays its quarter turn (200 ms Reanimated keyframe) and the
 // pieces connected to the entry are drawn filled with water. The water enters on the left of the entry row and
 // leaves on the right of the exit row. The « Indice » button highlights a path cell that is not yet turned right.
 // A solved grid stays shown 1 s (engine pause `solvedMs`, AC-88): the water runs from the entry through the connected
-// pieces in path order and the grid points pop above the board; a frame loop ticks the engine with the injectable
-// clock only during that pause, and React re-renders only when the water front moves or the grid changes.
+// pieces in path order and the grid points pop above the board. A frame loop ticks the engine with the injectable
+// clock while the round is active (the grid clock, then the solved pause; it stops during the tutorial and the pause),
+// and React re-renders only when the seconds left, the water front or the grid change.
 import { useCallback, useEffect, useMemo, useRef, useState } from 'react';
 import { Pressable, StyleSheet, useWindowDimensions, View } from 'react-native';
 import Animated, { FadeIn, FadeInUp, Keyframe, ZoomIn } from 'react-native-reanimated';
@@ -12,7 +13,7 @@ import Animated, { FadeIn, FadeInUp, Keyframe, ZoomIn } from 'react-native-reani
 import { PALETTE } from '../../art/palette';
 import { now } from '../../game/clock';
 import { upgradeLevels } from '../../game/core/upgrades';
-import { createPipes, E, filledCells, N, PieceKind, PIPES_GRIDS, PIPES_SIZE, PipesAction, PipesState, reducePipes, S, W, waterFront } from '../../game/pipes/engine';
+import { createPipes, E, filledCells, N, PieceKind, PipesAction, PipesState, reducePipes, S, W, waterFront } from '../../game/pipes/engine';
 import { useI18n } from '../../i18n/I18nProvider';
 import { useGameStore } from '../../state/GameStore';
 import { Button } from '../../ui/Button';
@@ -74,15 +75,18 @@ function PipeShape({ kind, size, water }: { kind: PieceKind; size: number; water
 
 type GridResult = { grid: number; points: number };
 
+/** Whole seconds left on the grid clock (shown in the HUD). */
+const secondsLeft = (state: Pick<PipesState, 'timeLeftMs'>): number => Math.ceil(state.timeLeftMs / 1000);
+
 export function PipesGame({ seed, onFinish }: { seed: number; onFinish: OnFinish }) {
   const { t } = useI18n();
   const { colors } = useTheme();
   const { save } = useGameStore();
   const { width, height } = useWindowDimensions();
-  const cell = Math.min(80, Math.floor(Math.min((width - 2 * spacing.md) / (PIPES_SIZE + 1), (height - 340) / PIPES_SIZE)));
-  const gutter = Math.floor(cell / 2);
-
   const [state, setState] = useState(() => createPipes(seed, upgradeLevels(save, 'pipes')));
+  const size = state.size;
+  const cell = Math.min(80, Math.floor(Math.min((width - 2 * spacing.md) / (size + 1), (height - 340) / size)));
+  const gutter = Math.floor(cell / 2);
   const stateRef = useRef(state);
   const [last, setLast] = useState<GridResult | null>(null);
   const steps = useMemo(() => [{ key: 'turn', text: t.tutorial.pipes.turn }], [t]);
@@ -98,8 +102,13 @@ export function PipesGame({ seed, onFinish }: { seed: number; onFinish: OnFinish
       if (previous.status !== 'playing') return;
       const next = reducePipes(previous, action);
       stateRef.current = next;
-      // A tick of the solved pause only re-renders when the water moves one step, the grid changes or the round ends.
-      const redraw = action.type !== 'tick' || next.grid !== previous.grid || next.status !== previous.status || waterFront(next) !== waterFront(previous);
+      // A tick only re-renders when the seconds left change, the water moves one step, the grid changes or the round ends.
+      const redraw =
+        action.type !== 'tick' ||
+        next.grid !== previous.grid ||
+        next.status !== previous.status ||
+        secondsLeft(next) !== secondsLeft(previous) ||
+        waterFront(next) !== waterFront(previous);
       if (redraw) setState(next);
       for (const e of next.events) {
         if (e.kind === 'solved') setLast({ grid: e.grid, points: e.points });
@@ -112,15 +121,15 @@ export function PipesGame({ seed, onFinish }: { seed: number; onFinish: OnFinish
     [advanceTutorial, finish, setCombos],
   );
 
-  // Frame loop of the solved pause (1 s): reads the injectable clock, keeps dispatch in a ref so that a new callback
-  // identity never restarts it.
+  // Frame loop of the grid clock and of the solved pause: reads the injectable clock, keeps dispatch in a ref so that a
+  // new callback identity never restarts it. It runs only while the round is active (not during the tutorial or the pause).
   const dispatchRef = useRef(dispatch);
   useEffect(() => {
     dispatchRef.current = dispatch;
   }, [dispatch]);
-  const showing = active && state.solvedMs > 0;
+  const running = active && state.status === 'playing';
   useEffect(() => {
-    if (!showing) return;
+    if (!running) return;
     let last = now();
     let handle = 0;
     const loop = () => {
@@ -128,11 +137,11 @@ export function PipesGame({ seed, onFinish }: { seed: number; onFinish: OnFinish
       const dt = Math.min(MAX_DT_MS, time - last);
       last = time;
       if (dt > 0) dispatchRef.current({ type: 'tick', dt });
-      if (stateRef.current.solvedMs > 0 && stateRef.current.status === 'playing') handle = requestAnimationFrame(loop);
+      if (stateRef.current.status === 'playing') handle = requestAnimationFrame(loop);
     };
     handle = requestAnimationFrame(loop);
     return () => cancelAnimationFrame(handle);
-  }, [showing]);
+  }, [running]);
 
   const solvedShown = state.solvedMs > 0;
   const locked = paused || state.status !== 'playing' || solvedShown;
@@ -144,13 +153,21 @@ export function PipesGame({ seed, onFinish }: { seed: number; onFinish: OnFinish
         <PixelText size={8} color="muted">
           {t.hud.grid}
         </PixelText>
-        <PixelText testID="hud-grid">{t.hud.of(state.grid, PIPES_GRIDS)}</PixelText>
+        <PixelText testID="hud-grid">{String(state.grid)}</PixelText>
       </View>
       <View style={styles.hudItem}>
         <PixelText size={8} color="muted">
           {t.hud.taps}
         </PixelText>
-        <PixelText testID="hud-taps">{String(state.taps)}</PixelText>
+        <PixelText testID="hud-taps">{t.hud.of(state.taps, state.maxTaps)}</PixelText>
+      </View>
+      <View style={styles.hudItem}>
+        <PixelText size={8} color="muted">
+          {t.hud.time}
+        </PixelText>
+        <PixelText testID="hud-time" color={secondsLeft(state) <= 5 ? 'danger' : 'text'}>
+          {`${secondsLeft(state)} s`}
+        </PixelText>
       </View>
     </>
   );
@@ -160,13 +177,13 @@ export function PipesGame({ seed, onFinish }: { seed: number; onFinish: OnFinish
       <View style={styles.column}>
         <Animated.View key={`grid-${state.grid}`} entering={FadeIn.duration(250)} style={styles.row}>
           {/* Entry: the water comes in from the left of the entry row. */}
-          <View style={{ width: gutter, height: PIPES_SIZE * cell + 4 }}>
+          <View style={{ width: gutter, height: size * cell + 4 }}>
             <View testID="pipes-entry" style={[styles.abs, { left: 0, width: gutter, top: 2 + state.entryRow * cell + (cell - stub) / 2, height: stub, backgroundColor: PALETTE.sky, borderColor: PALETTE.outline, borderWidth: 3 }]} />
           </View>
-          <View testID="pipes-board" style={[styles.board, { width: PIPES_SIZE * cell + 4, backgroundColor: colors.surface, borderColor: colors.border }]}>
+          <View testID="pipes-board" style={[styles.board, { width: size * cell + 4, backgroundColor: colors.surface, borderColor: colors.border }]}>
             {state.pieces.map((piece, i) => {
-              const col = i % PIPES_SIZE;
-              const row = Math.floor(i / PIPES_SIZE);
+              const col = i % size;
+              const row = Math.floor(i / size);
               const hinted = state.hint === i;
               const turns = state.turns[i];
               return (
@@ -189,8 +206,8 @@ export function PipesGame({ seed, onFinish }: { seed: number; onFinish: OnFinish
             })}
           </View>
           {/* Exit: the drain on the right of the exit row. */}
-          <View style={{ width: gutter, height: PIPES_SIZE * cell + 4 }}>
-            <View testID="pipes-exit" style={[styles.abs, { right: 0, width: gutter, top: 2 + state.exitRow * cell + (cell - stub) / 2, height: stub, backgroundColor: water[state.exitRow * PIPES_SIZE + PIPES_SIZE - 1] && solvedShown ? PALETTE.sky : PALETTE.grey, borderColor: PALETTE.outline, borderWidth: 3 }]} />
+          <View style={{ width: gutter, height: size * cell + 4 }}>
+            <View testID="pipes-exit" style={[styles.abs, { right: 0, width: gutter, top: 2 + state.exitRow * cell + (cell - stub) / 2, height: stub, backgroundColor: water[state.exitRow * size + size - 1] && solvedShown ? PALETTE.sky : PALETTE.grey, borderColor: PALETTE.outline, borderWidth: 3 }]} />
           </View>
           {/* The grid points pop above the solved grid while its water runs. */}
           {solvedShown && last && (

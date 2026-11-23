@@ -2,16 +2,16 @@ import {
   buildGrid,
   createPipes,
   E,
+  extraTaps,
   filledCells,
+  gridSize,
+  gridTimeMs,
   gridScore,
   hintCell,
   isSolved,
   N,
   openings,
   Piece,
-  PIPES_CELLS,
-  PIPES_FAIL_AFTER,
-  PIPES_SIZE,
   PipesState,
   reducePipes,
   S,
@@ -23,6 +23,8 @@ import {
   waterFront,
   waterOrder,
 } from '../game/pipes/engine';
+import { BOT_GRID_CAP, playPipesBot } from '../game/pipes/bot';
+import { gameById } from '../game/core/content';
 
 const tap = (state: PipesState, cell: number) => reducePipes(state, { type: 'tap', cell });
 const tick = (state: PipesState, dt = 50) => reducePipes(state, { type: 'tick', dt });
@@ -48,7 +50,7 @@ function solve(state: PipesState): PipesState {
 /** A cell outside the path whose turn does not solve the grid (wasted taps). */
 function wastedTap(state: PipesState): number {
   const onPath = new Set(state.path.map((p) => p.cell));
-  for (let cell = 0; cell < PIPES_CELLS; cell++) {
+  for (let cell = 0; cell < state.pieces.length; cell++) {
     if (onPath.has(cell)) continue;
     const pieces = state.pieces.slice();
     pieces[cell] = { ...pieces[cell], rot: pieces[cell].rot + 1 };
@@ -57,7 +59,7 @@ function wastedTap(state: PipesState): number {
   throw new Error('no wasted tap');
 }
 
-const adjacent = (a: number, b: number) => Math.abs((a % PIPES_SIZE) - (b % PIPES_SIZE)) + Math.abs(Math.floor(a / PIPES_SIZE) - Math.floor(b / PIPES_SIZE)) === 1;
+const adjacent = (a: number, b: number, size: number) => Math.abs((a % size) - (b % size)) + Math.abs(Math.floor(a / size) - Math.floor(b / size)) === 1;
 
 describe('Plombier Express engine (AC-62)', () => {
   it('AC-62: a tap turns the piece a quarter turn clockwise', () => {
@@ -77,17 +79,19 @@ describe('Plombier Express engine (AC-62)', () => {
     expect(next.events).toEqual([{ kind: 'turn', cell }]);
   });
 
-  it('AC-62: every grid has a seeded entry-to-exit path that connects once turned right, never starts solved, par ≥ 1 (500 seeds × 5 grids)', () => {
-    for (let seed = 1; seed <= 500; seed++) {
+  it('AC-62: every grid (4 × 4, 5 × 5 then 6 × 6) has a seeded entry-to-exit path that connects once turned right, never starts solved, par ≥ 1 (200 seeds × 8 grids)', () => {
+    for (let seed = 1; seed <= 200; seed++) {
       let state = createPipes(seed * 104729);
-      for (let k = 1; k <= 5; k++) {
+      for (let k = 1; k <= 8; k++) {
         expect(state.grid).toBe(k);
-        const { path, pieces, entryRow, exitRow } = state;
+        expect(state.size).toBe(gridSize(k));
+        expect(state.pieces).toHaveLength(gridSize(k) ** 2);
+        const { path, pieces, entryRow, exitRow, size } = state;
         // The path is self-avoiding, adjacent step to step, from the left of the entry row to the right of the exit row.
-        expect(path[0].cell).toBe(entryRow * PIPES_SIZE);
-        expect(path[path.length - 1].cell).toBe(exitRow * PIPES_SIZE + PIPES_SIZE - 1);
+        expect(path[0].cell).toBe(entryRow * size);
+        expect(path[path.length - 1].cell).toBe(exitRow * size + size - 1);
         expect(new Set(path.map((p) => p.cell)).size).toBe(path.length);
-        for (let i = 1; i < path.length; i++) expect(adjacent(path[i - 1].cell, path[i].cell)).toBe(true);
+        for (let i = 1; i < path.length; i++) expect(adjacent(path[i - 1].cell, path[i].cell, size)).toBe(true);
         // Every path piece can be turned to its needed openings; par is the sum of the minimal clockwise turns.
         let par = 0;
         for (const p of path) {
@@ -109,9 +113,9 @@ describe('Plombier Express engine (AC-62)', () => {
         expect(state.score).toBe(before + 300);
         state = settle(state);
       }
-      expect(state.status).toBe('over');
-      expect(state.score).toBe(1500);
-      expect(state.combos).toBe(5);
+      expect(state.status).toBe('playing'); // no last grid
+      expect(state.score).toBe(2400);
+      expect(state.combos).toBe(8);
     }
   });
 
@@ -123,12 +127,12 @@ describe('Plombier Express engine (AC-62)', () => {
 
   it('AC-62: solved detection follows any connected path, not only the seeded one', () => {
     // Row 2 made of straight pieces W–E: a straight line from entry row 2 to exit row 2.
-    const pieces: Piece[] = Array.from({ length: PIPES_CELLS }, () => ({ kind: 'elbow', rot: 0 }));
-    for (let c = 0; c < PIPES_SIZE; c++) pieces[2 * PIPES_SIZE + c] = { kind: 'straight', rot: 2 };
+    const pieces: Piece[] = Array.from({ length: 25 }, () => ({ kind: 'elbow', rot: 0 }));
+    for (let c = 0; c < 5; c++) pieces[2 * 5 + c] = { kind: 'straight', rot: 2 };
     expect(isSolved(pieces, 2, 2)).toBe(true);
     // Detour through row 1: elbow (W,N) at col 1 row 2... built as a U: (0,2) E–W, (1,2) W–N, (1,1) S–E, (2,1) W–E, (3,1) W–S, (3,2) N–E, (4,2) W–E.
     const detour = pieces.slice();
-    const at = (c: number, r: number) => r * PIPES_SIZE + c;
+    const at = (c: number, r: number) => r * 5 + c;
     detour[at(1, 2)] = { kind: 'elbow', rot: 3 }; // W | N
     detour[at(1, 1)] = { kind: 'elbow', rot: 1 }; // E | S
     detour[at(2, 1)] = { kind: 'straight', rot: 0 };
@@ -173,19 +177,45 @@ describe('Plombier Express engine (AC-62)', () => {
     expect(state.taps).toBe(0);
   });
 
-  it('AC-62: a grid unsolved after par + 20 taps is failed with 0 points; the round ends after 5 grids', () => {
+  it('AC-62: grids grow 4 × 4, 5 × 5, then 6 × 6; grid k allows par + max(6, 21 − k) taps and max(15, 63 − 3k) s', () => {
+    expect([1, 3, 4, 6, 7, 30].map(gridSize)).toEqual([4, 4, 5, 5, 6, 6]);
+    expect([1, 2, 14, 15, 40].map(extraTaps)).toEqual([20, 19, 7, 6, 6]);
+    expect([1, 2, 15, 16, 40].map(gridTimeMs)).toEqual([60000, 57000, 18000, 15000, 15000]);
     let state = createPipes(31);
-    const limit = state.par + PIPES_FAIL_AFTER;
-    for (let i = 0; i < limit - 1; i++) state = tap(state, wastedTap(state));
-    expect(state.grid).toBe(1);
+    expect(state).toMatchObject({ grid: 1, size: 4, maxTaps: state.par + 20, timeLeftMs: 60000 });
+    state = settle(solve(state));
+    expect(state).toMatchObject({ grid: 2, size: 4, maxTaps: state.par + 19, timeLeftMs: 57000 });
+  });
+
+  it('AC-62: the round ends at the first grid unsolved when its taps run out: 0 points for it, no next grid', () => {
+    let state = settle(solve(createPipes(31)));
+    expect(state.grid).toBe(2);
+    const score = state.score;
+    for (let i = 0; i < state.maxTaps - 1; i++) state = tap(state, wastedTap(state));
+    expect(state.status).toBe('playing');
     state = tap(state, wastedTap(state));
-    expect(state.events).toContainEqual({ kind: 'failed', grid: 1 });
-    expect(state.events).toContainEqual({ kind: 'grid', grid: 2 });
-    expect(state.score).toBe(0);
-    for (let k = 2; k <= 5; k++) while (state.grid === k && state.status === 'playing') state = tap(state, wastedTap(state));
     expect(state.status).toBe('over');
-    expect(state.events).toContainEqual({ kind: 'over', score: 0 });
+    expect(state.events).toContainEqual({ kind: 'failed', grid: 2, reason: 'taps' });
+    expect(state.events).toContainEqual({ kind: 'over', score });
+    expect(state.events.some((e) => e.kind === 'grid')).toBe(false);
     expect(tap(state, 0).events).toEqual([]);
+  });
+
+  it('AC-62: the round ends when the time of the grid is up; the clock stops while the solved grid is shown', () => {
+    let state = createPipes(8);
+    state = tick(state, 59_950);
+    expect(state.status).toBe('playing');
+    expect(state.timeLeftMs).toBe(50);
+    const ended = tick(state, 50);
+    expect(ended.status).toBe('over');
+    expect(ended.events).toContainEqual({ kind: 'failed', grid: 1, reason: 'time' });
+    // Solved with 50 ms left: the 1 s pause does not use the clock of the grid, the next grid has its own time.
+    const solved = solve(state);
+    expect(solved.solvedMs).toBe(SOLVED_SHOW_MS);
+    const next = settle(solved);
+    expect(next.status).toBe('playing');
+    expect(next.grid).toBe(2);
+    expect(next.timeLeftMs).toBe(gridTimeMs(2));
   });
 
   it('AC-62: « Indice » gives 1 / 2 / 3 hints; a hint shows a path cell not yet turned right and is not a tap', () => {
@@ -246,7 +276,7 @@ describe('Plombier Express solved grid shown (AC-88)', () => {
   it('AC-88: taps and hints are ignored while the solved grid is shown (a double tap changes nothing)', () => {
     const solved = solve(createPipes(2026, { hint: 3 }));
     expect(solved.solvedMs).toBeGreaterThan(0);
-    for (let cell = 0; cell < PIPES_CELLS; cell++) {
+    for (let cell = 0; cell < solved.pieces.length; cell++) {
       const after = tap(tap(solved, cell), cell);
       expect(after.pieces).toEqual(solved.pieces);
       expect(after.taps).toBe(solved.taps);
@@ -259,10 +289,12 @@ describe('Plombier Express solved grid shown (AC-88)', () => {
     expect(hinted.hintsLeft).toBe(solved.hintsLeft);
     expect(hinted.hint).toBeNull();
     expect(hinted.events).toEqual([{ kind: 'ignored' }]);
-    // A tick of 0 ms or a tick outside the pause changes nothing.
+    // A tick of 0 ms changes nothing; outside the pause a tick only runs the grid clock.
     expect(tick(solved, 0).solvedMs).toBe(solved.solvedMs);
+    expect(tick(solved, 500).timeLeftMs).toBe(solved.timeLeftMs);
     const playing = createPipes(2026);
-    expect(tick(playing, 500)).toBe(playing);
+    expect(tick(playing, 0)).toBe(playing);
+    expect(tick(playing, 500)).toEqual({ ...playing, timeLeftMs: playing.timeLeftMs - 500 });
   });
 
   it('AC-88: the water fills the connected pieces in path order, from the entry to the exit, then the whole pipe is held', () => {
@@ -272,12 +304,12 @@ describe('Plombier Express solved grid shown (AC-88)', () => {
       const watered = wateredCells(solved.pieces, solved.entryRow);
       expect(order.map((o) => o >= 0)).toEqual(watered);
       // Each step of the water is one cell further: every filled cell (but the entry) touches a cell one step before.
-      const entry = solved.entryRow * PIPES_SIZE;
-      const exit = solved.exitRow * PIPES_SIZE + PIPES_SIZE - 1;
+      const entry = solved.entryRow * solved.size;
+      const exit = solved.exitRow * solved.size + solved.size - 1;
       expect(order[entry]).toBe(0);
-      for (let cell = 0; cell < PIPES_CELLS; cell++) {
+      for (let cell = 0; cell < solved.pieces.length; cell++) {
         if (order[cell] <= 0) continue;
-        const before = [cell - 1, cell + 1, cell - PIPES_SIZE, cell + PIPES_SIZE].filter((c) => c >= 0 && c < PIPES_CELLS && adjacent(c, cell));
+        const before = [cell - 1, cell + 1, cell - solved.size, cell + solved.size].filter((c) => c >= 0 && c < solved.pieces.length && adjacent(c, cell, solved.size));
         expect(before.some((c) => order[c] === order[cell] - 1)).toBe(true);
       }
       // Frame by frame: only the entry at first, the filled set only grows, cells fill in their order, the exit is
@@ -291,7 +323,7 @@ describe('Plombier Express solved grid shown (AC-88)', () => {
         s = tick(s);
         const now = filledCells(s);
         const front = waterFront(s);
-        for (let cell = 0; cell < PIPES_CELLS; cell++) {
+        for (let cell = 0; cell < solved.pieces.length; cell++) {
           if (previous[cell]) expect(now[cell]).toBe(true);
           expect(now[cell]).toBe(order[cell] >= 0 && order[cell] < front);
         }
@@ -306,23 +338,48 @@ describe('Plombier Express solved grid shown (AC-88)', () => {
     }
   });
 
-  it('AC-88: the 5th solved grid is shown 1 s too, then the round ends; a failed grid has no pause', () => {
+  it('AC-88: the 5th solved grid is shown 1 s too, then grid 6 comes; a failed grid has no pause and ends the round', () => {
     let state = createPipes(404);
     for (let k = 1; k <= 4; k++) state = settle(solve(state));
     expect(state.grid).toBe(5);
     state = solve(state);
     expect(state.status).toBe('playing');
     expect(state.solvedMs).toBe(SOLVED_SHOW_MS);
-    expect(state.events.some((e) => e.kind === 'over')).toBe(false);
     state = settle(state);
-    expect(state.status).toBe('over');
-    expect(state.events).toEqual([{ kind: 'over', score: 1500 }]);
+    expect(state.status).toBe('playing');
+    expect(state.grid).toBe(6);
+    expect(state.events).toEqual([{ kind: 'grid', grid: 6 }]);
 
     let failing = createPipes(31);
-    const limit = failing.par + PIPES_FAIL_AFTER;
+    const limit = failing.maxTaps;
     for (let i = 0; i < limit; i++) failing = tap(failing, wastedTap(failing));
-    expect(failing.events).toContainEqual({ kind: 'failed', grid: 1 });
-    expect(failing.grid).toBe(2);
+    expect(failing.events).toContainEqual({ kind: 'failed', grid: 1, reason: 'taps' });
+    expect(failing.status).toBe('over');
     expect(failing.solvedMs).toBe(0);
+  });
+});
+
+describe('Plombier Express balance (AC-115)', () => {
+  const rounds = Array.from({ length: 50 }, (_, i) => playPipesBot(i + 1));
+  const scores = rounds.map((r) => r.score).sort((x, y) => x - y);
+  const median = (scores[24] + scores[25]) / 2;
+
+  it('AC-115: every bot round ends (taps or time) within its cap of grids, and the bot is deterministic', () => {
+    for (const r of rounds) {
+      expect(r.status).toBe('over');
+      expect(r.grid).toBeLessThan(BOT_GRID_CAP);
+    }
+    expect(playPipesBot(9)).toEqual(playPipesBot(9));
+  });
+
+  it('AC-115: over 50 seeds the casual bot median reaches the 1-star threshold and stays below the 3-star threshold', () => {
+    const [one, , three] = gameById('pipes').stars;
+    expect(median).toBeGreaterThanOrEqual(one);
+    expect(median).toBeLessThan(three);
+  });
+
+  it('AC-115 (measured, reported): bot p25 / median / p90 and grids reached over seeds 1-50', () => {
+    const grids = rounds.map((r) => r.grid).sort((x, y) => x - y);
+    expect({ p25: scores[12], median, p90: scores[45], gridMedian: grids[25] }).toEqual({ p25: 2325, median: 2872.5, p90: 3570, gridMedian: 13 });
   });
 });

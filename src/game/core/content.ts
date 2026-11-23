@@ -232,7 +232,7 @@ export const GAMES: readonly Game[] = [
   {
     id: 'pipes',
     world: 'puzzle',
-    stars: [700, 1100, 1400],
+    stars: [2350, 3550, 5750], // v0.4.0 phone test: endless growing grids with a clock, from the casual bot (p25 2 325, p90 3 570, median 2 872)
     upgrades: [{ id: 'hint', maxLevel: UPGRADE_MAX_LEVEL }, coinsUpgrade],
     realTime: false,
   },
@@ -491,7 +491,7 @@ export const CHALLENGES: readonly ChallengeDef[] = [
   { id: 'score_tower', kind: 'score', target: 150, game: 'tower', reward: { coins: 50 }, minGames: 1 },
   { id: 'score_hop', kind: 'score', target: 150, game: 'hop', reward: { coins: 50 }, minGames: 1 },
   { id: 'score_lights', kind: 'score', target: 500, game: 'lights', reward: { coins: 50 }, minGames: 1 },
-  { id: 'score_pipes', kind: 'score', target: 700, game: 'pipes', reward: { coins: 50 }, minGames: 1 },
+  { id: 'score_pipes', kind: 'score', target: 2350, game: 'pipes', reward: { coins: 50 }, minGames: 1 },
   { id: 'score_flood', kind: 'score', target: 800, game: 'flood', reward: { coins: 50 }, minGames: 1 },
   { id: 'score_socks', kind: 'score', target: 800, game: 'socks', reward: { coins: 50 }, minGames: 1 },
   { id: 'score_twentyone', kind: 'score', target: 400, game: 'twentyone', reward: { coins: 50 }, minGames: 1 },

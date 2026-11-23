@@ -4,7 +4,7 @@ import { SafeAreaProvider } from 'react-native-safe-area-context';
 
 import { setClock } from '../game/clock';
 import { defaultSave, serializeSave } from '../game/core/save';
-import { createPipes, filledCells, PIPES_SIZE, PipesState, reducePipes, SOLVED_SHOW_MS, turnsToFit, wateredCells } from '../game/pipes/engine';
+import { createPipes, filledCells, PipesState, reducePipes, SOLVED_SHOW_MS, turnsToFit, wateredCells } from '../game/pipes/engine';
 import type { OnFinish } from '../screens/game/GameFrame';
 import { PipesGame } from '../screens/game/PipesGame';
 import { GameStoreProvider, useGameStore } from '../state/GameStore';
@@ -44,7 +44,9 @@ async function advance(ms: number) {
   });
 }
 
-const pos = (cell: number) => `${cell % PIPES_SIZE}-${Math.floor(cell / PIPES_SIZE)}`;
+/** Grids 1 to 3 are 4 × 4 (the tests play grids 1 and 2). */
+const SIZE = 4;
+const pos = (cell: number) => `${cell % SIZE}-${Math.floor(cell / SIZE)}`;
 const rotationOf = (cell: number) => {
   const style = [screen.getByTestId(`pipes-piece-${pos(cell)}`).props.style].flat(3);
   return style.find((s) => s && s.transform)?.transform[0].rotate;
@@ -64,8 +66,8 @@ describe('Plombier Express screen (AC-69)', () => {
     await start();
     expect(screen.getByTestId('tutorial-turn')).toHaveTextContent(/Touche un tuyau pour le tourner/);
     const engine = createPipes(SEED, {});
-    expect(screen.getByTestId('hud-grid')).toHaveTextContent(/^1 \/ 5$/);
-    expect(screen.getByTestId('hud-taps')).toHaveTextContent(/^0$/);
+    expect(screen.getByTestId('hud-grid')).toHaveTextContent(/^1$/);
+    expect(screen.getByTestId('hud-taps')).toHaveTextContent(/^0 \/ \d+$/);
     expect(screen.getByTestId('pipes-btn-hint')).toHaveTextContent(/Indice \(0\)/);
     expect(screen.getByTestId('pipes-btn-hint')).toBeDisabled();
     expect(waterOnScreen(engine)).toEqual(wateredCells(engine.pieces, engine.entryRow));
@@ -76,7 +78,7 @@ describe('Plombier Express screen (AC-69)', () => {
     expect(rotationOf(first)).toBe(`${engine.pieces[first].rot * 90}deg`);
     await fireEvent.press(screen.getByTestId(`pipes-cell-${pos(first)}`));
     expect(screen.queryByTestId('tutorial-bubble')).toBeNull();
-    expect(screen.getByTestId('hud-taps')).toHaveTextContent(/^1$/);
+    expect(screen.getByTestId('hud-taps')).toHaveTextContent(/^1 \/ \d+$/);
     expect(rotationOf(first)).toBe(`${afterTap.pieces[first].rot * 90}deg`);
     expect(waterOnScreen(afterTap)).toEqual(wateredCells(afterTap.pieces, afterTap.entryRow));
 
@@ -93,10 +95,10 @@ describe('Plombier Express screen (AC-69)', () => {
     expect(expected.grid).toBe(1);
     expect(expected.solvedMs).toBe(SOLVED_SHOW_MS);
     expect(screen.getByTestId('hud-score')).toHaveTextContent(new RegExp(`^${expected.score}$`));
-    expect(screen.getByTestId('hud-grid')).toHaveTextContent(/^1 \/ 5$/);
+    expect(screen.getByTestId('hud-grid')).toHaveTextContent(/^1$/);
     expect(screen.getByTestId('pipes-last')).toHaveTextContent(new RegExp(`^\\+${expected.score}$`));
     for (let t = 0; t < SOLVED_SHOW_MS + 100; t += 50) await advance(50);
-    expect(screen.getByTestId('hud-grid')).toHaveTextContent(/^2 \/ 5$/);
+    expect(screen.getByTestId('hud-grid')).toHaveTextContent(/^2$/);
     expect(screen.queryByTestId('pipes-points')).toBeNull();
   }, 60_000);
 
@@ -122,7 +124,7 @@ describe('Plombier Express screen (AC-69)', () => {
     await fireEvent.press(screen.getByTestId(`pipes-cell-${pos(expected.path[0].cell)}`));
     await fireEvent.press(screen.getByTestId(`pipes-cell-${pos(expected.path[0].cell)}`));
     expect(expected.pieces.map((_, i) => rotationOf(i))).toEqual(solvedRotations);
-    expect(screen.getByTestId('hud-taps')).toHaveTextContent(new RegExp(`^${expected.taps}$`));
+    expect(screen.getByTestId('hud-taps')).toHaveTextContent(new RegExp(`^${expected.taps} / ${expected.maxTaps}$`));
 
     // Frame by frame (50 ms): the filled cells only grow, as the engine predicts, until the whole pipe is full.
     let engine = expected;
@@ -135,15 +137,15 @@ describe('Plombier Express screen (AC-69)', () => {
       const filled = shown.filter(Boolean).length;
       expect(filled).toBeGreaterThanOrEqual(count);
       count = filled;
-      expect(screen.getByTestId('hud-grid')).toHaveTextContent(/^1 \/ 5$/);
+      expect(screen.getByTestId('hud-grid')).toHaveTextContent(/^1$/);
       expect(screen.getByTestId('pipes-points')).toBeTruthy();
     }
     expect(count).toBe(wateredCells(expected.pieces, expected.entryRow).filter(Boolean).length);
     expect(count).toBeGreaterThan(1);
     await advance(50);
     await advance(50);
-    expect(screen.getByTestId('hud-grid')).toHaveTextContent(/^2 \/ 5$/);
-    expect(screen.getByTestId('hud-taps')).toHaveTextContent(/^0$/);
+    expect(screen.getByTestId('hud-grid')).toHaveTextContent(/^2$/);
+    expect(screen.getByTestId('hud-taps')).toHaveTextContent(/^0 \/ \d+$/);
     expect(screen.getByTestId('hud-score')).toHaveTextContent(new RegExp(`^${points}$`));
     expect(screen.queryByTestId('pipes-points')).toBeNull();
   }, 60_000);
@@ -156,7 +158,7 @@ describe('Plombier Express screen (AC-69)', () => {
     expect(screen.getByTestId('pipes-btn-hint')).toHaveTextContent(/Indice \(0\)/);
     expect(screen.getByTestId('pipes-btn-hint')).toBeDisabled();
     expect(screen.getByTestId(`pipes-cell-${pos(expected.hint as number)}`)).toHaveStyle({ borderWidth: 3 });
-    expect(screen.getByTestId('hud-taps')).toHaveTextContent(/^0$/);
+    expect(screen.getByTestId('hud-taps')).toHaveTextContent(/^0 \/ \d+$/);
   });
 
   it('AC-69: Pause → Quitter ends the round with the current score', async () => {

@@ -168,7 +168,7 @@ forever (a lower score later never removes one). 69 stars exist in v0.3.0.
 | Tour Bancale | 150 | 300 | 500 |
 | Saute-Lapin | 150 | 350 | 600 |
 | Lucioles | 500 | 750 | 950 |
-| Plombier Express | from the casual bot (v0.4.0 phone test) | | |
+| Plombier Express | 2 350 | 3 550 | 5 750 |
 | Raz-de-Couleurs | 800 | 2 000 | 3 500 |
 | Chaussettes Perdues | 800 | 1 600 | 2 800 |
 | Vingt-et-Un | 400 | 600 | 750 |

@@ -297,7 +297,7 @@ export const fr = {
     score_tower: `Marquer 150 points à Tour Bancale`,
     score_hop: `Marquer 150 points à Saute-Lapin`,
     score_lights: `Marquer 500 points à Lucioles`,
-    score_pipes: `Marquer 700 points à Plombier Express`,
+    score_pipes: `Marquer 2350 points à Plombier Express`,
     score_flood: `Marquer 800 points à Raz-de-Couleurs`,
     score_socks: `Marquer 800 points à Chaussettes Perdues`,
     score_twentyone: `Marquer 400 points à Vingt-et-Un`,

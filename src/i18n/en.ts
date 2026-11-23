@@ -297,7 +297,7 @@ export const en: Strings = {
     score_tower: `Score 150 at Wobbly Tower`,
     score_hop: `Score 150 at Bunny Hop`,
     score_lights: `Score 500 at Fireflies`,
-    score_pipes: `Score 700 at Pipe Rush`,
+    score_pipes: `Score 2350 at Pipe Rush`,
     score_flood: `Score 800 at Colour Tide`,
     score_socks: `Score 800 at Lost Socks`,
     score_twentyone: `Score 400 at Twenty-One`,

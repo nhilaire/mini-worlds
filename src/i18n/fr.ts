@@ -360,7 +360,7 @@ export const fr = {
     rounds10: 'Joue 10 parties',
     rounds100: 'Joue 100 parties',
     first_star: 'Gagne une étoile',
-    all_stars: 'Gagne les 69 étoiles',
+    all_stars: 'Gagne toutes les étoiles',
     explorer: 'Joue à 3 jeux différents',
     globetrotter: 'Joue à 10 jeux différents',
     first_upgrade: 'Achète une amélioration',

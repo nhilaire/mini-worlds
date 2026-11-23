@@ -1,5 +1,5 @@
 // v0.4.0 catalogue: twelve more games, world Défis opens (AC-95).
-import { CHALLENGES, gameById, GAMES, WORLDS, worldById } from '../../game/core/content';
+import { ACHIEVEMENTS, CHALLENGES, gameById, GAMES, WORLDS, worldById } from '../../game/core/content';
 import { checkUnlocks } from '../../game/core/unlocks';
 import { defaultSave, parseSave, Save, serializeSave } from '../../game/core/save';
 import { DICTIONARIES, LANGUAGES } from '../../i18n';
@@ -71,6 +71,15 @@ describe('v0.4.0 catalogue (AC-95)', () => {
     expect(checkUnlocks(withStars(30, 9)).unlocked).not.toContain('challenges');
     expect(GAMES).toHaveLength(35);
     expect(GAMES.length * 3).toBe(105);
+  });
+});
+
+describe('Ciel étoilé (AC-14, AC-95)', () => {
+  it('needs every star of the version (105) and its hint names no number in any language', () => {
+    expect(ACHIEVEMENTS.find((a) => a.id === 'all_stars')).toMatchObject({ kind: 'stars', target: 105 });
+    expect(DICTIONARIES.fr.achievementHint.all_stars).toBe('Gagne toutes les étoiles');
+    expect(DICTIONARIES.en.achievementHint.all_stars).toBe('Earn every star');
+    for (const language of LANGUAGES) expect(DICTIONARIES[language].achievementHint.all_stars).not.toMatch(/d/);
   });
 });
 

@@ -150,7 +150,7 @@ v0.4.0 phone test changes (PRD amendment 4e3bbd3, approved 2026-11-23)
 - [x] T-102 Bataille de Nombres screen: preview labels, 3 tutorial bubbles, own-territory reselect (AC-113) - proof: unit
 - [x] T-103 Mini Défense engine: 3 turrets, 3 enemies, endless waves, economy, stars recomputed (AC-99, AC-115) - proof: unit
 - [x] T-104 Mini Défense screen: turret picker, HUD « Vague k » (AC-114) - proof: unit
-- [ ] T-105 Ciel étoilé copy for every star (105), catalogue check (AC-14, AC-95) - proof: unit
+- [x] T-105 Ciel étoilé copy for every star (105), catalogue check (AC-14, AC-95) - proof: unit
 - [ ] T-106 Phone test of the reworked games and the game of the day (AC-116) - proof: device
 
 ## Notes

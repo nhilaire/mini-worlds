@@ -360,7 +360,7 @@ export const en: Strings = {
     rounds10: 'Play 10 rounds',
     rounds100: 'Play 100 rounds',
     first_star: 'Earn a star',
-    all_stars: 'Earn all 69 stars',
+    all_stars: 'Earn every star',
     explorer: 'Play 3 different games',
     globetrotter: 'Play 10 different games',
     first_upgrade: 'Buy an upgrade',

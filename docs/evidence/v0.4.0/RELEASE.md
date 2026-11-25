@@ -1,11 +1,11 @@
 # Release: Bric-à-Jeux v0.4.0
 
 Phone install: PASS
-User acceptance: pending
+User acceptance: confirmed (2026-11-25)
 Date: 2026-11-23
-Commit: 1ca3efd
+Commit: d3e2b0a
 APK: mini-worlds-0.4.0-arm64-v8a.apk (49.9 MB, arm64-v8a)
-SHA-256: a06855adf00b398dba1c20f3cf714768b8606196c2ad3f3ffa20369e92a3c73e
+SHA-256: 11d5b6b6216a458b5a738e03e09011e2a4814b6be4a04435dcc9e608f89ad9ec
 Signature: release signature valid
 Phone: Android 11 (API 30, arm64-v8a)
 Launch check: alive after 10 s, no fatal error
@@ -38,3 +38,7 @@ Decisions taken with the user after the test (2026-11-23), to amend in the PRD:
 - Bataille de Nombres: outcome preview on each neighbour before an attack, a 3-bubble tutorial, a first training map of 3 territories with a passive enemy, and moves only onto other territories (no reinforcing one's own).
 - Other games with a fixed end: unchanged for now (only the 5 games cited).
 The play log was not saved: the phone was unplugged before `playlog save`; it will be taken at the next install.
+
+Second phone test, 2026-11-25 (APK of d3e2b0a, verified commit e9bc770): accepted by the user (« j'accepte ») after the
+rework of the first test's points. The play log was started (pid 14056) but not saved: the phone was unplugged before
+`playlog save`; the launch check (alive after 10 s, no fatal error) is the device proof of this install.

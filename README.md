@@ -20,16 +20,14 @@ French and English (it follows the phone's language; you can change it in the se
 Download the APK attached to the latest release (if any) or build it yourself (below), then install it on an
 Android phone (allow installation from unknown sources).
 
-Three mini-games in this version, each in its own world:
+35 mini-games in nine worlds (Arcade, Puzzle, Stratégie, Cartes, Bulles, Adresse, Exploration, Mémoire, Défis), all
+played with one finger: falling blocks, match-3, bubble shooter, fruit fusion, pipes, mazes, card games, tower
+defence, territory battles, memory and logic games... A world opens with stars and your level, and inside a world
+each game opens with the stars earned there.
 
-- **Pluie de Blocs** (Arcade): drag to move the falling block, tap to rotate, swipe down to drop; clear lines.
-- **Potager Fou** (Puzzle): swipe a vegetable onto its neighbour to line up 3 identical ones, in 20 moves.
-- **Bulles en Folie** (Bubbles): hold to aim, release to shoot; pop groups of 3 bubbles before they reach the
-  bottom.
-
-Every round earns stars (3 score thresholds per game), coins and XP. Stars and your level unlock the next
-worlds; coins buy upgrades for the games you like; a daily reward and three daily challenges reward coming back.
-The seven other worlds of the map are coming in later versions.
+Every round earns stars (3 score thresholds per game), coins and XP. Coins buy upgrades for the games you like; a
+daily reward calendar (miss a day and it starts again), three daily challenges and a game of the day (coins ×2 on
+its rounds) reward coming back. The tenth world, Construction, is coming in a later version.
 
 ## Privacy
 
